@@ -1,9 +1,11 @@
 using IMS.API.Authorization;
 using IMS.Application.Common;
 using IMS.Application.Interfaces;
+using IMS.Application.Interfaces.Company;
 using IMS.Infrastructure.Persistence;
 using IMS.Infrastructure.Repositories;
 using IMS.Infrastructure.Services;
+using IMS.Infrastructure.Services.Company;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +21,8 @@ builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
