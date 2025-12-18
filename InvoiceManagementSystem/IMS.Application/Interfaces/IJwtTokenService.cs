@@ -1,4 +1,4 @@
-﻿using IMS.Domain.Entities;
+﻿using IMS.Domain.Entities.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;

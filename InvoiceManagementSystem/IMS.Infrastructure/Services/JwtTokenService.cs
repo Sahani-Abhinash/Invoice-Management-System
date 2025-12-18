@@ -1,5 +1,5 @@
 ﻿using IMS.Application.Interfaces;
-using IMS.Domain.Entities;
+using IMS.Domain.Entities.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;

@@ -1,3 +1,5 @@
+using IMS.API.Authorization;
+using IMS.Application.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IMS.API.Controllers
@@ -18,6 +20,7 @@ namespace IMS.API.Controllers
             _logger = logger;
         }
 
+        //[HasPermission(Permissions.CreateInvoice)]
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {

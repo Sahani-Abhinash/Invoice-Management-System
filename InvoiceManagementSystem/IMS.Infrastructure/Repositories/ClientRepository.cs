@@ -1,5 +1,5 @@
 ﻿using IMS.Application.Interfaces;
-using IMS.Domain.Entities;
+using IMS.Domain.Entities.Company;
 using IMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,15 +19,15 @@ namespace IMS.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Client>> GetAllAsync()
-            => await _context.Clients.ToListAsync();
+        public async Task<IEnumerable<Company>> GetAllAsync()
+            => await _context.Companies.ToListAsync();
 
-        public async Task<Client?> GetByIdAsync(Guid id)
-            => await _context.Clients.FindAsync(id);
+        public async Task<Company?> GetByIdAsync(Guid id)
+            => await _context.Companies.FindAsync(id);
 
-        public async Task AddAsync(Client client)
+        public async Task AddAsync(Company client)
         {
-            _context.Clients.Add(client);
+            _context.Companies.Add(client);
             await _context.SaveChangesAsync();
         }
     }

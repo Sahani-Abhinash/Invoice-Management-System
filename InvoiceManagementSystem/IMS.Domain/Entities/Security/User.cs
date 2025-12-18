@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMS.Domain.Entities
+namespace IMS.Domain.Entities.Security
 {
     public class User : BaseEntity
     {

@@ -1,16 +1,18 @@
 ﻿using IMS.Domain.Common;
+using IMS.Domain.Entities.Company;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMS.Domain.Entities
+namespace IMS.Domain.Entities.Warehouse
 {
-    public class Client : BaseEntity
+    public class Warehouse : BaseEntity
     {
+        public Guid BranchId { get; set; }
+        public Branch Branch { get; set; } = null!;
+
         public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
     }
 }

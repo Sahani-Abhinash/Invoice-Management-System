@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMS.Domain.Entities
+namespace IMS.Domain.Entities.Security
 {
-    public class RolePermission
+    public class UserRole
     {
+        public Guid UserId { get; set; }
+        public User User { get; set; } = null!;
+
         public Guid RoleId { get; set; }
         public Role Role { get; set; } = null!;
-
-        public Guid PermissionId { get; set; }
-        public Permission Permission { get; set; } = null!;
     }
 }
