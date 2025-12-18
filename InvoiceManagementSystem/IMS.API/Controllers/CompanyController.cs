@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace IMS.API.Controllers
 {
     [ApiController]
-    [Route("api/companies")]
+    [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyManager _companyManager;

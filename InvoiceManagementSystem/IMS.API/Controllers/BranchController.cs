@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace IMS.API.Controllers
 {
     [ApiController]
-    [Route("api/branches")]
+    [Route("api/[controller]")]
     public class BranchController : ControllerBase
     {
         private readonly IBranchManager _branchManager;
