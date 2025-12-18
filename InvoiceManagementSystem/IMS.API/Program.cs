@@ -1,4 +1,4 @@
-using IMS.API.Authorization;
+﻿using IMS.API.Authorization;
 using IMS.Application.Common;
 using IMS.Application.Interfaces;
 using IMS.Application.Interfaces.Company;
@@ -12,6 +12,19 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 🔹 ADD THIS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -81,6 +94,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// 🔹 ADD THIS (VERY IMPORTANT POSITION)
+app.UseCors("AllowAngular");
 
 app.UseHttpsRedirection();
 
