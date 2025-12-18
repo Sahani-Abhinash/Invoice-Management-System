@@ -1,4 +1,4 @@
-﻿using IMS.Domain.Entities.Company;
+﻿using IMS.Domain.Entities.Companies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;

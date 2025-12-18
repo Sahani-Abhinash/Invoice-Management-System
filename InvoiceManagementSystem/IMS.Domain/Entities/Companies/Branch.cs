@@ -1,7 +1,7 @@
-﻿using IMS.Domain.Common;
+using IMS.Domain.Common;
 using warehouse = IMS.Domain.Entities.Warehouse;
 
-namespace IMS.Domain.Entities.Company
+namespace IMS.Domain.Entities.Companies
 {
     public class Branch : BaseEntity
     {

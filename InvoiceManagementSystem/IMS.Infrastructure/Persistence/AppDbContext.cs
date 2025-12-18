@@ -1,4 +1,4 @@
-﻿using IMS.Domain.Entities.Company;
+﻿using IMS.Domain.Entities.Companies;
 using IMS.Domain.Entities.Pricing;
 using IMS.Domain.Entities.Product;
 using IMS.Domain.Entities.Security;

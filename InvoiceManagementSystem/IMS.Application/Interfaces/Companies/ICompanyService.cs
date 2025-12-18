@@ -1,11 +1,11 @@
-﻿using IMS.Application.DTOs.Company;
+using IMS.Application.DTOs.Companies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMS.Application.Interfaces.Company
+namespace IMS.Application.Interfaces.Companies
 {
     public interface ICompanyService
     {

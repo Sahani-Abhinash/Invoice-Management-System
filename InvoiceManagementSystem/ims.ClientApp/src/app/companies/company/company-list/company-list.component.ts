@@ -16,7 +16,11 @@ export class CompanyListComponent implements OnInit {
 
   companies: Company[] = [];
 
-  constructor(private companyService: CompanyService, private router: Router, private cdr: ChangeDetectorRef) { }
+  constructor(private companyService: CompanyService, 
+    private router: Router, 
+    private cdr: ChangeDetectorRef) { 
+      
+    }
 
   ngOnInit(): void {
     console.log('CompanyListComponent initialized');

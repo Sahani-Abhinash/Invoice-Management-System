@@ -1,15 +1,17 @@
-﻿using System;
+using IMS.Domain.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMS.Application.DTOs.Company
+namespace IMS.Domain.Entities.Companies
 {
-    public class CompanyDto
+    public class Company : BaseEntity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string TaxNumber { get; set; } = string.Empty;
+
+        public ICollection<Branch> Branches { get; set; } = new List<Branch>();
     }
 }

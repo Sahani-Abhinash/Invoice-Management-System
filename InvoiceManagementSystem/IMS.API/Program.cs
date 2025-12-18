@@ -1,11 +1,13 @@
 ﻿using IMS.API.Authorization;
 using IMS.Application.Common;
 using IMS.Application.Interfaces;
-using IMS.Application.Interfaces.Company;
+using IMS.Application.Interfaces.Common;
+using IMS.Application.Interfaces.Companies;
+using IMS.Application.Managers.Companies;
 using IMS.Infrastructure.Persistence;
-using IMS.Infrastructure.Repositories;
+using IMS.Infrastructure.Repositories.Common;
 using IMS.Infrastructure.Services;
-using IMS.Infrastructure.Services.Company;
+using IMS.Infrastructure.Services.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,12 +32,20 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IClientRepository, ClientRepository>();
+// Register Generic Repository
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
 
+// Register Services
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IBranchService, BranchService>();
+
+// Register Managers (Separate managers for each entity)
+builder.Services.AddScoped<ICompanyManager, CompanyManager>();
+builder.Services.AddScoped<IBranchManager, BranchManager>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
