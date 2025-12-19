@@ -1,0 +1,26 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Branches</h2>
+    <button class="btn btn-primary" (click)="createBranch()">Add Branch</button>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Company</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let branch of branches">
+        <td>{{ branch.name }}</td>
+        <td>{{ companyName(branch) }}</td>
+        <td>
+          <button class="btn btn-sm btn-info me-2" (click)="editBranch(branch.id)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch.id)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
