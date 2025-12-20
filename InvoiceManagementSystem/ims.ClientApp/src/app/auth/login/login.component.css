@@ -1,0 +1,3 @@
+.auth-bg { min-height: 100vh; }
+.bg-auth { background-image: url('/template/images/auth-bg.png'); background-size: cover; background-position: center; }
+.password-addon { height: 100%; }

@@ -1,0 +1,110 @@
+<div class="auth-bg 100-vh">
+    <div class="bg-overlay bg-light"></div>
+
+    <div class="account-pages">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-11">
+                    <div class="auth-full-page-content d-flex min-vh-100 py-sm-5 py-4">
+                        <div class="w-100">
+                            <div class="d-flex flex-column h-100 py-0 py-xl-4">
+
+                                <div class="text-center mb-5">
+                                    <a [routerLink]="['/']">
+                                        <span class="logo-lg">
+                                            <img src="/template/images/logo-dark.png" alt="" height="21">
+                                        </span>
+                                    </a>
+                                </div>
+
+                                <div class="card my-auto overflow-hidden">
+                                    <div class="row g-0">
+                                        <div class="col-lg-6">
+                                            <div class="p-lg-5 p-4">
+                                                <div class="text-center">
+                                                    <h5 class="mb-0">Welcome Back !</h5>
+                                                    <p class="text-muted mt-2">Sign in to continue.</p>
+                                                </div>
+
+                                                                                                <div class="mt-4">
+                                                                                                        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-input">
+                                                                                                                <div class="mb-3">
+                                                                                                                    <label for="email" class="form-label">Email</label>
+                                                                                                                    <input type="email" class="form-control" id="email" placeholder="Enter email" formControlName="email">
+                                                                                                                </div>
+
+                                                                                                                <div class="mb-2">
+                                                                                                                    <label for="password" class="form-label">Password</label>
+                                                                                                                    <div class="position-relative auth-pass-inputgroup mb-3">
+                                                                                                                        <input [type]="passwordVisible ? 'text' : 'password'" class="form-control pe-5 password-input" placeholder="Enter password" id="password" formControlName="password">
+                                                                                                                        <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" (click)="togglePassword()" title="Toggle password visibility"><i class="las la-eye align-middle fs-18" aria-hidden="true"></i></button>
+                                                                                                                    </div>
+                                                                                                                </div>
+
+                                                        <div class="form-check form-check-primary fs-16 py-2">
+                                                            <input class="form-check-input" type="checkbox" id="remember-check" formControlName="remember">
+                                                            <div class="float-end">
+                                                                <a [routerLink]="['/']" class="text-muted text-decoration-underline fs-14">Forgot your password?</a>
+                                                            </div>
+                                                            <label class="form-check-label fs-14" for="remember-check">
+                                                                Remember me
+                                                            </label>
+                                                        </div>
+
+                                                        <div class="mt-2">
+                                                            <button class="btn btn-primary w-100" type="submit">Log In</button>
+                                                        </div>
+
+                                                        <div class="mt-4 text-center">
+                                                            <div class="signin-other-title">
+                                                                <h5 class="fs-15 mb-3 title">Sign in with</h5>
+                                                            </div>
+                                                            <ul class="list-inline">
+                                                                <li class="list-inline-item">
+                                                                    <a href="javascript:void(0)" class="social-list-item bg-primary text-white border-primary" title="Sign in with Facebook">
+                                                                        <i class="mdi mdi-facebook"></i>
+                                                                    </a>
+                                                                </li>
+                                                                <li class="list-inline-item">
+                                                                    <a href="javascript:void(0)" class="social-list-item bg-info text-white border-info" title="Sign in with X/Twitter">
+                                                                        <i class="mdi mdi-twitter"></i>
+                                                                    </a>
+                                                                </li>
+                                                                <li class="list-inline-item">
+                                                                    <a href="javascript:void(0)" class="social-list-item bg-danger text-white border-danger" title="Sign in with Google">
+                                                                        <i class="mdi mdi-google"></i>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+
+                                                        <div class="mt-4 text-center">
+                                                            <p class="mb-0">Don't have an account? <a [routerLink]="['/']" class="fw-medium text-primary text-decoration-underline">Signup now</a></p>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <div class="d-flex h-100 bg-auth align-items-end">
+                                                <div class="p-lg-5 p-4">
+                                                    <div class="bg-overlay bg-primary"></div>
+                                                    <!-- Right-side content can stay static for now -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 text-center">
+                                      <p class="mb-0 text-muted">© {{ currentYear }} Invoika.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

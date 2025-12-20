@@ -1,10 +1,12 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AuthStore } from './auth/auth.store';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.css',
   standalone: true,
@@ -13,12 +15,42 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 export class App implements OnInit {
   protected readonly title = signal('ims.ClientApp');
   isSidebarOpen = signal(true);
+  onAuthRoute = signal(false);
+
+  constructor(private router: Router, public authStore: AuthStore) {}
 
   ngOnInit() {
+    // Track route changes to toggle layout for auth pages
+    // Set initial state based on current URL (first render)
+    this.setAuthRouteState(this.router.url);
+
+    // Track route changes to toggle layout for auth pages
+    this.router.events.subscribe((evt) => {
+      if (evt instanceof NavigationEnd) {
+        this.setAuthRouteState(evt.urlAfterRedirects);
+      }
+    });
     // Initialize menu toggle event listeners
     this.setupMenuToggle();
     // Initialize Simplebar if needed
     this.initializeSimplebar();
+  }
+
+  private setAuthRouteState(url: string) {
+    const normalized = (url || '').toLowerCase();
+    // Be robust to leading slash and query/hash fragments
+    const pathOnly = normalized.split('?')[0].split('#')[0];
+    // Match login/auth anywhere at a path boundary
+    const isAuth = /(^|\/)login(\/|$)/.test(pathOnly) || /(^|\/)auth(\/|$)/.test(pathOnly);
+    this.onAuthRoute.set(isAuth);
+  }
+
+  isAuthRoute() {
+    return this.onAuthRoute();
+  }
+
+  getUserName() {
+    return this.authStore.userName();
   }
 
   private setupMenuToggle() {
@@ -77,5 +109,10 @@ export class App implements OnInit {
         }
       }
     }, 100);
+  }
+
+  logout() {
+    this.authStore.clear();
+    this.router.navigateByUrl('/login');
   }
 }

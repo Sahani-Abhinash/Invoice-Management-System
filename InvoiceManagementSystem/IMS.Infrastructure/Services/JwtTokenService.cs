@@ -26,7 +26,9 @@ namespace IMS.Infrastructure.Services
             var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            // include full name in token claims
+            new Claim("fullName", user.FullName ?? string.Empty)
         };
 
             claims.AddRange(permissions.Select(p => new Claim("permission", p)));
