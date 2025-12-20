@@ -1,0 +1,16 @@
+/* Table column widths */
+.checkbox-column {
+	width: 50px;
+}
+
+.email-column {
+	width: 20%;
+}
+
+.status-column {
+	width: 16%;
+}
+
+.action-column {
+	width: 12%;
+}

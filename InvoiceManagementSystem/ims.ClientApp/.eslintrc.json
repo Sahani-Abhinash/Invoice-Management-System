@@ -1,0 +1,27 @@
+{
+  "root": true,
+  "overrides": [
+    {
+      "files": ["*.html"],
+      "parser": "@angular-eslint/template-parser",
+      "extends": [
+        "plugin:@angular-eslint/template/recommended",
+        "plugin:@angular-eslint/template/accessibility"
+      ],
+      "rules": {
+        "@angular-eslint/template/elements-content": "off",
+        "@angular-eslint/template/label-has-associated-control": "off",
+        "@angular-eslint/template/no-inline-styles": "off",
+        "@angular-eslint/template/interactive-supports-focus": "off",
+        "@angular-eslint/template/click-events-have-key-events": "off",
+        "@angular-eslint/template/valid-aria": "off"
+      }
+    },
+    {
+      "files": ["*.ts"],
+      "extends": [
+        "plugin:@angular-eslint/recommended"
+      ]
+    }
+  ]
+}
