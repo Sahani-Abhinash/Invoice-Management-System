@@ -1,0 +1,38 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Permissions</h5>
+    <a class="btn btn-sm btn-primary" [routerLink]="['/permissions/create']">Create Permission</a>
+  </div>
+  <div class="card-body">
+    <div class="mb-2 text-muted">Found {{ permissions.length || 0 }} permissions.</div>
+    <div *ngIf="loading" class="text-muted">Loading…</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of permissions; trackBy: trackById">
+            <td class="text-body">{{ p.name }}</td>
+            <td class="text-body">{{ p.description || '-' }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary me-2" [routerLink]="['/permissions/edit', p.id]">Edit</a>
+              <button class="btn btn-sm btn-outline-danger" (click)="remove(p)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="permissions.length === 0">
+            <td colspan="3" class="text-center text-muted">No permissions found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button class="btn btn-light btn-sm" (click)="fetch()">Refresh</button>
+  </div>
+</div>

@@ -22,7 +22,7 @@ namespace IMS.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("IMS.Domain.Entities.Company.Branch", b =>
+            modelBuilder.Entity("IMS.Domain.Entities.Companies.Branch", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,7 +52,7 @@ namespace IMS.Infrastructure.Migrations
                     b.ToTable("Branches");
                 });
 
-            modelBuilder.Entity("IMS.Domain.Entities.Company.Company", b =>
+            modelBuilder.Entity("IMS.Domain.Entities.Companies.Company", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -291,7 +291,11 @@ namespace IMS.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -414,9 +418,9 @@ namespace IMS.Infrastructure.Migrations
                     b.ToTable("Warehouses");
                 });
 
-            modelBuilder.Entity("IMS.Domain.Entities.Company.Branch", b =>
+            modelBuilder.Entity("IMS.Domain.Entities.Companies.Branch", b =>
                 {
-                    b.HasOne("IMS.Domain.Entities.Company.Company", "Company")
+                    b.HasOne("IMS.Domain.Entities.Companies.Company", "Company")
                         .WithMany("Branches")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -525,7 +529,7 @@ namespace IMS.Infrastructure.Migrations
 
             modelBuilder.Entity("IMS.Domain.Entities.Warehouse.Warehouse", b =>
                 {
-                    b.HasOne("IMS.Domain.Entities.Company.Branch", "Branch")
+                    b.HasOne("IMS.Domain.Entities.Companies.Branch", "Branch")
                         .WithMany("Warehouses")
                         .HasForeignKey("BranchId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -534,12 +538,12 @@ namespace IMS.Infrastructure.Migrations
                     b.Navigation("Branch");
                 });
 
-            modelBuilder.Entity("IMS.Domain.Entities.Company.Branch", b =>
+            modelBuilder.Entity("IMS.Domain.Entities.Companies.Branch", b =>
                 {
                     b.Navigation("Warehouses");
                 });
 
-            modelBuilder.Entity("IMS.Domain.Entities.Company.Company", b =>
+            modelBuilder.Entity("IMS.Domain.Entities.Companies.Company", b =>
                 {
                     b.Navigation("Branches");
                 });

@@ -1,0 +1,40 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Roles</h5>
+    <a class="btn btn-sm btn-primary" [routerLink]="['/roles/create']">Create Role</a>
+  </div>
+  <div class="card-body">
+    <div class="mb-2 text-muted">Found {{ roles.length || 0 }} roles.</div>
+    <div *ngIf="loading" class="text-muted">Loading…</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th class="name">Name</th>
+            <th class="desc">Description</th>
+            <th>Permissions</th>
+            <th class="actions text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of roles; trackBy: trackById">
+            <td class="text-body">{{ r.name }}</td>
+            <td class="text-body">{{ r.description }}</td>
+            <td class="text-body"><small>{{ getRolePermissions(r.id) }}</small></td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary me-2" [routerLink]="['/roles/edit', r.id]">Edit</a>
+              <button class="btn btn-sm btn-outline-danger" (click)="remove(r)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="roles.length === 0">
+            <td colspan="4" class="text-center text-muted">No roles found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button class="btn btn-light btn-sm" (click)="fetch()">Refresh</button>
+  </div>
+</div>

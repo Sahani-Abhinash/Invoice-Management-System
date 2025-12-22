@@ -23,12 +23,13 @@ namespace IMS.Infrastructure.Services
 
         public string GenerateToken(User user, IEnumerable<string> permissions)
         {
+            var composedName = string.Join(' ', new[] { user.FirstName, user.LastName }.Where(s => !string.IsNullOrWhiteSpace(s))).Trim();
             var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            // include full name in token claims
-            new Claim("fullName", user.FullName ?? string.Empty)
+            // include composed full name in token claims
+            new Claim("fullName", composedName)
         };
 
             claims.AddRange(permissions.Select(p => new Claim("permission", p)));

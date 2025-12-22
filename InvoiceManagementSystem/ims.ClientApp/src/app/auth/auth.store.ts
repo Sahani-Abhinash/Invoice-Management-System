@@ -64,9 +64,11 @@ function getDisplayNameFromClaims(claims: any | null): string {
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   private readonly storageKey = 'auth_token';
+  private readonly permissionsKey = 'user_permissions';
   token = signal<string | null>(null);
   userName = signal<string>('');
   userId = signal<string | null>(null);
+  permissions = signal<string[]>([]);
 
   constructor() {
     // Prefer persistent token, else session token
@@ -75,6 +77,13 @@ export class AuthStore {
     const saved = savedPersistent || savedSession;
     if (saved) {
       this.setToken(saved, { remember: Boolean(savedPersistent) });
+    }
+    // Load saved permissions
+    const savedPermissions = localStorage.getItem(this.permissionsKey) || sessionStorage.getItem(this.permissionsKey);
+    if (savedPermissions) {
+      try {
+        this.permissions.set(JSON.parse(savedPermissions));
+      } catch {}
     }
   }
 
@@ -102,7 +111,40 @@ export class AuthStore {
     }
   }
 
+  setPermissions(permissions: string[], remember: boolean = true) {
+    console.log('🔐 AuthStore.setPermissions CALLED with:', permissions, 'remember:', remember);
+    this.permissions.set(permissions);
+    console.log('🔐 After signal set, current value:', this.permissions());
+    const permStr = JSON.stringify(permissions);
+    if (remember) {
+      localStorage.setItem(this.permissionsKey, permStr);
+      sessionStorage.removeItem(this.permissionsKey);
+      console.log('🔐 Saved to localStorage');
+    } else {
+      sessionStorage.setItem(this.permissionsKey, permStr);
+      localStorage.removeItem(this.permissionsKey);
+      console.log('🔐 Saved to sessionStorage');
+    }
+  }
+
+  hasPermission(permissionName: string): boolean {
+    const perms = this.permissions();
+    const has = perms.includes(permissionName);
+    console.log('hasPermission check:', permissionName, 'in', perms, '=', has);
+    return has;
+  }
+
+  hasAnyPermission(permissionNames: string[]): boolean {
+    const perms = this.permissions();
+    const has = permissionNames.some(p => perms.includes(p));
+    console.log('hasAnyPermission check:', permissionNames, 'in', perms, '=', has);
+    return has;
+  }
+
   clear() {
     this.setToken(null);
+    this.permissions.set([]);
+    localStorage.removeItem(this.permissionsKey);
+    sessionStorage.removeItem(this.permissionsKey);
   }
 }

@@ -1,0 +1,49 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Users</h5>
+    <a class="btn btn-sm btn-primary" [routerLink]="['/users/create']">Create User</a>
+  </div>
+  <div class="card-body">
+    <div class="mb-2 text-muted">Found {{ users.length || 0 }} users.</div>
+    <div *ngIf="loading" class="text-muted">Loading…</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-striped align-middle user-table">
+        <thead>
+          <tr>
+            <th class="name">Name</th>
+            <th class="email">Email</th>
+            <th>Roles</th>
+            <th class="actions text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users; trackBy: trackById">
+            <td class="text-body">{{ displayName(u) }}</td>
+            <td class="text-body">{{ u.email }}</td>
+            <td class="text-body"><small>{{ getUserRoles(u.id) }}</small></td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary me-2" [routerLink]="['/users/edit', u.id]">Edit</a>
+              <button class="btn btn-sm btn-outline-danger" (click)="remove(u)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="users.length === 0">
+            <td colspan="4" class="text-center text-muted">No users found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Simple debug list to rule out table styling issues -->
+    <div class="mt-3" *ngIf="users.length">
+      <div class="alert alert-info py-2">Debug list:</div>
+      <ul class="list-unstyled mb-0">
+        <li *ngFor="let u of users" class="text-body">{{ displayName(u) }} - {{ u.email }}</li>
+      </ul>
+      <pre class="mt-2 debug-json">{{ users | json }}</pre>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button class="btn btn-light btn-sm" (click)="fetch()">Refresh</button>
+  </div>
+</div>

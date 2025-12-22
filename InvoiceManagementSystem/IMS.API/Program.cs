@@ -42,10 +42,25 @@ builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 // Register Services
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
+// User services
+builder.Services.AddScoped<IMS.Application.Interfaces.Security.IUserService, IMS.Infrastructure.Services.Security.UserService>();
+// Role services
+builder.Services.AddScoped<IMS.Application.Interfaces.Security.IRoleService, IMS.Infrastructure.Services.Security.RoleService>();
+// Permission services
+builder.Services.AddScoped<IMS.Application.Interfaces.Security.IPermissionService, IMS.Infrastructure.Services.Security.PermissionService>();
+// RolePermission services
+builder.Services.AddScoped<IMS.Application.Interfaces.Security.IRolePermissionService, IMS.Infrastructure.Services.Security.RolePermissionService>();
+// UserRole services
+builder.Services.AddScoped<IMS.Application.Interfaces.Security.IUserRoleService, IMS.Infrastructure.Services.Security.UserRoleService>();
 
 // Register Managers (Separate managers for each entity)
 builder.Services.AddScoped<ICompanyManager, CompanyManager>();
 builder.Services.AddScoped<IBranchManager, BranchManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Security.IUserManager, IMS.Application.Managers.Security.UserManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Security.IRoleManager, IMS.Application.Managers.Security.RoleManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Security.IPermissionManager, IMS.Application.Managers.Security.PermissionManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Security.IUserRoleManager, IMS.Application.Managers.Security.UserRoleManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Security.IRolePermissionManager, IMS.Application.Managers.Security.RolePermissionManager>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(

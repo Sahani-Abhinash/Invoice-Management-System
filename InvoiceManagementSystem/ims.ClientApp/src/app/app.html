@@ -359,6 +359,12 @@
                         <a class="dropdown-item" href="auth-lockscreen.html"><i class="bx bx-lock-open fs-15 align-middle me-1"></i> <span key="t-lock-screen">Lock screen</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger" href="#" (click)="logout()"><i class="bx bx-power-off fs-15 align-middle me-1 text-danger"></i> <span key="t-logout">Logout</span></a>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item-text small">
+                            <strong>Permissions ({{ authStore.permissions().length }}):</strong><br>
+                            <div *ngIf="authStore.permissions().length === 0" class="text-danger">No permissions loaded!</div>
+                            <div *ngFor="let p of authStore.permissions()" class="text-muted" style="font-size: 11px;">• {{ p }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -431,15 +437,41 @@
                         </li>
 
                         <!-- Added: Companies and Branches links below Dashboard -->
-                        <li class="nav-item">
+                        <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Companies.View', 'Companies.Manage'])">
                             <a class="nav-link menu-link" [routerLink]="['/companies']" routerLinkActive="active">
                                 <i class="las la-building"></i> <span data-key="t-companies">Companies</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Branches.View', 'Branches.Manage'])">
                             <a class="nav-link menu-link" [routerLink]="['/branches']" routerLinkActive="active">
                                 <i class="las la-code-branch"></i> <span data-key="t-branches">Branches</span>
                             </a>
+                        </li>
+
+                        <!-- Security Management -->
+                        <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Users.View', 'Users.Manage', 'Roles.View', 'Roles.Manage', 'Permissions.View', 'Permissions.Manage'])">
+                            <a class="nav-link menu-link" href="#sidebarSecurity" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSecurity">
+                                <i class="las la-shield-alt"></i> <span data-key="t-security">Security</span>
+                            </a>
+                            <div class="collapse menu-dropdown" id="sidebarSecurity">
+                                <ul class="nav nav-sm flex-column">
+                                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Users.View', 'Users.Manage'])">
+                                        <a class="nav-link" [routerLink]="['/users']" routerLinkActive="active" data-key="t-users">
+                                            <i class="las la-user"></i> Users
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Roles.View', 'Roles.Manage'])">
+                                        <a class="nav-link" [routerLink]="['/roles']" routerLinkActive="active" data-key="t-roles">
+                                            <i class="las la-user-shield"></i> Roles
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Permissions.View', 'Permissions.Manage'])">
+                                        <a class="nav-link" [routerLink]="['/permissions']" routerLinkActive="active" data-key="t-permissions">
+                                            <i class="las la-key"></i> Permissions
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
 
                         <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Pages</span></li>
@@ -514,7 +546,7 @@
                                     </li>
 
                                     <li class="nav-item">
-                                        <a href="user.html" class="nav-link" data-key="t-users">Users</a>
+                                        <a [routerLink]="['/users']" class="nav-link" data-key="t-users">Users</a>
                                     </li>
 
                                     <li class="nav-item">

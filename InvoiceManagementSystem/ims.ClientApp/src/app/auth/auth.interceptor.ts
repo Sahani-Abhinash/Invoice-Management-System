@@ -7,8 +7,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthStore);
   const token = auth.token();
 
-  // Only attach to our API host
-  const isApi = req.url.startsWith('https://localhost:7276/');
+  // Only attach to our API host or proxied /api path
+  const isApi = req.url.startsWith('https://localhost:7276/') || req.url.startsWith('/api');
 
   if (token && isApi) {
     req = req.clone({

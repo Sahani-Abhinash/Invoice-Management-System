@@ -12,6 +12,14 @@ export interface LoginRequest {
 export interface LoginResponse {
   token?: string;
   requiresTwoFactor?: boolean;
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+  };
+  permissions?: string[];
   [key: string]: any;
 }
 
@@ -22,5 +30,13 @@ export class AuthService {
 
   login(payload: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, payload);
+  }
+
+  getMyPermissions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/me/permissions`);
+  }
+
+  checkPermission(name: string): Observable<{ hasPermission: boolean }> {
+    return this.http.get<{ hasPermission: boolean }>(`${this.apiUrl}/me/permissions/check?name=${encodeURIComponent(name)}`);
   }
 }

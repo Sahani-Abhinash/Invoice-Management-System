@@ -15,42 +15,52 @@ public static class DbSeeder
         context.Database.Migrate(); // Ensure database is created and latest migration applied
 
         // --------------------------
-        // Permissions
+        // Permissions (ensure all constants from Permissions class exist)
         // --------------------------
-        if (!context.Permissions.Any())
         {
-            var permissions = new[]
+            var permissionNames = typeof(Permissions).GetFields()
+                .Select(f => f.GetValue(null)?.ToString())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct()
+                .ToList();
+
+            // Get existing permission names from DB
+            var existingNames = context.Permissions.Select(p => p.Name).ToList();
+
+            // Determine which permission constants are missing in DB
+            var missing = permissionNames.Except(existingNames).ToList();
+
+            if (missing.Any())
             {
-                new Permission { Id = Guid.NewGuid(), Name = Permissions.ManageUsers },
-                new Permission { Id = Guid.NewGuid(), Name = Permissions.ManageInventory },
-                new Permission { Id = Guid.NewGuid(), Name = Permissions.CreateInvoice },
-                new Permission { Id = Guid.NewGuid(), Name = Permissions.PayInvoice }
-            };
-            context.Permissions.AddRange(permissions);
-            context.SaveChanges();
+                var newPermissions = missing.Select(n => new Permission { Id = Guid.NewGuid(), Name = n! }).ToArray();
+                context.Permissions.AddRange(newPermissions);
+                context.SaveChanges();
+            }
         }
 
         // --------------------------
-        // Roles
+        // Roles - ensure Admin role exists and has all permissions
         // --------------------------
-        if (!context.Roles.Any())
+        var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
+        if (adminRole == null)
         {
-            var adminRole = new Role
-            {
-                Id = Guid.NewGuid(),
-                Name = "Admin"
-            };
+            adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
             context.Roles.Add(adminRole);
             context.SaveChanges();
+        }
 
-            // Assign all permissions to Admin
-            var rolePermissions = context.Permissions
-                .Select(p => new RolePermission
-                {
-                    RoleId = adminRole.Id,
-                    PermissionId = p.Id
-                }).ToList();
-            context.RolePermissions.AddRange(rolePermissions);
+        // Ensure admin role has links to all permissions
+        var allPermissionIds = context.Permissions.Select(p => p.Id).ToList();
+        var existingForAdmin = context.RolePermissions
+            .Where(rp => rp.RoleId == adminRole.Id)
+            .Select(rp => rp.PermissionId)
+            .ToList();
+
+        var missingForAdmin = allPermissionIds.Except(existingForAdmin).ToList();
+        if (missingForAdmin.Any())
+        {
+            var newRolePerms = missingForAdmin.Select(pid => new RolePermission { RoleId = adminRole.Id, PermissionId = pid }).ToArray();
+            context.RolePermissions.AddRange(newRolePerms);
             context.SaveChanges();
         }
 
@@ -62,7 +72,8 @@ public static class DbSeeder
             var adminUser = new User
             {
                 Id = Guid.NewGuid(),
-                FullName = "Admin User",
+                FirstName = "Admin",
+                LastName = "User",
                 Email = "admin@ims.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123") // Use BCrypt or preferred hash
             };
@@ -70,7 +81,7 @@ public static class DbSeeder
             context.SaveChanges();
 
             // Assign Admin role
-            var adminRole = context.Roles.First(r => r.Name == "Admin");
+            adminRole = context.Roles.First(r => r.Name == "Admin");
             context.UserRoles.Add(new UserRole
             {
                 UserId = adminUser.Id,

@@ -1,0 +1,63 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ isEdit ? 'Edit Role' : 'Create Role' }}</h5>
+    <a class="btn btn-sm btn-light" [routerLink]="['/roles']">Back</a>
+  </div>
+  <div class="card-body">
+    <div *ngIf="loading" class="text-muted">Loading…</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" *ngIf="!loading">
+      <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" formControlName="name" placeholder="e.g. Administrator" />
+        <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Name is required</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea rows="3" class="form-control" formControlName="description" placeholder="Optional description"></textarea>
+      </div>
+
+      <!-- Permission Assignment Section -->
+      <div class="mb-3" *ngIf="availablePermissions.length > 0">
+        <label class="form-label fw-bold">Assign Permissions</label>
+        <small class="text-muted d-block mb-2">Select permissions grouped by module</small>
+        
+        <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+          <div *ngFor="let moduleName of moduleNames" class="mb-3">
+            <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
+              <strong class="text-primary">{{ moduleName }}</strong>
+              <span class="badge bg-secondary ms-2">{{ groupedPermissions.get(moduleName)?.length }}</span>
+            </div>
+            <div class="ms-3">
+              <div class="form-check mb-2" *ngFor="let perm of groupedPermissions.get(moduleName)">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  [id]="'perm-' + perm.id"
+                  [title]="perm.name"
+                  placeholder="Select permission"
+                  [checked]="isPermissionSelected(perm.id)"
+                  (change)="togglePermission(perm.id)">
+                <label class="form-check-label" [for]="'perm-' + perm.id">
+                  {{ perm.name }}
+                  <small class="text-muted d-block" *ngIf="perm.description">{{ perm.description }}</small>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="availablePermissions.length === 0" class="text-muted text-center py-3 border rounded">
+          No permissions available
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">Save</button>
+        <a class="btn btn-light" [routerLink]="['/roles']">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
