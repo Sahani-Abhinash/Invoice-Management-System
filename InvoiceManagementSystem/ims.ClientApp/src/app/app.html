@@ -448,6 +448,36 @@
                             </a>
                         </li>
 
+                        <!-- Warehouses link -->
+                        <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Warehouses.View', 'Warehouses.Manage'])">
+                            <a class="nav-link menu-link" [routerLink]="['/warehouses']" routerLinkActive="active">
+                                <i class="las la-warehouse"></i> <span data-key="t-warehouses">Warehouses</span>
+                            </a>
+                        </li>
+
+                        <!-- Geography Master -->
+                        <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Geography.View', 'Geography.Manage'])">
+                            <a class="nav-link menu-link" href="#sidebarGeography" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarGeography">
+                                <i class="las la-globe"></i> <span data-key="t-geography">Geography</span>
+                            </a>
+                            <div class="collapse menu-dropdown" id="sidebarGeography">
+                                <ul class="nav nav-sm flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link" [routerLink]="['/geography/countries']" routerLinkActive="active">Countries</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" [routerLink]="['/geography/states']" routerLinkActive="active">States</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" [routerLink]="['/geography/cities']" routerLinkActive="active">Cities</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" [routerLink]="['/geography/postalcodes']" routerLinkActive="active">Postal Codes</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
                         <!-- Security Management -->
                         <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Users.View', 'Users.Manage', 'Roles.View', 'Roles.Manage', 'Permissions.View', 'Permissions.Manage'])">
                             <a class="nav-link menu-link" href="#sidebarSecurity" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSecurity">

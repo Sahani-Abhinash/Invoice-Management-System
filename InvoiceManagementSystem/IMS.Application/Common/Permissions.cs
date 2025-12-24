@@ -33,5 +33,15 @@ namespace IMS.Application.Common
         public const string ManageStocks = "Stocks.Manage";
         // Price lists
         public const string ManagePriceLists = "PriceLists.Manage";
+
+        // Geography
+        public const string ViewCountries = "Countries.View";
+        public const string ManageCountries = "Countries.Manage";
+        public const string ViewStates = "States.View";
+        public const string ManageStates = "States.Manage";
+        public const string ViewCities = "Cities.View";
+        public const string ManageCities = "Cities.Manage";
+        public const string ViewPostalCodes = "PostalCodes.View";
+        public const string ManagePostalCodes = "PostalCodes.Manage";
     }
 }

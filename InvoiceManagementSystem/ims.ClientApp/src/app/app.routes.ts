@@ -13,6 +13,8 @@ export const routes: Routes = [
   { path: 'users', loadChildren: () => import('./security/users/user.module').then(m => m.UserModule) },
   { path: 'roles', loadChildren: () => import('./security/roles/role.module').then(m => m.RoleModule) },
   { path: 'permissions', loadChildren: () => import('./security/permissions/permission.module').then(m => m.PermissionModule) },
+  { path: 'warehouses', loadChildren: () => import('./warehouse/warehouse.module').then(m => m.WarehouseModule) },
+  { path: 'geography', loadChildren: () => import('./Master/geography/geography.module').then(m => m.GeographyModule) },
   { path: '**', redirectTo: 'home' },
   // TODO: Add routes for the following components:
   // { path: 'about', component: AboutComponent },

@@ -8,8 +8,14 @@ namespace IMS.API.Controllers
     [Route("api/[controller]")]
     public class PermissionController : ControllerBase
     {
+        /// <summary>
+        /// Permission manager used to manage permissions.
+        /// </summary>
         private readonly IPermissionManager _permissionManager;
 
+        /// <summary>
+        /// Create PermissionController.
+        /// </summary>
         public PermissionController(IPermissionManager permissionManager)
         {
             _permissionManager = permissionManager;

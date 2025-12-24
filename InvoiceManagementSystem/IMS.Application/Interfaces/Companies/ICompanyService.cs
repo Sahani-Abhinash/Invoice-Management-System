@@ -9,10 +9,29 @@ namespace IMS.Application.Interfaces.Companies
 {
     public interface ICompanyService
     {
+        /// <summary>
+        /// Get all companies.
+        /// </summary>
         Task<IEnumerable<CompanyDto>> GetAllAsync();
+
+        /// <summary>
+        /// Get company by id.
+        /// </summary>
         Task<CompanyDto?> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// Create a new company.
+        /// </summary>
         Task<CompanyDto> CreateAsync(CreateCompanyDto dto);
+
+        /// <summary>
+        /// Update existing company.
+        /// </summary>
         Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto);
+
+        /// <summary>
+        /// Delete company by id (soft-delete).
+        /// </summary>
         Task<bool> DeleteAsync(Guid id);
     }
 }

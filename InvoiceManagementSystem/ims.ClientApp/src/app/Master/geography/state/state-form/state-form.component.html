@@ -1,0 +1,29 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ id ? 'Edit State' : 'Create State' }}</h5>
+    <a class="btn btn-sm btn-light" [routerLink]="['/geography/states']">Back</a>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter state name">
+        <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Name is required</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="country" class="form-label">Country</label>
+        <select class="form-select" id="country" formControlName="countryId">
+          <option value="" disabled>Select country</option>
+          <option *ngFor="let c of countries" [value]="c.id.toString()">{{ c.name }}</option>
+        </select>
+        <div class="text-danger small" *ngIf="form.get('countryId')?.touched && form.get('countryId')?.invalid">Country is required</div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create' }}</button>
+        <a class="btn btn-light" [routerLink]="['/geography/states']">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

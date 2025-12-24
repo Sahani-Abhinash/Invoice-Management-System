@@ -30,12 +30,12 @@ public static class DbSeeder
             // Determine which permission constants are missing in DB
             var missing = permissionNames.Except(existingNames).ToList();
 
-            if (missing.Any())
-            {
-                var newPermissions = missing.Select(n => new Permission { Id = Guid.NewGuid(), Name = n! }).ToArray();
-                context.Permissions.AddRange(newPermissions);
-                context.SaveChanges();
-            }
+                if (missing.Any())
+                {
+                    var newPermissions = missing.Select(n => new Permission { Id = Guid.NewGuid(), Name = n!, IsActive = true, IsDeleted = false }).ToArray();
+                    context.Permissions.AddRange(newPermissions);
+                    context.SaveChanges();
+                }
         }
 
         // --------------------------
@@ -44,7 +44,7 @@ public static class DbSeeder
         var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
         if (adminRole == null)
         {
-            adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
+            adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin", IsActive = true, IsDeleted = false };
             context.Roles.Add(adminRole);
             context.SaveChanges();
         }
@@ -75,7 +75,9 @@ public static class DbSeeder
                 FirstName = "Admin",
                 LastName = "User",
                 Email = "admin@ims.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123") // Use BCrypt or preferred hash
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"), // Use BCrypt or preferred hash
+                IsActive = true,
+                IsDeleted = false
             };
             context.Users.Add(adminUser);
             context.SaveChanges();
@@ -95,13 +97,12 @@ public static class DbSeeder
         // --------------------------
         if (!context.Companies.Any())
         {
-            var company1 = new Company { Id = Guid.NewGuid(), Name = "ABC Pvt Ltd", TaxNumber = "TAX123456" };
-            var company2 = new Company { Id = Guid.NewGuid(), Name = "XYZ GmbH", TaxNumber = "TAX654321" };
+            var company1 = new Company { Id = Guid.NewGuid(), Name = "ABC Pvt Ltd", TaxNumber = "TAX123456", IsActive = true, IsDeleted = false };
+            var company2 = new Company { Id = Guid.NewGuid(), Name = "XYZ GmbH", TaxNumber = "TAX654321", IsActive = true, IsDeleted = false };
             context.Companies.AddRange(company1, company2);
             context.SaveChanges();
-
-            var branch1 = new Branch { Id = Guid.NewGuid(), Name = "ABC Delhi Branch", Address = "Delhi, India", CompanyId = company1.Id };
-            var branch2 = new Branch { Id = Guid.NewGuid(), Name = "XYZ Berlin Branch", Address = "Berlin, Germany", CompanyId = company2.Id };
+            var branch1 = new Branch { Id = Guid.NewGuid(), Name = "ABC Delhi Branch", Address = "Delhi, India", CompanyId = company1.Id, IsActive = true, IsDeleted = false };
+            var branch2 = new Branch { Id = Guid.NewGuid(), Name = "XYZ Berlin Branch", Address = "Berlin, Germany", CompanyId = company2.Id, IsActive = true, IsDeleted = false };
             context.Branches.AddRange(branch1, branch2);
             context.SaveChanges();
         }
@@ -114,9 +115,35 @@ public static class DbSeeder
             var branch1 = context.Branches.First(b => b.Name == "ABC Delhi Branch");
             var branch2 = context.Branches.First(b => b.Name == "XYZ Berlin Branch");
 
-            var warehouse1 = new Warehouse { Id = Guid.NewGuid(), Name = "ABC Delhi Main Warehouse", BranchId = branch1.Id };
-            var warehouse2 = new Warehouse { Id = Guid.NewGuid(), Name = "XYZ Berlin Central Warehouse", BranchId = branch2.Id };
+            var warehouse1 = new Warehouse { Id = Guid.NewGuid(), Name = "ABC Delhi Main Warehouse", BranchId = branch1.Id, IsActive = true, IsDeleted = false };
+            var warehouse2 = new Warehouse { Id = Guid.NewGuid(), Name = "XYZ Berlin Central Warehouse", BranchId = branch2.Id, IsActive = true, IsDeleted = false };
             context.Warehouses.AddRange(warehouse1, warehouse2);
+            context.SaveChanges();
+        }
+
+        // --------------------------
+        // Geography: Countries, States, Cities, PostalCodes
+        // --------------------------
+        if (!context.Countries.Any())
+        {
+            var india = new IMS.Domain.Entities.Geography.Country { Id = Guid.NewGuid(), Name = "India", ISOCode = "IN", IsActive = true, IsDeleted = false };
+            var germany = new IMS.Domain.Entities.Geography.Country { Id = Guid.NewGuid(), Name = "Germany", ISOCode = "DE", IsActive = true, IsDeleted = false };
+            context.Countries.AddRange(india, germany);
+            context.SaveChanges();
+
+            var delhiState = new IMS.Domain.Entities.Geography.State { Id = Guid.NewGuid(), Name = "Delhi", CountryId = india.Id, IsActive = true, IsDeleted = false };
+            var berlinState = new IMS.Domain.Entities.Geography.State { Id = Guid.NewGuid(), Name = "Berlin", CountryId = germany.Id, IsActive = true, IsDeleted = false };
+            context.States.AddRange(delhiState, berlinState);
+            context.SaveChanges();
+
+            var delhiCity = new IMS.Domain.Entities.Geography.City { Id = Guid.NewGuid(), Name = "New Delhi", StateId = delhiState.Id, IsActive = true, IsDeleted = false };
+            var berlinCity = new IMS.Domain.Entities.Geography.City { Id = Guid.NewGuid(), Name = "Berlin", StateId = berlinState.Id, IsActive = true, IsDeleted = false };
+            context.Cities.AddRange(delhiCity, berlinCity);
+            context.SaveChanges();
+
+            var delhiPostal = new IMS.Domain.Entities.Geography.PostalCode { Id = Guid.NewGuid(), Code = "110001", CityId = delhiCity.Id, IsActive = true, IsDeleted = false };
+            var berlinPostal = new IMS.Domain.Entities.Geography.PostalCode { Id = Guid.NewGuid(), Code = "10115", CityId = berlinCity.Id, IsActive = true, IsDeleted = false };
+            context.PostalCodes.AddRange(delhiPostal, berlinPostal);
             context.SaveChanges();
         }
 
@@ -127,8 +154,8 @@ public static class DbSeeder
         {
             var uoms = new[]
             {
-                new UnitOfMeasure { Id = Guid.NewGuid(), Name = "Piece", Symbol = "pcs" },
-                new UnitOfMeasure { Id = Guid.NewGuid(), Name = "Kilogram", Symbol = "kg" }
+                new UnitOfMeasure { Id = Guid.NewGuid(), Name = "Piece", Symbol = "pcs", IsActive = true, IsDeleted = false },
+                new UnitOfMeasure { Id = Guid.NewGuid(), Name = "Kilogram", Symbol = "kg", IsActive = true, IsDeleted = false }
             };
             context.UnitOfMeasures.AddRange(uoms);
             context.SaveChanges();
@@ -141,8 +168,8 @@ public static class DbSeeder
         {
             var priceLists = new[]
             {
-                new PriceList { Id = Guid.NewGuid(), Name = "Retail", IsDefault = true },
-                new PriceList { Id = Guid.NewGuid(), Name = "Wholesale", IsDefault = false }
+                new PriceList { Id = Guid.NewGuid(), Name = "Retail", IsDefault = true, IsActive = true, IsDeleted = false },
+                new PriceList { Id = Guid.NewGuid(), Name = "Wholesale", IsDefault = false, IsActive = true, IsDeleted = false }
             };
             context.PriceLists.AddRange(priceLists);
             context.SaveChanges();
@@ -162,7 +189,9 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 Name = "Product A",
                 SKU = "PRODA-001",
-                UnitOfMeasureId = uomPiece.Id
+                UnitOfMeasureId = uomPiece.Id,
+                IsActive = true,
+                IsDeleted = false
             };
             context.Items.Add(item1);
             context.SaveChanges();
@@ -175,7 +204,9 @@ public static class DbSeeder
                     ItemId = item1.Id,
                     PriceListId = retailPriceList.Id,
                     Price = 100,
-                    EffectiveFrom = DateTime.Now
+                    EffectiveFrom = DateTime.Now,
+                    IsActive = true,
+                    IsDeleted = false
                 },
                 new ItemPrice
                 {
@@ -183,7 +214,9 @@ public static class DbSeeder
                     ItemId = item1.Id,
                     PriceListId = wholesalePriceList.Id,
                     Price = 90,
-                    EffectiveFrom = DateTime.Now
+                    EffectiveFrom = DateTime.Now,
+                    IsActive = true,
+                    IsDeleted = false
                 }
             };
             context.ItemPrices.AddRange(prices);

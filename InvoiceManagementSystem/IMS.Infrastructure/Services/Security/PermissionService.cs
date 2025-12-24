@@ -2,6 +2,7 @@ using IMS.Application.DTOs.Security;
 using IMS.Application.Interfaces.Common;
 using IMS.Application.Interfaces.Security;
 using IMS.Domain.Entities.Security;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace IMS.Infrastructure.Services.Security
         public async Task<IEnumerable<PermissionDto>> GetAllAsync()
         {
             var perms = await _repository.GetAllAsync();
+
             return perms.Select(p => new PermissionDto { Id = p.Id, Name = p.Name }).ToList();
         }
 

@@ -3,6 +3,7 @@ using IMS.Application.Interfaces;
 using IMS.Application.Interfaces.Common;
 using IMS.Application.Interfaces.Security;
 using IMS.Domain.Entities.Security;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace IMS.Infrastructure.Services.Security
         public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
             var users = await _repository.GetAllAsync();
+
             return users.Select(u => new UserDto
             {
                 Id = u.Id,
@@ -79,6 +81,8 @@ namespace IMS.Infrastructure.Services.Security
             var user = await _repository.GetByIdAsync(id);
             if (user == null) return null;
 
+            if (user is IMS.Domain.Common.BaseEntity be && (be.IsDeleted || !be.IsActive)) return null;
+
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.Email = dto.Email;
@@ -105,6 +109,7 @@ namespace IMS.Infrastructure.Services.Security
         {
             var user = await _repository.GetByIdAsync(id);
             if (user == null) return false;
+            if (user is IMS.Domain.Common.BaseEntity be && be.IsDeleted) return false;
             _repository.Delete(user);
             await _repository.SaveChangesAsync();
             return true;

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IMS.API.Controllers
 {
+    /// <summary>
+    /// Sample weather forecast controller used for diagnostics and examples.
+    ///</summary>
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase

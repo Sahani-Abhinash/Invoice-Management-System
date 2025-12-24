@@ -29,8 +29,14 @@ builder.Services.AddCors(options =>
 });
 
 // Add services to the container.
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IMS.Application.Interfaces.Common.ICurrentUserService, IMS.API.Services.Common.CurrentUserService>();
+
+// Register DbContext with ability to inject current user service via DI
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 // Register Generic Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -42,6 +48,14 @@ builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 // Register Services
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
+// Geography
+builder.Services.AddScoped<IMS.Application.Interfaces.Geography.IGeographyService, IMS.Infrastructure.Services.Geography.GeographyService>();
+// Warehouse services
+builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IWarehouseService, IMS.Infrastructure.Services.Warehouses.WarehouseService>();
+// Stock services
+builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IStockService, IMS.Infrastructure.Services.Warehouses.StockService>();
+// Stock transaction services
+builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IStockTransactionService, IMS.Infrastructure.Services.Warehouses.StockTransactionService>();
 // User services
 builder.Services.AddScoped<IMS.Application.Interfaces.Security.IUserService, IMS.Infrastructure.Services.Security.UserService>();
 // Role services
@@ -50,12 +64,39 @@ builder.Services.AddScoped<IMS.Application.Interfaces.Security.IRoleService, IMS
 builder.Services.AddScoped<IMS.Application.Interfaces.Security.IPermissionService, IMS.Infrastructure.Services.Security.PermissionService>();
 // RolePermission services
 builder.Services.AddScoped<IMS.Application.Interfaces.Security.IRolePermissionService, IMS.Infrastructure.Services.Security.RolePermissionService>();
+// Address service
+builder.Services.AddScoped<IMS.Application.Interfaces.Common.IAddressService, IMS.Infrastructure.Services.Common.AddressService>();
 // UserRole services
 builder.Services.AddScoped<IMS.Application.Interfaces.Security.IUserRoleService, IMS.Infrastructure.Services.Security.UserRoleService>();
+
+// Product & Pricing services (register these so managers can be constructed)
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IUnitOfMeasureService, IMS.Infrastructure.Services.Product.UnitOfMeasureService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Pricing.IPriceListService, IMS.Infrastructure.Services.Pricing.PriceListService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemPriceService, IMS.Infrastructure.Services.Product.ItemPriceService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemService, IMS.Infrastructure.Services.Product.ItemService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemImageService, IMS.Infrastructure.Services.Product.ItemImageService>();
 
 // Register Managers (Separate managers for each entity)
 builder.Services.AddScoped<ICompanyManager, CompanyManager>();
 builder.Services.AddScoped<IBranchManager, BranchManager>();
+// Geography manager
+builder.Services.AddScoped<IMS.Application.Managers.Geography.IGeographyManager, IMS.Application.Managers.Geography.GeographyManager>();
+// Warehouse manager
+builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IWarehouseManager, IMS.Application.Managers.Warehouses.WarehouseManager>();
+// Stock manager
+builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IStockManager, IMS.Application.Managers.Warehouses.StockManager>();
+// StockTransaction manager
+builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IStockTransactionManager, IMS.Application.Managers.Warehouses.StockTransactionManager>();
+// Product managers
+builder.Services.AddScoped<IMS.Application.Managers.Product.IUnitOfMeasureManager, IMS.Application.Managers.Product.UnitOfMeasureManager>();
+// Pricing managers
+builder.Services.AddScoped<IMS.Application.Managers.Pricing.IPriceListManager, IMS.Application.Managers.Pricing.PriceListManager>();
+// ItemPrice manager
+builder.Services.AddScoped<IMS.Application.Managers.Product.IItemPriceManager, IMS.Application.Managers.Product.ItemPriceManager>();
+// Item manager
+builder.Services.AddScoped<IMS.Application.Managers.Product.IItemManager, IMS.Application.Managers.Product.ItemManager>();
+// ItemImage manager
+builder.Services.AddScoped<IMS.Application.Managers.Product.IItemImageManager, IMS.Application.Managers.Product.ItemImageManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Security.IUserManager, IMS.Application.Managers.Security.UserManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Security.IRoleManager, IMS.Application.Managers.Security.RoleManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Security.IPermissionManager, IMS.Application.Managers.Security.PermissionManager>();
@@ -88,21 +129,30 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+var jwtKey = builder.Configuration["JwtSettings:Key"];
+if (!string.IsNullOrEmpty(jwtKey))
+{
+    builder.Services.AddAuthentication("Bearer")
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!))
-        };
-    });
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtKey))
+            };
+        });
+}
+else
+{
+    // JwtSettings:Key missing - skip JWT setup to avoid startup failure. Inspect configuration.
+    Console.WriteLine("Warning: JwtSettings:Key not configured. Skipping JWT authentication registration.");
+}
 
 
 var app = builder.Build();
@@ -110,12 +160,22 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    DbSeeder.Seed(context);
+    try
+    {
+        DbSeeder.Seed(context);
+    }
+    catch (Exception ex)
+    {
+        // Log and continue so the app can start even if seeding fails.
+        // Swagger was returning 500 due to unhandled exceptions during startup.
+        Console.WriteLine("DbSeeder failed: " + ex);
+    }
 }
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }

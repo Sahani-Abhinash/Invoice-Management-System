@@ -24,18 +24,14 @@ namespace IMS.Infrastructure.Services.Companies
 
         public async Task<IEnumerable<BranchDto>> GetAllAsync()
         {
-            var branches = await _repository.GetQueryable()
-                .Include(b => b.Company)
-                .ToListAsync();
+            var branches = await _repository.GetAllAsync(b => b.Company);
 
             return branches.Select(b => MapToDto(b, b.Company!)).ToList();
         }
 
         public async Task<BranchDto?> GetByIdAsync(Guid id)
         {
-            var branchEntity = await _repository.GetQueryable()
-                .Include(b => b.Company)
-                .FirstOrDefaultAsync(b => b.Id == id);
+            var branchEntity = await _repository.GetByIdAsync(id, b => b.Company);
             
             if (branchEntity == null) return null;
 
@@ -44,10 +40,8 @@ namespace IMS.Infrastructure.Services.Companies
 
         public async Task<IEnumerable<BranchDto>> GetByCompanyIdAsync(Guid companyId)
         {
-            var branches = await _repository.GetQueryable()
-                .Where(b => b.CompanyId == companyId)
-                .Include(b => b.Company)
-                .ToListAsync();
+            var branches = await _repository.GetAllAsync(b => b.Company);
+            branches = branches.Where(b => b.CompanyId == companyId);
 
             return branches.Select(b => MapToDto(b, b.Company!)).ToList();
         }
@@ -59,7 +53,9 @@ namespace IMS.Infrastructure.Services.Companies
                 Id = Guid.NewGuid(),
                 CompanyId = dto.CompanyId,
                 Name = dto.Name,
-                Address = dto.Address
+                Address = dto.Address,
+                IsActive = true,
+                IsDeleted = false
             };
 
             await _repository.AddAsync(branchEntity);
@@ -73,6 +69,9 @@ namespace IMS.Infrastructure.Services.Companies
         {
             var branchEntity = await _repository.GetByIdAsync(id);
             if (branchEntity == null) return null;
+
+            // FindAsync may return soft-deleted entities; ensure entity is active and not deleted
+            if (branchEntity.IsDeleted || !branchEntity.IsActive) return null;
 
             branchEntity.CompanyId = dto.CompanyId;
             branchEntity.Name = dto.Name;
@@ -90,6 +89,9 @@ namespace IMS.Infrastructure.Services.Companies
             var branchEntity = await _repository.GetByIdAsync(id);
             if (branchEntity == null) return false;
 
+            if (branchEntity.IsDeleted) return false; // already deleted
+
+            // mark as deleted via repository deletion (DbContext SaveChanges will convert to soft-delete)
             _repository.Delete(branchEntity);
             await _repository.SaveChangesAsync();
             return true;

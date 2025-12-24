@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace IMS.Application.Managers.Companies
 {
+    /// <summary>
+    /// Manager coordinating branch operations. Delegates to IBranchService.
+    /// </summary>
     public class BranchManager : IBranchManager
     {
         private readonly IBranchService _branchService;

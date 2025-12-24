@@ -1,0 +1,26 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Warehouses</h2>
+    <button class="btn btn-primary" (click)="createWarehouse()">Add Warehouse</button>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Branch</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let w of warehouses">
+        <td>{{ w.name }}</td>
+        <td>{{ branchName(w) }}</td>
+        <td>
+          <button class="btn btn-sm btn-info me-2" (click)="editWarehouse(w.id)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteWarehouse(w.id)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

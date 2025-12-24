@@ -1,5 +1,5 @@
 ﻿using IMS.Application.Interfaces;
-using IMS.Infrastructure.Persistence;
+using IMS.Application.Interfaces.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
@@ -9,34 +9,59 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace IMS.API.Controllers
-{
+{    
+    /// <summary>
+    /// Authentication endpoints (login and permission checks).
+    /// </summary>
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        /// <summary>
+        /// Repository for user entities.
+        /// </summary>
+        private readonly IRepository<IMS.Domain.Entities.Security.User> _userRepo;
+
+        /// <summary>
+        /// Repository for user-role relationships.
+        /// </summary>
+        private readonly IRepository<IMS.Domain.Entities.Security.UserRole> _userRoleRepo;
+
+        /// <summary>
+        /// Password hashing helper.
+        /// </summary>
         private readonly IPasswordHasher _hasher;
+
+        /// <summary>
+        /// JWT token generator.
+        /// </summary>
         private readonly IJwtTokenService _jwt;
 
         public AuthController(
-            AppDbContext context,
+            IRepository<IMS.Domain.Entities.Security.User> userRepo,
+            IRepository<IMS.Domain.Entities.Security.UserRole> userRoleRepo,
             IPasswordHasher hasher,
             IJwtTokenService jwt)
         {
-            _context = context;
+            _userRepo = userRepo;
+            _userRoleRepo = userRoleRepo;
             _hasher = hasher;
             _jwt = jwt;
         }
 
+        /// <summary>
+        /// Authenticates a user and returns a JWT token and permissions.
+        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
-            var user = await _context.Users
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                .ThenInclude(r => r.RolePermissions)
-                .ThenInclude(rp => rp.Permission)
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _userRepo.GetQueryable()
+                .Where(u => u.Email == request.Email)
+                .Include(u => u.UserRoles!)
+                    .ThenInclude(ur => ur.Role!)
+                        .ThenInclude(r => r.RolePermissions!)
+                            .ThenInclude(rp => rp.Permission!)
+                .FirstOrDefaultAsync();
 
             if (user == null || !_hasher.Verify(request.Password, user.PasswordHash))
                 return Unauthorized("Invalid credentials");
@@ -64,6 +89,9 @@ namespace IMS.API.Controllers
             });
         }
 
+        /// <summary>
+        /// Returns permissions for the current authenticated user.
+        /// </summary>
         [HttpGet("me/permissions")]
         [Authorize]
         public async Task<IActionResult> GetMyPermissions()
@@ -74,8 +102,11 @@ namespace IMS.API.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
-            var permissions = await _context.UserRoles
+            var permissions = await _userRoleRepo.GetQueryable()
                 .Where(ur => ur.UserId == userId)
+                .Include(ur => ur.Role!)
+                    .ThenInclude(r => r.RolePermissions!)
+                        .ThenInclude(rp => rp.Permission!)
                 .SelectMany(ur => ur.Role.RolePermissions)
                 .Select(rp => new
                 {
@@ -88,6 +119,9 @@ namespace IMS.API.Controllers
             return Ok(permissions);
         }
 
+        /// <summary>
+        /// Check whether the current user has a specific permission by name.
+        /// </summary>
         [HttpGet("me/permissions/check")]
         [Authorize]
         public async Task<IActionResult> CheckPermission([FromQuery] string name)
@@ -98,8 +132,11 @@ namespace IMS.API.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
-            var hasPermission = await _context.UserRoles
+            var hasPermission = await _userRoleRepo.GetQueryable()
                 .Where(ur => ur.UserId == userId)
+                .Include(ur => ur.Role!)
+                    .ThenInclude(r => r.RolePermissions!)
+                        .ThenInclude(rp => rp.Permission!)
                 .SelectMany(ur => ur.Role.RolePermissions)
                 .AnyAsync(rp => rp.Permission.Name == name);
 

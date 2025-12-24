@@ -8,8 +8,14 @@ namespace IMS.API.Controllers
     [Route("api/[controller]")]
     public class RolePermissionController : ControllerBase
     {
+        /// <summary>
+        /// Manager that handles role-permission assignments.
+        /// </summary>
         private readonly IRolePermissionManager _manager;
 
+        /// <summary>
+        /// Create RolePermissionController.
+        /// </summary>
         public RolePermissionController(IRolePermissionManager manager)
         {
             _manager = manager;

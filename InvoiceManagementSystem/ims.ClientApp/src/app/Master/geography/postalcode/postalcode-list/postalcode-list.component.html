@@ -1,0 +1,25 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Postal Codes</h2>
+    <button class="btn btn-primary" (click)="createPostalCode()">Add Postal Code</button>
+  </div>
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>City</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let pc of postalcodes">
+        <td>{{ pc.code }}</td>
+        <td>{{ cityName(pc) }}</td>
+        <td>
+          <button class="btn btn-sm btn-info me-2" (click)="editPostalCode(pc.id)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deletePostalCode(pc.id)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

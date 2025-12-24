@@ -2,6 +2,7 @@ using IMS.Application.DTOs.Companies;
 using IMS.Application.Interfaces.Companies;
 using IMS.Application.Interfaces.Common;
 using IMS.Domain.Entities.Companies;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,16 +13,26 @@ namespace IMS.Infrastructure.Services.Companies
 {
     public class CompanyService : ICompanyService
     {
+        /// <summary>
+        /// Repository for company entities.
+        /// </summary>
         private readonly IRepository<Company> _repository;
 
+        /// <summary>
+        /// Constructs the CompanyService with the provided repository.
+        /// </summary>
         public CompanyService(IRepository<Company> repository)
         {
             _repository = repository;
         }
 
+        /// <summary>
+        /// Retrieves all companies and maps to DTOs.
+        /// </summary>
         public async Task<IEnumerable<CompanyDto>> GetAllAsync()
         {
             var companies = await _repository.GetAllAsync();
+
             return companies.Select(c => new CompanyDto
             {
                 Id = c.Id,
@@ -30,6 +41,9 @@ namespace IMS.Infrastructure.Services.Companies
             }).ToList();
         }
 
+        /// <summary>
+        /// Retrieves a company by id.
+        /// </summary>
         public async Task<CompanyDto?> GetByIdAsync(Guid id)
         {
             var companyEntity = await _repository.GetByIdAsync(id);
@@ -43,6 +57,9 @@ namespace IMS.Infrastructure.Services.Companies
             };
         }
 
+        /// <summary>
+        /// Creates a new company entity from DTO and persists it.
+        /// </summary>
         public async Task<CompanyDto> CreateAsync(CreateCompanyDto dto)
         {
             var companyEntity = new Company
@@ -50,6 +67,7 @@ namespace IMS.Infrastructure.Services.Companies
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 TaxNumber = dto.TaxNumber
+                // BaseEntity defaults will be enforced in repository AddAsync
             };
 
             await _repository.AddAsync(companyEntity);
@@ -63,10 +81,15 @@ namespace IMS.Infrastructure.Services.Companies
             };
         }
 
+        /// <summary>
+        /// Updates an existing company.
+        /// </summary>
         public async Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto)
         {
             var companyEntity = await _repository.GetByIdAsync(id);
             if (companyEntity == null) return null;
+
+            if (companyEntity is IMS.Domain.Common.BaseEntity be && (be.IsDeleted || !be.IsActive)) return null;
 
             companyEntity.Name = dto.Name;
             companyEntity.TaxNumber = dto.TaxNumber;
@@ -82,10 +105,15 @@ namespace IMS.Infrastructure.Services.Companies
             };
         }
 
+        /// <summary>
+        /// Deletes (soft-delete) a company by id.
+        /// </summary>
         public async Task<bool> DeleteAsync(Guid id)
         {
             var companyEntity = await _repository.GetByIdAsync(id);
             if (companyEntity == null) return false;
+
+            if (companyEntity is IMS.Domain.Common.BaseEntity be && be.IsDeleted) return false;
 
             _repository.Delete(companyEntity);
             await _repository.SaveChangesAsync();
