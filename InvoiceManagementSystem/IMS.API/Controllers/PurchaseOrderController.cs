@@ -24,6 +24,9 @@ namespace IMS.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePurchaseOrderDto dto) { var created = await _manager.CreateAsync(dto); return CreatedAtAction(nameof(GetById), new { id = created.Id }, created); }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreatePurchaseOrderDto dto) { var updated = await _manager.UpdateAsync(id, dto); if (updated == null) return BadRequest("Could not update. PO might be approved, closed or not found."); return Ok(updated); }
+
         [HttpPost("approve/{id}")]
         public async Task<IActionResult> Approve(Guid id) { var r = await _manager.ApproveAsync(id); if (r==null) return NotFound(); return Ok(r);} 
 

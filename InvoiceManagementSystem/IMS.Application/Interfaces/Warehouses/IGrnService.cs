@@ -10,6 +10,7 @@ namespace IMS.Application.Interfaces.Warehouses
         Task<IEnumerable<GrnDto>> GetAllAsync();
         Task<GrnDto?> GetByIdAsync(Guid id);
         Task<GrnDto> CreateAsync(CreateGrnDto dto);
+        Task<GrnDto?> UpdateAsync(Guid id, CreateGrnDto dto);
         Task<bool> ReceiveAsync(Guid id);
     }
 }

@@ -1,0 +1,22 @@
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(52, 125, 253, 0.04);
+}
+
+.btn-soft-primary {
+    background-color: rgba(52, 125, 253, 0.1);
+    color: #347dfd;
+}
+
+.btn-soft-success {
+    background-color: rgba(69, 203, 133, 0.1);
+    color: #45cb85;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+}

@@ -1,0 +1,167 @@
+<div class="invoice-container">
+    <div *ngIf="isLoading" class="text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <div *ngIf="!isLoading && grn">
+        <!-- Toolbar -->
+        <div class="d-flex justify-content-end mb-4 no-print gap-2">
+            <button class="btn btn-secondary btn-sm" (click)="back()">
+                <i class="las la-arrow-left"></i> Back
+            </button>
+            <button *ngIf="!grn.isReceived" class="btn btn-info btn-sm text-white" (click)="edit()">
+                <i class="las la-edit"></i> Edit
+            </button>
+            <button *ngIf="!grn.isReceived" class="btn btn-success btn-sm" (click)="receive()">
+                <i class="las la-check"></i> Mark as Received
+            </button>
+            <button class="btn btn-primary btn-sm" (click)="print()">
+                <i class="las la-print"></i> Print
+            </button>
+        </div>
+
+        <!-- Title -->
+        <div class="header-title">
+            GOODS RECEIPT NOTE (GRN)
+        </div>
+
+        <!-- Company Info & Logo -->
+        <div class="company-section">
+            <div class="company-info">
+                <h4>My Company Name LLC</h4>
+                <p>123 Business Rd.<br>
+                    Tech City, TC 90210<br>
+                    Mobile: +1 555-0123<br>
+                    Email: info@mycompany.com</p>
+            </div>
+            <div class="company-logo">
+                <i class="las la-warehouse text-primary"></i> IMS<span class="text-danger">.</span>
+            </div>
+        </div>
+
+        <!-- Supplier & GRN Meta -->
+        <div class="po-details">
+            <div class="bill-to">
+                <h5 class="mb-2" style="font-weight: 700;">Supplier</h5>
+                <div *ngIf="isLoadingDetails" class="text-muted small">Loading supplier info...</div>
+                <div *ngIf="!isLoadingDetails && vendor">
+                    <p style="font-weight: 600;">{{ vendor.name }}</p>
+                    <p>
+                        <ng-container *ngIf="vendor.address">
+                            {{ vendor.address.line1 }}<br>
+                            <ng-container *ngIf="vendor.address.line2">{{ vendor.address.line2 }}<br></ng-container>
+                            <ng-container *ngIf="vendor.address.city">{{ vendor.address.city.name }}, </ng-container>
+                            <ng-container *ngIf="vendor.address.state">{{ vendor.address.state.name }} </ng-container>
+                            <ng-container *ngIf="vendor.address.postalCode">{{ vendor.address.postalCode.code
+                                }}</ng-container>
+                            <ng-container *ngIf="vendor.address.country"><br>{{ vendor.address.country.name
+                                }}</ng-container>
+                            <br>
+                        </ng-container>
+                        <ng-container *ngIf="!vendor.address">No Address Provided<br></ng-container>
+                        {{ vendor.email }}<br>
+                        {{ vendor.phone }}
+                    </p>
+                </div>
+                <div *ngIf="!isLoadingDetails && !vendor">
+                    <p class="text-danger">Vendor information not found (ID: {{ grn.vendorId }})</p>
+                </div>
+            </div>
+            <div class="po-meta">
+                <table>
+                    <tr>
+                        <td class="label">GRN No :</td>
+                        <td><strong>{{ grn.reference }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="label">Date :</td>
+                        <td>{{ grn.receivedDate | date:'mediumDate' }}</td>
+                    </tr>
+                    <tr *ngIf="grn.purchaseOrderId">
+                        <td class="label">PO Ref :</td>
+                        <td>{{ grn.purchaseOrderId }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Status :</td>
+                        <td>
+                            <span *ngIf="grn.isReceived" class="badge bg-success">RECEIVED</span>
+                            <span *ngIf="!grn.isReceived" class="badge bg-warning">PENDING</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Warehouse Info -->
+        <div class="mt-4 mb-4">
+            <h5 class="mb-2" style="font-weight: 700;">Delivery To (Warehouse)</h5>
+            <div *ngIf="isLoadingDetails" class="text-muted small">Loading warehouse info...</div>
+            <div *ngIf="!isLoadingDetails && warehouse">
+                <p><strong>{{ warehouse.name }}</strong></p>
+                <p *ngIf="warehouse.branch">Branch: {{ warehouse.branch }}</p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">Sl.</th>
+                    <th>Description</th>
+                    <th style="width: 80px; text-align: center;">Qty</th>
+                    <th style="width: 120px; text-align: right;">Rate</th>
+                    <th style="width: 120px; text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let line of grn.lines; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>
+                        <div *ngIf="isLoadingDetails">Loading Item...</div>
+                        <div *ngIf="!isLoadingDetails">
+                            <span style="font-weight: 500;">{{ getItem(line.itemId)?.name || 'Unknown Item' }}</span>
+                            <br>
+                            <small class="text-muted">{{ getItem(line.itemId)?.sku || line.itemId }}</small>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">{{ line.quantity }}</td>
+                    <td style="text-align: right;">{{ line.unitPrice | currency }}</td>
+                    <td style="text-align: right;">{{ (line.quantity * line.unitPrice) | currency }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td class="label">Subtotal</td>
+                    <td>{{ totalAmount | currency }}</td>
+                </tr>
+                <tr class="grand-total">
+                    <td class="label">Total</td>
+                    <td>{{ totalAmount | currency }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer / Signature -->
+        <div class="footer-section">
+            <div class="notes">
+                <h6 style="font-weight: 700;">Notes</h6>
+                <p class="text-muted small">
+                    This Goods Receipt Note confirms the physical receipt of goods into the warehouse.<br>
+                    Stock levels have been updated accordingly if marked as 'Received'.
+                </p>
+            </div>
+            <div class="signature">
+                <div class="signature-line"></div>
+                <span class="small" style="font-weight: 600;">Store Manager Signature</span>
+            </div>
+        </div>
+    </div>
+</div>

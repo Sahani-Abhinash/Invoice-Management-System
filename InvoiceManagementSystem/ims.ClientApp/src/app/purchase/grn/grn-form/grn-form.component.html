@@ -1,0 +1,188 @@
+<div class="invoice-container">
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <h3 class="m-0">{{ isEdit ? 'Edit' : 'Create' }} Goods Receipt Note (GRN)</h3>
+        <button class="btn btn-secondary btn-sm" (click)="cancel()">
+            <i class="las la-arrow-left"></i> Back to List
+        </button>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading">
+        <form [formGroup]="grnForm" (ngSubmit)="onSubmit()">
+            <!-- GRN Header -->
+            <div class="grn-header-section mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="company-logo">
+                            <i class="las la-warehouse text-primary"></i> IMS<span class="text-danger">.</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <h1 class="display-6 fw-bold text-muted">GRN FORM</h1>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meta Data Section -->
+            <div class="card mb-4 border-0 shadow-sm bg-light-subtle">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">GRN Reference / Slip No <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" formControlName="reference"
+                                placeholder="e.g. GRN-2023-001">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Link to Purchase Order (Optional)</label>
+                            <select class="form-select" formControlName="purchaseOrderId"
+                                (change)="onPoChange(grnForm.get('purchaseOrderId')?.value)">
+                                <option value="">-- Manual GRN / No PO --</option>
+                                <option *ngFor="let po of purchaseOrders" [value]="(po.id || '').toLowerCase()">
+                                    {{ po.reference }} - {{ getPoVendorName(po.vendorId) }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Received Date</label>
+                            <input type="text" class="form-control" [value]="today | date:'mediumDate'" readonly
+                                disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Section -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-primary text-white py-2">
+                            <h6 class="m-0"><i class="las la-truck"></i> Ship From (Vendor)</h6>
+                        </div>
+                        <div class="card-body">
+                            <select class="form-select mb-2" formControlName="vendorId">
+                                <option value="">Select Vendor</option>
+                                <option *ngFor="let vendor of vendors" [value]="(vendor.id || '').toLowerCase()">{{
+                                    vendor.name }}</option>
+                            </select>
+                            <div *ngIf="grnForm.get('vendorId')?.touched && grnForm.get('vendorId')?.invalid"
+                                class="text-danger small">
+                                Vendor is required
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-info text-white py-2">
+                            <h6 class="m-0"><i class="las la-warehouse"></i> Ship To (Warehouse)</h6>
+                        </div>
+                        <div class="card-body">
+                            <select class="form-select mb-2" formControlName="warehouseId">
+                                <option value="">Select Warehouse</option>
+                                <option *ngFor="let wh of warehouses" [value]="(wh.id || '').toLowerCase()">{{ wh.name
+                                    }}</option>
+                            </select>
+                            <div *ngIf="grnForm.get('warehouseId')?.touched && grnForm.get('warehouseId')?.invalid"
+                                class="text-danger small">
+                                Warehouse is required
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Item Description</th>
+                                    <th style="width: 120px; text-align: center;">Ordered</th>
+                                    <th style="width: 120px; text-align: center;">Prev. Recvd</th>
+                                    <th style="width: 150px; text-align: center;">Qty to Receive</th>
+                                    <th style="width: 120px; text-align: right;">Unit Price</th>
+                                    <th style="width: 120px; text-align: right;">Total</th>
+                                    <th style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody formArrayName="lines">
+                                <tr *ngFor="let line of lines.controls; let i = index" [formGroupName]="i">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>
+                                        <select class="form-select form-select-sm" formControlName="itemId">
+                                            <option value="">Select Item</option>
+                                            <option *ngFor="let item of getFilteredItems()"
+                                                [value]="(item.id || '').toLowerCase()">
+                                                {{ item.name }} ({{ item.sku }})
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td class="text-center text-muted small">
+                                        {{ line.get('quantityOrdered')?.value || 0 }}
+                                    </td>
+                                    <td class="text-center text-muted small">
+                                        {{ line.get('alreadyReceived')?.value || 0 }}
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm text-center fw-bold"
+                                            formControlName="quantity" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm text-end"
+                                            formControlName="unitPrice" min="0" step="0.01">
+                                    </td>
+                                    <td style="text-align: right;" class="fw-bold">
+                                        {{ calculateLineTotal(i) | currency }}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-link text-danger p-0"
+                                            (click)="removeLine(i)">
+                                            <i class="las la-trash fs-18"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="lines.length === 0">
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        No items recorded. Use 'Add Item' to start receiving goods.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button type="button" class="btn btn-outline-primary btn-sm" (click)="addLine()">
+                                <i class="las la-plus"></i> Add Line Item
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="text-end">
+                                    <div class="text-muted small uppercase fw-bold">Grand Total</div>
+                                    <div class="h4 m-0 fw-bold text-primary">{{ calculateGrandTotal() | currency }}
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-lg px-4"
+                                    [disabled]="isSaving || grnForm.invalid">
+                                    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                                    <i class="las la-save"></i> {{ isEdit ? 'Update' : 'Save' }} GRN
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

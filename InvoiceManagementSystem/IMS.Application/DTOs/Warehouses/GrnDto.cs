@@ -16,6 +16,7 @@ namespace IMS.Application.DTOs.Warehouses
         public Guid Id { get; set; }
         public Guid VendorId { get; set; }
         public Guid WarehouseId { get; set; }
+        public Guid? PurchaseOrderId { get; set; }
         public DateTime ReceivedDate { get; set; }
         public string Reference { get; set; } = string.Empty;
         public bool IsReceived { get; set; }

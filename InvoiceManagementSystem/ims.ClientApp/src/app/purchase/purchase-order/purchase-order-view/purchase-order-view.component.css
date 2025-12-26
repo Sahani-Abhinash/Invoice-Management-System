@@ -1,0 +1,152 @@
+.invoice-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+}
+
+.company-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.company-info h4 {
+    margin: 0 0 5px 0;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.company-logo {
+    font-size: 32px;
+    font-weight: 800;
+    color: #444;
+}
+
+.po-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.bill-to p {
+    margin: 0 0 5px 0;
+}
+
+.po-meta table {
+    text-align: right;
+}
+
+.po-meta td {
+    padding: 2px 10px;
+}
+
+.po-meta .label {
+    font-weight: 600;
+}
+
+/* Table */
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.items-table th {
+    background-color: #0d6efd; /* Blue color from image */
+    color: white;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.items-table th:last-child, .items-table td:last-child {
+    text-align: right;
+}
+
+.items-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+/* Totals */
+.totals-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
+}
+
+.totals-table {
+    width: 300px;
+}
+
+.totals-table td {
+    padding: 5px 10px;
+    text-align: right;
+}
+
+.totals-table .label {
+    font-weight: 600;
+}
+
+.totals-table .grand-total {
+    font-size: 16px;
+    font-weight: 700;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+}
+
+/* Footer */
+.footer-section {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 60px;
+    align-items: flex-end;
+}
+
+.signature {
+    text-align: center;
+}
+
+.signature-line {
+    border-bottom: 1px solid #333;
+    width: 200px;
+    margin-bottom: 10px;
+}
+
+/* Print */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .invoice-container, .invoice-container * {
+        visibility: visible;
+    }
+    .invoice-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+        padding: 0;
+    }
+    .no-print {
+        display: none !important;
+    }
+}

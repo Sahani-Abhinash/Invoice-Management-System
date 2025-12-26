@@ -37,6 +37,14 @@ namespace IMS.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateGrnDto dto)
+        {
+            var updated = await _manager.UpdateAsync(id, dto);
+            if (updated == null) return BadRequest("Could not update. GRN might be received or not found.");
+            return Ok(updated);
+        }
+
         [HttpPost("receive/{id}")]
         public async Task<IActionResult> Receive(Guid id)
         {

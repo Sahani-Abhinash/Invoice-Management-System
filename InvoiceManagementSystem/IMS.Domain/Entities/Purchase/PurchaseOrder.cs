@@ -2,7 +2,7 @@ using IMS.Domain.Common;
 using System;
 using System.Collections.Generic;
 
-namespace IMS.Domain.Entities.Warehouse
+namespace IMS.Domain.Entities.Purchase
 {
     public class PurchaseOrder : BaseEntity
     {

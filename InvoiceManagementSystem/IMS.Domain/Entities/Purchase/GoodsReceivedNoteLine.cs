@@ -1,7 +1,7 @@
 using IMS.Domain.Common;
 using System;
 
-namespace IMS.Domain.Entities.Procurement
+namespace IMS.Domain.Entities.Purchase
 {
     public class GoodsReceivedNoteLine : BaseEntity
     {

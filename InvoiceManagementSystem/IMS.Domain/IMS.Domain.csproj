@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\Procurement\" />
     <Folder Include="Entities\Invoicing\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>

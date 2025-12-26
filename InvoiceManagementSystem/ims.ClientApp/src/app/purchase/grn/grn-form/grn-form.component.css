@@ -1,0 +1,77 @@
+.invoice-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.grn-header-section {
+    border-bottom: 3px solid #f8f9fa;
+    padding-bottom: 20px;
+}
+
+.company-logo {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.table thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 15px 10px;
+}
+
+.table tbody td {
+    padding: 12px 10px;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid #e9ecef;
+    padding: 0.6rem 0.75rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #347dfd;
+    box-shadow: 0 0 0 0.25rem rgba(52, 125, 253, 0.1);
+}
+
+.form-control-sm {
+    padding: 0.4rem 0.5rem;
+}
+
+.bg-light-subtle {
+    background-color: #fbfcfd !important;
+}
+
+.card-header h6 {
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .invoice-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+    }
+}

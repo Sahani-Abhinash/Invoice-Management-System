@@ -1,0 +1,94 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">Goods Receipt Notes</h4>
+                <div class="page-title-right">
+                    <button class="btn btn-primary" (click)="createGrn()">
+                        <i class="las la-plus"></i> Create GRN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div *ngIf="isLoading" class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+                    <div *ngIf="!isLoading && !error">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Received Date</th>
+                                        <th>Vendor</th>
+                                        <th>Warehouse</th>
+                                        <th>Items</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let grn of grns" style="cursor: pointer;" (click)="viewGrn(grn.id)">
+                                        <td>
+                                            <strong>{{ grn.reference }}</strong>
+                                        </td>
+                                        <td>{{ grn.receivedDate | date:'mediumDate' }}</td>
+                                        <td>
+                                            <span class="fw-medium">{{ getVendorName(grn.vendorId) }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small">{{ getWarehouseName(grn.warehouseId)
+                                                }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ grn.lines.length }} items</span>
+                                        </td>
+                                        <td>
+                                            <span *ngIf="grn.isReceived" class="badge bg-success">
+                                                <i class="las la-check-circle"></i> Received
+                                            </span>
+                                            <span *ngIf="!grn.isReceived" class="badge bg-warning">
+                                                <i class="las la-clock"></i> Pending
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-soft-primary me-1"
+                                                (click)="viewGrn(grn.id); $event.stopPropagation()" title="View">
+                                                <i class="las la-eye"></i>
+                                            </button>
+                                            <button *ngIf="!grn.isReceived" class="btn btn-sm btn-soft-info me-1"
+                                                (click)="editGrn(grn.id, $event)" title="Edit">
+                                                <i class="las la-edit"></i>
+                                            </button>
+                                            <button *ngIf="!grn.isReceived" class="btn btn-sm btn-soft-success"
+                                                (click)="receiveGrn(grn.id, $event)" title="Mark as Received">
+                                                <i class="las la-check"></i> Receive
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="grns.length === 0">
+                                        <td colspan="7" class="text-center text-muted py-5">
+                                            <i class="las la-inbox la-3x d-block mb-3"></i>
+                                            No GRNs found. Click "Create GRN" to add a new one.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

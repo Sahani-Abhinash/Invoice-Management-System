@@ -10,6 +10,7 @@ namespace IMS.Application.Managers.Warehouses
         Task<IEnumerable<PurchaseOrderDto>> GetAllAsync();
         Task<PurchaseOrderDto?> GetByIdAsync(Guid id);
         Task<PurchaseOrderDto> CreateAsync(CreatePurchaseOrderDto dto);
+        Task<PurchaseOrderDto?> UpdateAsync(Guid id, CreatePurchaseOrderDto dto);
         Task<PurchaseOrderDto?> ApproveAsync(Guid id);
         Task<bool> CloseAsync(Guid id);
     }

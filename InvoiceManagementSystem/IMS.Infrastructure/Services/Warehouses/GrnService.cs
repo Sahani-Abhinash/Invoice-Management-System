@@ -1,6 +1,7 @@
 using IMS.Application.DTOs.Warehouses;
 using IMS.Application.Interfaces.Warehouses;
 using IMS.Application.Interfaces.Common;
+using IMS.Domain.Entities.Purchase;
 using IMS.Domain.Entities.Warehouse;
 using IMS.Domain.Enums;
 using System;
@@ -70,6 +71,7 @@ namespace IMS.Infrastructure.Services.Warehouses
                 Id = grn.Id,
                 VendorId = grn.VendorId,
                 WarehouseId = grn.WarehouseId,
+                PurchaseOrderId = grn.PurchaseOrderId,
                 Reference = grn.Reference,
                 ReceivedDate = grn.ReceivedDate,
                 IsReceived = grn.IsReceived,
@@ -77,10 +79,47 @@ namespace IMS.Infrastructure.Services.Warehouses
             };
         }
 
+        public async Task<GrnDto?> UpdateAsync(Guid id, CreateGrnDto dto)
+        {
+            var grn = await _grnRepo.GetByIdAsync(id);
+            if (grn == null || grn.IsReceived) return null;
+
+            grn.VendorId = dto.VendorId;
+            grn.WarehouseId = dto.WarehouseId;
+            grn.PurchaseOrderId = dto.PurchaseOrderId;
+            grn.Reference = dto.Reference;
+
+            _grnRepo.Update(grn);
+
+            var existingLines = (await _grnLineRepo.GetAllAsync()).Where(l => l.GoodsReceivedNoteId == id).ToList();
+            foreach (var line in existingLines)
+            {
+                _grnLineRepo.Delete(line);
+            }
+
+            foreach (var l in dto.Lines)
+            {
+                var line = new GoodsReceivedNoteLine
+                {
+                    Id = Guid.NewGuid(),
+                    GoodsReceivedNoteId = grn.Id,
+                    ItemId = l.ItemId,
+                    Quantity = l.Quantity,
+                    UnitPrice = l.UnitPrice
+                };
+                await _grnLineRepo.AddAsync(line);
+            }
+
+            await _grnRepo.SaveChangesAsync();
+            await _grnLineRepo.SaveChangesAsync();
+
+            return await GetByIdAsync(id);
+        }
+
         public async Task<IEnumerable<GrnDto>> GetAllAsync()
         {
             var list = await _grnRepo.GetAllAsync();
-            return list.Select(g => new GrnDto { Id = g.Id, VendorId = g.VendorId, WarehouseId = g.WarehouseId, Reference = g.Reference, ReceivedDate = g.ReceivedDate, IsReceived = g.IsReceived }).ToList();
+            return list.Select(g => new GrnDto { Id = g.Id, VendorId = g.VendorId, WarehouseId = g.WarehouseId, PurchaseOrderId = g.PurchaseOrderId, Reference = g.Reference, ReceivedDate = g.ReceivedDate, IsReceived = g.IsReceived }).ToList();
         }
 
         public async Task<GrnDto?> GetByIdAsync(Guid id)
@@ -92,7 +131,7 @@ namespace IMS.Infrastructure.Services.Warehouses
             var lines = allLines.Where(l => l.GoodsReceivedNoteId == g.Id)
                 .Select(l => new GrnLineDto { Id = l.Id, ItemId = l.ItemId, Quantity = l.Quantity, UnitPrice = l.UnitPrice })
                 .ToList();
-            return new GrnDto { Id = g.Id, VendorId = g.VendorId, WarehouseId = g.WarehouseId, Reference = g.Reference, ReceivedDate = g.ReceivedDate, IsReceived = g.IsReceived, Lines = lines };
+            return new GrnDto { Id = g.Id, VendorId = g.VendorId, WarehouseId = g.WarehouseId, PurchaseOrderId = g.PurchaseOrderId, Reference = g.Reference, ReceivedDate = g.ReceivedDate, IsReceived = g.IsReceived, Lines = lines };
         }
 
         public async Task<bool> ReceiveAsync(Guid id)

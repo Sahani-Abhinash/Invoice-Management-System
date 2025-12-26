@@ -1,0 +1,118 @@
+.invoice-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    max-width: 1000px;
+    margin: 20px auto;
+}
+
+.header-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.company-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.company-logo {
+    font-size: 36px;
+    font-weight: 900;
+}
+
+.po-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.po-meta table td {
+    padding: 5px 10px;
+}
+
+.po-meta .label {
+    font-weight: 600;
+    color: #666;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.items-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.items-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.totals-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 50px;
+}
+
+.totals-table {
+    width: 300px;
+}
+
+.totals-table td {
+    padding: 8px 12px;
+}
+
+.totals-table .label {
+    text-align: right;
+    font-weight: 600;
+}
+
+.grand-total {
+    font-size: 20px;
+    font-weight: 800;
+    border-top: 2px solid #eee;
+}
+
+.footer-section {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 50px;
+    border-top: 1px solid #eee;
+    padding-top: 30px;
+}
+
+.signature {
+    text-align: center;
+    width: 200px;
+}
+
+.signature-line {
+    border-bottom: 1px solid #333;
+    margin-bottom: 10px;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .invoice-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 10px;
+    }
+}

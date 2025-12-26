@@ -1,0 +1,48 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Purchase Orders</h2>
+        <button class="btn btn-primary" (click)="createPO()">Create PO</button>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Vendor</th>
+                <th>Warehouse</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let po of purchaseOrders$ | async">
+                <td>{{ po.reference }}</td>
+                <td>{{ po.vendorName }}</td>
+                <td>{{ po.warehouseName }}</td>
+                <td>{{ po.orderDate | date:'mediumDate' }}</td>
+                <td>
+                    <span class="badge" [ngClass]="{
+            'bg-success': po.isApproved && !po.isClosed,
+            'bg-secondary': po.isClosed,
+            'bg-warning': !po.isApproved && !po.isClosed
+          }">
+                        {{ po.isClosed ? 'Closed' : (po.isApproved ? 'Approved' : 'Draft') }}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-primary me-2" (click)="viewPODetail(po.id)">View</button>
+                    <button class="btn btn-sm btn-info me-2" *ngIf="!po.isApproved && !po.isClosed"
+                        (click)="viewPO(po.id)">Edit</button>
+                    <button class="btn btn-sm btn-success me-2" *ngIf="!po.isApproved && !po.isClosed"
+                        (click)="approvePO(po.id)">Approve</button>
+                    <button class="btn btn-sm btn-secondary" *ngIf="po.isApproved && !po.isClosed"
+                        (click)="closePO(po.id)">Close</button>
+                </td>
+            </tr>
+            <tr *ngIf="(purchaseOrders$ | async)?.length === 0">
+                <td colspan="6" class="text-center text-muted">No purchase orders found.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

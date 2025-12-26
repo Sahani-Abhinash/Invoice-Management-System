@@ -3,7 +3,7 @@ using IMS.Domain.Entities.Pricing;
 using IMS.Domain.Entities.Product;
 using IMS.Domain.Entities.Security;
 using IMS.Domain.Entities.Warehouse;
-using IMS.Domain.Entities.Procurement;
+using IMS.Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
 using IMS.Domain.Entities.Invoicing;
 using System;
@@ -43,11 +43,11 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<Warehouse> Warehouses => Set<Warehouse>();
         public DbSet<Stock> Stocks => Set<Stock>();
         public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
-        // Purchase Orders & GRN (procurement folder)
-        public DbSet<IMS.Domain.Entities.Procurement.PurchaseOrder> PurchaseOrders => Set<IMS.Domain.Entities.Procurement.PurchaseOrder>();
-        public DbSet<IMS.Domain.Entities.Procurement.PurchaseOrderLine> PurchaseOrderLines => Set<IMS.Domain.Entities.Procurement.PurchaseOrderLine>();
-        public DbSet<IMS.Domain.Entities.Procurement.GoodsReceivedNote> GoodsReceivedNotes => Set<IMS.Domain.Entities.Procurement.GoodsReceivedNote>();
-        public DbSet<IMS.Domain.Entities.Procurement.GoodsReceivedNoteLine> GoodsReceivedNoteLines => Set<IMS.Domain.Entities.Procurement.GoodsReceivedNoteLine>();
+        // Purchase Orders & GRN (purchase folder)
+        public DbSet<IMS.Domain.Entities.Purchase.PurchaseOrder> PurchaseOrders => Set<IMS.Domain.Entities.Purchase.PurchaseOrder>();
+        public DbSet<IMS.Domain.Entities.Purchase.PurchaseOrderLine> PurchaseOrderLines => Set<IMS.Domain.Entities.Purchase.PurchaseOrderLine>();
+        public DbSet<IMS.Domain.Entities.Purchase.GoodsReceivedNote> GoodsReceivedNotes => Set<IMS.Domain.Entities.Purchase.GoodsReceivedNote>();
+        public DbSet<IMS.Domain.Entities.Purchase.GoodsReceivedNoteLine> GoodsReceivedNoteLines => Set<IMS.Domain.Entities.Purchase.GoodsReceivedNoteLine>();
 
         // ---------------------
         // Geography

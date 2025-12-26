@@ -17,6 +17,8 @@ export const routes: Routes = [
   { path: 'warehouses', loadChildren: () => import('./warehouse/warehouse.module').then(m => m.WarehouseModule) },
   { path: 'geography', loadChildren: () => import('./Master/geography/geography.module').then(m => m.GeographyModule) },
   { path: 'products', loadChildren: () => import('./product/product.routes').then(m => m.PRODUCT_ROUTES) },
+  { path: 'purchase-orders', loadChildren: () => import('./purchase/purchase-order/purchase-order.routes').then(m => m.PURCHASE_ORDER_ROUTES) },
+  { path: 'grns', loadChildren: () => import('./purchase/grn/grn.routes').then(m => m.GRN_ROUTES) },
   { path: '**', redirectTo: 'home' },
   // TODO: Add routes for the following components:
   // { path: 'about', component: AboutComponent },
