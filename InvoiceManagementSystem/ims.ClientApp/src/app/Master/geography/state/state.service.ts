@@ -6,8 +6,8 @@ import { Country } from '../country/country.service';
 export interface State {
   id: string;
   name: string;
+  countryId: string;  // Required, not optional - matches StateDto
   country?: Country;
-  countryId?: string;
 }
 
 @Injectable({ providedIn: 'root' })

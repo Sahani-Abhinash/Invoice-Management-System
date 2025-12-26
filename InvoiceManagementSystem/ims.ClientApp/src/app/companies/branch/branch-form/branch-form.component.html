@@ -20,6 +20,14 @@
         <div class="text-danger small" *ngIf="form.get('companyId')?.touched && form.get('companyId')?.invalid">Company is required</div>
       </div>
 
+      <div class="mb-3">
+        <label for="address" class="form-label">Address</label>
+        <select class="form-select" id="address" formControlName="addressId">
+          <option value="">Select address (optional)</option>
+          <option *ngFor="let addr of addresses" [value]="addr.id">{{ formatAddress(addr) }}</option>
+        </select>
+      </div>
+
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create' }}</button>
         <a class="btn btn-light" [routerLink]="['/branches']">Cancel</a>

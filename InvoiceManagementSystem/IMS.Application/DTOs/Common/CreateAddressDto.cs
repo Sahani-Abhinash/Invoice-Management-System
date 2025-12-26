@@ -6,10 +6,11 @@ namespace IMS.Application.DTOs.Common
     {
         public string Line1 { get; set; } = string.Empty;
         public string? Line2 { get; set; }
-        public string City { get; set; } = string.Empty;
-        public string? State { get; set; }
-        public string PostalCode { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
+        // Structured references via IDs (optional)
+        public Guid? CountryId { get; set; }
+        public Guid? StateId { get; set; }
+        public Guid? CityId { get; set; }
+        public Guid? PostalCodeId { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         public IMS.Domain.Enums.AddressType? Type { get; set; }

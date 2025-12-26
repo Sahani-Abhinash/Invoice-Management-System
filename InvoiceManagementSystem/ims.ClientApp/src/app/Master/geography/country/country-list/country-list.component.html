@@ -7,14 +7,14 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Code</th>
+        <th>ISO Code</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let c of countries">
         <td>{{ c.name }}</td>
-        <td>{{ c.code || '—' }}</td>
+        <td>{{ c.isoCode || '—' }}</td>
         <td>
           <button class="btn btn-sm btn-info me-2" (click)="editCountry(c.id)">Edit</button>
           <button class="btn btn-sm btn-danger" (click)="deleteCountry(c.id)">Delete</button>

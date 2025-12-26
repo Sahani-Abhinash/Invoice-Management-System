@@ -64,4 +64,19 @@ export class BranchListComponent implements OnInit {
 
     return nameFromBranch ?? '—';
   }
+
+  address(branch: Branch): string {
+    const addr = (branch as any).address;
+    if (!addr) return '—';
+    
+    const parts = [];
+    if (addr.country?.name) parts.push(addr.country.name);
+    if (addr.state?.name) parts.push(addr.state.name);
+    if (addr.city?.name) parts.push(addr.city.name);
+    if (addr.postalCode?.code) parts.push(addr.postalCode.code);
+    if (addr.line1) parts.push(addr.line1);
+    if (addr.line2) parts.push(addr.line2);
+    
+    return parts.length > 0 ? parts.join(', ') : '—';
+  }
 }

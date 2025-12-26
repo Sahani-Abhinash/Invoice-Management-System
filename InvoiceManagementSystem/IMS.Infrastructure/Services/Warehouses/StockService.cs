@@ -15,32 +15,36 @@ namespace IMS.Infrastructure.Services.Warehouses
         private readonly IRepository<Stock> _repository;
         private readonly IRepository<Item> _itemRepository;
         private readonly IRepository<Warehouse> _warehouseRepository;
+        private readonly IMS.Application.Interfaces.Common.IAddressService _addressService;
 
-        public StockService(IRepository<Stock> repository, IRepository<Item> itemRepository, IRepository<Warehouse> warehouseRepository)
+        public StockService(IRepository<Stock> repository, IRepository<Item> itemRepository, IRepository<Warehouse> warehouseRepository, IMS.Application.Interfaces.Common.IAddressService addressService)
         {
             _repository = repository;
             _itemRepository = itemRepository;
             _warehouseRepository = warehouseRepository;
+            _addressService = addressService;
         }
 
         public async Task<IEnumerable<StockDto>> GetAllAsync()
         {
             var stocks = await _repository.GetAllAsync(s => s.Item, s => s.Warehouse);
-            return stocks.Select(s => MapToDto(s, s.Item!, s.Warehouse!)).ToList();
+            var tasks = stocks.Select(s => MapToDtoAsync(s, s.Item!, s.Warehouse!));
+            return (await Task.WhenAll(tasks)).ToList();
         }
 
         public async Task<StockDto?> GetByIdAsync(Guid id)
         {
             var entity = await _repository.GetByIdAsync(id, s => s.Item, s => s.Warehouse);
             if (entity == null) return null;
-            return MapToDto(entity, entity.Item!, entity.Warehouse!);
+            return await MapToDtoAsync(entity, entity.Item!, entity.Warehouse!);
         }
 
         public async Task<IEnumerable<StockDto>> GetByWarehouseIdAsync(Guid warehouseId)
         {
             var stocks = await _repository.GetAllAsync(s => s.Item, s => s.Warehouse);
             stocks = stocks.Where(s => s.WarehouseId == warehouseId);
-            return stocks.Select(s => MapToDto(s, s.Item!, s.Warehouse!)).ToList();
+            var tasks = stocks.Select(s => MapToDtoAsync(s, s.Item!, s.Warehouse!));
+            return (await Task.WhenAll(tasks)).ToList();
         }
 
         public async Task<StockDto> CreateAsync(CreateStockDto dto)
@@ -60,7 +64,7 @@ namespace IMS.Infrastructure.Services.Warehouses
 
             var item = await _itemRepository.GetByIdAsync(entity.ItemId);
             var warehouse = await _warehouseRepository.GetByIdAsync(entity.WarehouseId);
-            return MapToDto(entity, item!, warehouse!);
+            return await MapToDtoAsync(entity, item!, warehouse!);
         }
 
         public async Task<StockDto?> UpdateAsync(Guid id, CreateStockDto dto)
@@ -78,7 +82,7 @@ namespace IMS.Infrastructure.Services.Warehouses
 
             var item = await _itemRepository.GetByIdAsync(entity.ItemId);
             var warehouse = await _warehouseRepository.GetByIdAsync(entity.WarehouseId);
-            return MapToDto(entity, item!, warehouse!);
+            return await MapToDtoAsync(entity, item!, warehouse!);
         }
 
         public async Task<bool> DeleteAsync(Guid id)
@@ -92,8 +96,11 @@ namespace IMS.Infrastructure.Services.Warehouses
             return true;
         }
 
-        private StockDto MapToDto(Stock s, Item i, Warehouse w)
+        private async Task<StockDto> MapToDtoAsync(Stock s, Item i, Warehouse w)
         {
+            var linked = await _addressService.GetForOwnerAsync(IMS.Domain.Enums.OwnerType.Branch, w.Branch.Id);
+            var primary = linked.FirstOrDefault();
+
             return new StockDto
             {
                 Id = s.Id,
@@ -112,7 +119,8 @@ namespace IMS.Infrastructure.Services.Warehouses
                     {
                         Id = w.Branch.Id,
                         Name = w.Branch.Name,
-                        Address = w.Branch.Address,
+                        AddressId = primary?.Id,
+                        Address = primary,
                         Company = new IMS.Application.DTOs.Companies.CompanyDto
                         {
                             Id = w.Branch.Company.Id,

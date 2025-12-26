@@ -75,7 +75,8 @@ namespace IMS.Infrastructure.Services.Geography
         // States
         public async Task<StateDto> CreateStateAsync(StateDto dto)
         {
-            var e = new State { Id = Guid.NewGuid(), Name = dto.Name, CountryId = dto.Country?.Id ?? Guid.Empty };
+            var countryId = dto.CountryId != Guid.Empty ? dto.CountryId : dto.Country?.Id ?? Guid.Empty;
+            var e = new State { Id = Guid.NewGuid(), Name = dto.Name, CountryId = countryId };
             await _stateRepo.AddAsync(e);
             await _stateRepo.SaveChangesAsync();
             dto.Id = e.Id;
@@ -94,14 +95,26 @@ namespace IMS.Infrastructure.Services.Geography
         public async Task<IEnumerable<StateDto>> GetAllStatesAsync()
         {
             var list = await _stateRepo.GetAllAsync(s => s.Country);
-            return list.Select(s => new StateDto { Id = s.Id, Name = s.Name, Country = s.Country == null ? null : new CountryDto { Id = s.Country.Id, Name = s.Country.Name, ISOCode = s.Country.ISOCode } });
+            return list.Select(s => new StateDto 
+            { 
+                Id = s.Id, 
+                Name = s.Name, 
+                CountryId = s.CountryId,
+                Country = s.Country == null ? null : new CountryDto { Id = s.Country.Id, Name = s.Country.Name, ISOCode = s.Country.ISOCode } 
+            });
         }
 
         public async Task<StateDto?> GetStateByIdAsync(Guid id)
         {
             var s = await _stateRepo.GetByIdAsync(id, st => st.Country);
             if (s == null) return null;
-            return new StateDto { Id = s.Id, Name = s.Name, Country = s.Country == null ? null : new CountryDto { Id = s.Country.Id, Name = s.Country.Name, ISOCode = s.Country.ISOCode } };
+            return new StateDto 
+            { 
+                Id = s.Id, 
+                Name = s.Name, 
+                CountryId = s.CountryId,
+                Country = s.Country == null ? null : new CountryDto { Id = s.Country.Id, Name = s.Country.Name, ISOCode = s.Country.ISOCode } 
+            };
         }
 
         public async Task<StateDto?> UpdateStateAsync(Guid id, StateDto dto)
@@ -109,7 +122,11 @@ namespace IMS.Infrastructure.Services.Geography
             var e = await _stateRepo.GetByIdAsync(id);
             if (e == null) return null;
             e.Name = dto.Name;
-            e.CountryId = dto.Country?.Id ?? e.CountryId;
+            // Prefer explicit CountryId from DTO when provided; fall back to navigation property if present
+            if (dto.CountryId != Guid.Empty)
+                e.CountryId = dto.CountryId;
+            else if (dto.Country != null)
+                e.CountryId = dto.Country.Id;
             _stateRepo.Update(e);
             await _stateRepo.SaveChangesAsync();
             return dto;
@@ -118,7 +135,8 @@ namespace IMS.Infrastructure.Services.Geography
         // Cities
         public async Task<CityDto> CreateCityAsync(CityDto dto)
         {
-            var e = new City { Id = Guid.NewGuid(), Name = dto.Name, StateId = dto.State?.Id ?? Guid.Empty };
+            var stateId = dto.StateId != Guid.Empty ? dto.StateId : dto.State?.Id ?? Guid.Empty;
+            var e = new City { Id = Guid.NewGuid(), Name = dto.Name, StateId = stateId };
             await _cityRepo.AddAsync(e);
             await _cityRepo.SaveChangesAsync();
             dto.Id = e.Id;
@@ -137,14 +155,26 @@ namespace IMS.Infrastructure.Services.Geography
         public async Task<IEnumerable<CityDto>> GetAllCitiesAsync()
         {
             var list = await _cityRepo.GetAllAsync(c => c.State);
-            return list.Select(c => new CityDto { Id = c.Id, Name = c.Name, State = c.State == null ? null : new StateDto { Id = c.State.Id, Name = c.State.Name } });
+            return list.Select(c => new CityDto 
+            { 
+                Id = c.Id, 
+                Name = c.Name, 
+                StateId = c.StateId,
+                State = c.State == null ? null : new StateDto { Id = c.State.Id, Name = c.State.Name, CountryId = c.State.CountryId } 
+            });
         }
 
         public async Task<CityDto?> GetCityByIdAsync(Guid id)
         {
             var c = await _cityRepo.GetByIdAsync(id, ct => ct.State);
             if (c == null) return null;
-            return new CityDto { Id = c.Id, Name = c.Name, State = c.State == null ? null : new StateDto { Id = c.State.Id, Name = c.State.Name } };
+            return new CityDto 
+            { 
+                Id = c.Id, 
+                Name = c.Name, 
+                StateId = c.StateId,
+                State = c.State == null ? null : new StateDto { Id = c.State.Id, Name = c.State.Name, CountryId = c.State.CountryId } 
+            };
         }
 
         public async Task<CityDto?> UpdateCityAsync(Guid id, CityDto dto)
@@ -152,7 +182,10 @@ namespace IMS.Infrastructure.Services.Geography
             var e = await _cityRepo.GetByIdAsync(id);
             if (e == null) return null;
             e.Name = dto.Name;
-            e.StateId = dto.State?.Id ?? e.StateId;
+            if (dto.StateId != Guid.Empty)
+                e.StateId = dto.StateId;
+            else if (dto.State != null)
+                e.StateId = dto.State.Id;
             _cityRepo.Update(e);
             await _cityRepo.SaveChangesAsync();
             return dto;
@@ -161,7 +194,8 @@ namespace IMS.Infrastructure.Services.Geography
         // PostalCodes
         public async Task<PostalCodeDto> CreatePostalCodeAsync(PostalCodeDto dto)
         {
-            var e = new PostalCode { Id = Guid.NewGuid(), Code = dto.Code, CityId = dto.City?.Id ?? Guid.Empty };
+            var cityId = dto.CityId != Guid.Empty ? dto.CityId : dto.City?.Id ?? Guid.Empty;
+            var e = new PostalCode { Id = Guid.NewGuid(), Code = dto.Code, CityId = cityId };
             await _postalRepo.AddAsync(e);
             await _postalRepo.SaveChangesAsync();
             dto.Id = e.Id;
@@ -180,14 +214,26 @@ namespace IMS.Infrastructure.Services.Geography
         public async Task<IEnumerable<PostalCodeDto>> GetAllPostalCodesAsync()
         {
             var list = await _postalRepo.GetAllAsync(pc => pc.City);
-            return list.Select(pc => new PostalCodeDto { Id = pc.Id, Code = pc.Code, City = pc.City == null ? null : new CityDto { Id = pc.City.Id, Name = pc.City.Name } });
+            return list.Select(pc => new PostalCodeDto 
+            { 
+                Id = pc.Id, 
+                Code = pc.Code, 
+                CityId = pc.CityId,
+                City = pc.City == null ? null : new CityDto { Id = pc.City.Id, Name = pc.City.Name, StateId = pc.City.StateId } 
+            });
         }
 
         public async Task<PostalCodeDto?> GetPostalCodeByIdAsync(Guid id)
         {
             var p = await _postalRepo.GetByIdAsync(id, pc => pc.City);
             if (p == null) return null;
-            return new PostalCodeDto { Id = p.Id, Code = p.Code, City = p.City == null ? null : new CityDto { Id = p.City.Id, Name = p.City.Name } };
+            return new PostalCodeDto 
+            { 
+                Id = p.Id, 
+                Code = p.Code, 
+                CityId = p.CityId,
+                City = p.City == null ? null : new CityDto { Id = p.City.Id, Name = p.City.Name, StateId = p.City.StateId } 
+            };
         }
 
         public async Task<PostalCodeDto?> UpdatePostalCodeAsync(Guid id, PostalCodeDto dto)
@@ -195,7 +241,10 @@ namespace IMS.Infrastructure.Services.Geography
             var e = await _postalRepo.GetByIdAsync(id);
             if (e == null) return null;
             e.Code = dto.Code;
-            e.CityId = dto.City?.Id ?? e.CityId;
+            if (dto.CityId != Guid.Empty)
+                e.CityId = dto.CityId;
+            else if (dto.City != null)
+                e.CityId = dto.City.Id;
             _postalRepo.Update(e);
             await _postalRepo.SaveChangesAsync();
             return dto;

@@ -6,6 +6,12 @@ export interface Branch {
   id: string;
   name: string;
   companyId: string;
+  addressId?: string;
+  address?: string;
+  company?: {
+    id: string;
+    name: string;
+  };
 }
 
 @Injectable({

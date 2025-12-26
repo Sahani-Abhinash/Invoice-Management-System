@@ -137,7 +137,7 @@ export class AuthStore {
   hasAnyPermission(permissionNames: string[]): boolean {
     const perms = this.permissions();
     const has = permissionNames.some(p => perms.includes(p));
-    console.log('hasAnyPermission check:', permissionNames, 'in', perms, '=', has);
+    //console.log('hasAnyPermission check:', permissionNames, 'in', perms, '=', has);
     return has;
   }
 

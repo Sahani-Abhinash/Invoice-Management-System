@@ -101,9 +101,20 @@ public static class DbSeeder
             var company2 = new Company { Id = Guid.NewGuid(), Name = "XYZ GmbH", TaxNumber = "TAX654321", IsActive = true, IsDeleted = false };
             context.Companies.AddRange(company1, company2);
             context.SaveChanges();
-            var branch1 = new Branch { Id = Guid.NewGuid(), Name = "ABC Delhi Branch", Address = "Delhi, India", CompanyId = company1.Id, IsActive = true, IsDeleted = false };
-            var branch2 = new Branch { Id = Guid.NewGuid(), Name = "XYZ Berlin Branch", Address = "Berlin, Germany", CompanyId = company2.Id, IsActive = true, IsDeleted = false };
+            var branch1 = new Branch { Id = Guid.NewGuid(), Name = "ABC Delhi Branch", CompanyId = company1.Id, IsActive = true, IsDeleted = false };
+            var branch2 = new Branch { Id = Guid.NewGuid(), Name = "XYZ Berlin Branch", CompanyId = company2.Id, IsActive = true, IsDeleted = false };
             context.Branches.AddRange(branch1, branch2);
+            context.SaveChanges();
+
+            // Seed sample addresses and link them to branches via EntityAddress
+            var addr1 = new IMS.Domain.Entities.Common.Address { Id = Guid.NewGuid(), Line1 = "Delhi, India", CityId = null, CountryId = null, IsActive = true, IsDeleted = false };
+            var addr2 = new IMS.Domain.Entities.Common.Address { Id = Guid.NewGuid(), Line1 = "Berlin, Germany", CityId = null, CountryId = null, IsActive = true, IsDeleted = false };
+            context.Addresses.AddRange(addr1, addr2);
+            context.SaveChanges();
+
+            var ea1 = new IMS.Domain.Entities.Common.EntityAddress { Id = Guid.NewGuid(), AddressId = addr1.Id, OwnerType = IMS.Domain.Enums.OwnerType.Branch, OwnerId = branch1.Id, IsPrimary = true, IsActive = true, IsDeleted = false };
+            var ea2 = new IMS.Domain.Entities.Common.EntityAddress { Id = Guid.NewGuid(), AddressId = addr2.Id, OwnerType = IMS.Domain.Enums.OwnerType.Branch, OwnerId = branch2.Id, IsPrimary = true, IsActive = true, IsDeleted = false };
+            context.EntityAddresses.AddRange(ea1, ea2);
             context.SaveChanges();
         }
 

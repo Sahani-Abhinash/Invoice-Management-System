@@ -1,0 +1,110 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ id ? 'Edit Address' : 'Create Address' }}</h5>
+    <a class="btn btn-sm btn-light" [routerLink]="['/geography/addresses']">Back</a>
+  </div>
+  <div class="card-body">
+    <!-- Success Message -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="success">
+      <strong>Success!</strong> Address has been saved successfully.
+      <button type="button" class="btn-close" (click)="success = false" aria-label="Close"></button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" *ngIf="error">
+      <strong>Error!</strong> {{ error }}
+      <button type="button" class="btn-close" (click)="error = null" aria-label="Close"></button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="d-flex justify-content-center my-3" *ngIf="loading">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="mb-3">
+        <label for="line1" class="form-label">Line 1 <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="line1" formControlName="line1" placeholder="Street address">
+        <div class="invalid-feedback d-block" *ngIf="form.get('line1')?.touched && form.get('line1')?.invalid">
+          <span *ngIf="form.get('line1')?.errors?.['required']">Line 1 is required</span>
+          <span *ngIf="form.get('line1')?.errors?.['minlength']">Line 1 must be at least 3 characters</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="line2" class="form-label">Line 2</label>
+        <input type="text" class="form-control" id="line2" formControlName="line2" placeholder="Apartment, suite, unit, etc. (optional)">
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="countryId" class="form-label">Country <span class="text-danger">*</span></label>
+          <select id="countryId" class="form-select" formControlName="countryId">
+            <option [ngValue]="null" disabled>Select country</option>
+            <option *ngFor="let c of countries" [ngValue]="c.id">{{ c.name }}</option>
+          </select>
+          <div class="invalid-feedback d-block" *ngIf="form.get('countryId')?.touched && form.get('countryId')?.invalid">
+            <span *ngIf="form.get('countryId')?.errors?.['required']">Country is required</span>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="stateId" class="form-label">State</label>
+          <select id="stateId" class="form-select" formControlName="stateId">
+            <option [ngValue]="null">{{ form.get('countryId')?.value ? 'Select state' : 'Select country first' }}</option>
+            <option *ngFor="let s of filteredStates" [ngValue]="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="cityId" class="form-label">City <span class="text-danger">*</span></label>
+          <select id="cityId" class="form-select" formControlName="cityId">
+            <option [ngValue]="null" disabled>{{ form.get('stateId')?.value ? 'Select city' : 'Select state first' }}</option>
+            <option *ngFor="let c of filteredCities" [ngValue]="c.id">{{ c.name }}</option>
+          </select>
+          <div class="invalid-feedback d-block" *ngIf="form.get('cityId')?.touched && form.get('cityId')?.invalid">
+            <span *ngIf="form.get('cityId')?.errors?.['required']">City is required</span>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="postalCodeId" class="form-label">Postal Code <span class="text-danger">*</span></label>
+          <select id="postalCodeId" class="form-select" formControlName="postalCodeId">
+            <option [ngValue]="null" disabled>{{ form.get('cityId')?.value ? 'Select postal code' : 'Select city first' }}</option>
+            <option *ngFor="let p of filteredPostalCodes" [ngValue]="p.id">{{ p.code }}</option>
+          </select>
+          <div class="invalid-feedback d-block" *ngIf="form.get('postalCodeId')?.touched && form.get('postalCodeId')?.invalid">
+            <span *ngIf="form.get('postalCodeId')?.errors?.['required']">Postal Code is required</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="latitude" class="form-label">Latitude</label>
+          <input type="number" step="0.000001" class="form-control" id="latitude" formControlName="latitude">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="longitude" class="form-label">Longitude</label>
+          <input type="number" step="0.000001" class="form-control" id="longitude" formControlName="longitude">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="type" class="form-label">Type</label>
+        <select id="type" class="form-select" formControlName="type">
+          <option *ngFor="let t of addressTypes" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
+          {{ loading ? 'Saving...' : (id ? 'Update' : 'Create') }}
+        </button>
+        <a class="btn btn-light" [routerLink]="['/geography/addresses']">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

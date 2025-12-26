@@ -1,0 +1,49 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ id ? 'Edit Vendor' : 'Create Vendor' }}</h5>
+    <a class="btn btn-sm btn-light" [routerLink]="['/vendors']">Back</a>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter vendor name">
+        <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Name is required</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="contactName" class="form-label">Contact Name</label>
+        <input type="text" class="form-control" id="contactName" formControlName="contactName" placeholder="Enter contact person">
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" formControlName="email" placeholder="Enter email">
+        <div class="text-danger small" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">Invalid email</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="text" class="form-control" id="phone" formControlName="phone" placeholder="Enter phone">
+      </div>
+
+      <div class="mb-3">
+        <label for="taxNumber" class="form-label">Tax Number</label>
+        <input type="text" class="form-control" id="taxNumber" formControlName="taxNumber" placeholder="Enter tax number">
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Address</label>
+        <select class="form-select" id="address" formControlName="addressId">
+          <option value="">Select address (optional)</option>
+          <option *ngFor="let addr of addresses" [value]="addr.id">{{ formatAddress(addr) }}</option>
+        </select>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create' }}</button>
+        <a class="btn btn-light" [routerLink]="['/vendors']">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

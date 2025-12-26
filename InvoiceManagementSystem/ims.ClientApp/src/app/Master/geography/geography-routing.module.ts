@@ -8,6 +8,8 @@ import { CityListComponent } from './city/city-list/city-list.component';
 import { CityFormComponent } from './city/city-form/city-form.component';
 import { PostalCodeListComponent } from './postalcode/postalcode-list/postalcode-list.component';
 import { PostalCodeFormComponent } from './postalcode/postalcode-form/postalcode-form.component';
+import { AddressListComponent } from './address/address-list/address-list.component';
+import { AddressFormComponent } from './address/address-form/address-form.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'countries', pathMatch: 'full' },
@@ -26,6 +28,10 @@ const routes: Routes = [
   { path: 'postalcodes', component: PostalCodeListComponent },
   { path: 'postalcodes/create', component: PostalCodeFormComponent },
   { path: 'postalcodes/edit/:id', component: PostalCodeFormComponent }
+  ,
+  { path: 'addresses', component: AddressListComponent },
+  { path: 'addresses/create', component: AddressFormComponent },
+  { path: 'addresses/edit/:id', component: AddressFormComponent }
 ];
 
 @NgModule({

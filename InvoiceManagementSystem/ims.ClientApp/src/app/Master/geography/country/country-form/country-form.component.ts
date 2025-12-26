@@ -14,6 +14,9 @@ import { CountryService } from '../country.service';
 export class CountryFormComponent implements OnInit {
   form!: FormGroup;
   id: string | null = null;
+  loading = false;
+  error: string | null = null;
+  success = false;
 
   constructor(
     private fb: FormBuilder,
@@ -22,24 +25,66 @@ export class CountryFormComponent implements OnInit {
     private countryService: CountryService
   ) {
     this.form = this.fb.group({
-      name: ['', Validators.required],
-      code: ['']
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      isoCode: ['', Validators.minLength(2)]
     });
   }
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');
+    console.log('Country Form - ID from route:', this.id);
     if (this.id) {
-      this.countryService.getById(this.id).subscribe(data => this.form.patchValue(data));
+      this.loading = true;
+      console.log('Fetching country data for ID:', this.id);
+      this.countryService.getById(this.id).subscribe({
+        next: (data) => {
+          console.log('Country data received:', data);
+          this.form.patchValue(data);
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to load country: ' + err.message;
+          this.loading = false;
+          console.error('Error loading country:', err);
+        }
+      });
     }
   }
 
   save() {
-    if (this.form.invalid) return;
-    if (this.id) {
-      this.countryService.update(this.id, this.form.value).subscribe(() => this.router.navigate(['/geography/countries']));
-    } else {
-      this.countryService.create(this.form.value).subscribe(() => this.router.navigate(['/geography/countries']));
+    if (this.form.invalid) {
+      this.error = 'Please fill in all required fields correctly';
+      return;
     }
+
+    this.loading = true;
+    this.error = null;
+    this.success = false;
+
+    const formData = this.form.value;
+    console.log('Saving country with data:', formData);
+    console.log('ID:', this.id);
+
+    const saveOperation = this.id
+      ? this.countryService.update(this.id, formData)
+      : this.countryService.create(formData);
+
+    saveOperation.subscribe({
+      next: (response) => {
+        console.log('Save successful, response:', response);
+        this.success = true;
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/geography/countries']);
+        }, 1500);
+      },
+      error: (err) => {
+        console.error('Save error:', err);
+        this.error = err?.error?.message || 'Failed to save country. Please try again.';
+        this.loading = false;
+        console.error('Error saving country:', err);
+      }
+    });
   }
 }
+

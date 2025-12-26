@@ -34,6 +34,46 @@ namespace IMS.Application.Common
         // Price lists
         public const string ManagePriceLists = "PriceLists.Manage";
 
+        // Vendors (suppliers)
+        public const string ViewVendors = "Vendors.View";
+        public const string ManageVendors = "Vendors.Manage";
+
+        // Purchase Orders
+        public const string ViewPurchaseOrders = "PurchaseOrders.View";
+        public const string ManagePurchaseOrders = "PurchaseOrders.Manage";
+        public const string ApprovePurchaseOrders = "PurchaseOrders.Approve";
+        public const string ClosePurchaseOrders = "PurchaseOrders.Close";
+
+        // Goods Received Notes (GRN)
+        public const string ViewGoodsReceivedNotes = "GoodsReceivedNotes.View";
+        public const string ManageGoodsReceivedNotes = "GoodsReceivedNotes.Manage";
+        public const string CreateGoodsReceivedNotes = "GoodsReceivedNotes.Create";
+        public const string ReceiveGoodsReceivedNotes = "GoodsReceivedNotes.Receive";
+
+        // Stock Transactions
+        public const string ViewStockTransactions = "StockTransactions.View";
+        public const string ManageStockTransactions = "StockTransactions.Manage";
+
+        // ---------------------
+        // Invoicing / Sales
+        // ---------------------
+        // Invoices
+        public const string ViewInvoices = "Invoices.View";
+        public const string ManageInvoices = "Invoices.Manage";
+        public const string CreateInvoices = "Invoices.Create";
+        public const string EditInvoices = "Invoices.Edit";
+        public const string DeleteInvoices = "Invoices.Delete";
+
+        // Invoice items (line-level permissions if needed)
+        public const string ViewInvoiceItems = "InvoiceItems.View";
+        public const string ManageInvoiceItems = "InvoiceItems.Manage";
+
+        // Payments
+        public const string ViewPayments = "Payments.View";
+        public const string ManagePayments = "Payments.Manage";
+        public const string CreatePayments = "Payments.Create";
+        public const string RefundPayments = "Payments.Refund";
+
         // Geography
         public const string ViewCountries = "Countries.View";
         public const string ManageCountries = "Countries.Manage";

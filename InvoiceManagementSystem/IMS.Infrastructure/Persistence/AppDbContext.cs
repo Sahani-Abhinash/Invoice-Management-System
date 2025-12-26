@@ -3,7 +3,9 @@ using IMS.Domain.Entities.Pricing;
 using IMS.Domain.Entities.Product;
 using IMS.Domain.Entities.Security;
 using IMS.Domain.Entities.Warehouse;
+using IMS.Domain.Entities.Procurement;
 using Microsoft.EntityFrameworkCore;
+using IMS.Domain.Entities.Invoicing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +34,8 @@ namespace IMS.Infrastructure.Persistence
         // ---------------------
         public DbSet<Company> Companies => Set<Company>();
         public DbSet<Branch> Branches => Set<Branch>();
+        // Vendors (suppliers)
+        public DbSet<Vendor> Vendors => Set<Vendor>();
 
         // ---------------------
         // Warehouses / Inventory
@@ -39,6 +43,11 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<Warehouse> Warehouses => Set<Warehouse>();
         public DbSet<Stock> Stocks => Set<Stock>();
         public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
+        // Purchase Orders & GRN (procurement folder)
+        public DbSet<IMS.Domain.Entities.Procurement.PurchaseOrder> PurchaseOrders => Set<IMS.Domain.Entities.Procurement.PurchaseOrder>();
+        public DbSet<IMS.Domain.Entities.Procurement.PurchaseOrderLine> PurchaseOrderLines => Set<IMS.Domain.Entities.Procurement.PurchaseOrderLine>();
+        public DbSet<IMS.Domain.Entities.Procurement.GoodsReceivedNote> GoodsReceivedNotes => Set<IMS.Domain.Entities.Procurement.GoodsReceivedNote>();
+        public DbSet<IMS.Domain.Entities.Procurement.GoodsReceivedNoteLine> GoodsReceivedNoteLines => Set<IMS.Domain.Entities.Procurement.GoodsReceivedNoteLine>();
 
         // ---------------------
         // Geography
@@ -77,11 +86,11 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<IMS.Domain.Entities.Common.EntityAddress> EntityAddresses => Set<IMS.Domain.Entities.Common.EntityAddress>();
 
         // ---------------------
-        // Invoice (Coming Next)
+        // Invoice / Sales
         // ---------------------
-        // public DbSet<Invoice> Invoices => Set<Invoice>();
-        // public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
-        // public DbSet<Payment> Payments => Set<Payment>();
+        public DbSet<Invoice> Invoices => Set<Invoice>();
+        public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+        public DbSet<Payment> Payments => Set<Payment>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

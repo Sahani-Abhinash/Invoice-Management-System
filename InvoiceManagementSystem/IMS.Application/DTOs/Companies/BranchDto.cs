@@ -1,4 +1,5 @@
 using IMS.Application.DTOs.Companies;
+using IMS.Application.DTOs.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,8 @@ namespace IMS.Application.DTOs.Companies
         /// <summary>
         /// Branch physical address.
         /// </summary>
-        public string Address { get; set; } = string.Empty;
+        public Guid? AddressId { get; set; }
+        public AddressDto? Address { get; set; }
 
         /// <summary>
         /// Parent company information.

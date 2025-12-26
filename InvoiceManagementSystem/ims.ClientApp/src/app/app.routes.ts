@@ -10,6 +10,7 @@ export const routes: Routes = [
   { path: 'Login', pathMatch: 'full', redirectTo: 'login' },
   { path: 'companies', loadChildren: () => import('./companies/company/company.module').then(m => m.CompanyModule) },
   { path: 'branches', loadChildren: () => import('./companies/branch/branch.module').then(m => m.BranchModule) },
+  { path: 'vendors', loadChildren: () => import('./companies/vendor/vendor.module').then(m => m.VendorModule) },
   { path: 'users', loadChildren: () => import('./security/users/user.module').then(m => m.UserModule) },
   { path: 'roles', loadChildren: () => import('./security/roles/role.module').then(m => m.RoleModule) },
   { path: 'permissions', loadChildren: () => import('./security/permissions/permission.module').then(m => m.PermissionModule) },

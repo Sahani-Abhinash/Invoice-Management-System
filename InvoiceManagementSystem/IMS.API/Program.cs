@@ -56,6 +56,9 @@ builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IWarehouseServi
 builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IStockService, IMS.Infrastructure.Services.Warehouses.StockService>();
 // Stock transaction services
 builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IStockTransactionService, IMS.Infrastructure.Services.Warehouses.StockTransactionService>();
+// Purchase order & GRN services
+builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IPurchaseOrderService, IMS.Infrastructure.Services.Warehouses.PurchaseOrderService>();
+builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IPurchaseOrderManager, IMS.Application.Managers.Warehouses.PurchaseOrderManager>();
 // User services
 builder.Services.AddScoped<IMS.Application.Interfaces.Security.IUserService, IMS.Infrastructure.Services.Security.UserService>();
 // Role services
@@ -87,6 +90,9 @@ builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IWarehouseManager
 builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IStockManager, IMS.Application.Managers.Warehouses.StockManager>();
 // StockTransaction manager
 builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IStockTransactionManager, IMS.Application.Managers.Warehouses.StockTransactionManager>();
+// GRN manager & service
+builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IGrnService, IMS.Infrastructure.Services.Warehouses.GrnService>();
+builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IGrnManager, IMS.Application.Managers.Warehouses.GrnManager>();
 // Product managers
 builder.Services.AddScoped<IMS.Application.Managers.Product.IUnitOfMeasureManager, IMS.Application.Managers.Product.UnitOfMeasureManager>();
 // Pricing managers
@@ -102,6 +108,9 @@ builder.Services.AddScoped<IMS.Application.Managers.Security.IRoleManager, IMS.A
 builder.Services.AddScoped<IMS.Application.Managers.Security.IPermissionManager, IMS.Application.Managers.Security.PermissionManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Security.IUserRoleManager, IMS.Application.Managers.Security.UserRoleManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Security.IRolePermissionManager, IMS.Application.Managers.Security.RolePermissionManager>();
+// Vendor service & manager
+builder.Services.AddScoped<IMS.Application.Interfaces.Companies.IVendorService, IMS.Infrastructure.Services.Companies.VendorService>();
+builder.Services.AddScoped<IMS.Application.Managers.Companies.IVendorManager, IMS.Application.Managers.Companies.VendorManager>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(

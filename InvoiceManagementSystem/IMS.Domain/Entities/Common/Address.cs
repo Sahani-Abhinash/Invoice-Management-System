@@ -1,5 +1,6 @@
 using IMS.Domain.Common;
 using System;
+using IMS.Domain.Entities.Geography;
 
 namespace IMS.Domain.Entities.Common
 {
@@ -7,10 +8,18 @@ namespace IMS.Domain.Entities.Common
     {
         public string Line1 { get; set; } = string.Empty;
         public string? Line2 { get; set; }
-        public string City { get; set; } = string.Empty;
-        public string? State { get; set; }
-        public string PostalCode { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
+        // Optional structured references to geography entities
+        public Guid? CountryId { get; set; }
+        public Country? CountryRef { get; set; }
+
+        public Guid? StateId { get; set; }
+        public State? StateRef { get; set; }
+
+        public Guid? CityId { get; set; }
+        public City? CityRef { get; set; }
+
+        public Guid? PostalCodeId { get; set; }
+        public PostalCode? PostalCodeRef { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         // Optional type: Billing, Shipping, HeadOffice, etc.

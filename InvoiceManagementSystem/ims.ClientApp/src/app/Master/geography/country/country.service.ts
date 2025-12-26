@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface Country {
   id: string;
   name: string;
-  code?: string;
+  isoCode?: string;
 }
 
 @Injectable({ providedIn: 'root' })
