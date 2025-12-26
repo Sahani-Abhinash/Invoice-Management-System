@@ -1,0 +1,41 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ id ? 'Edit Item' : 'Create Item' }}</h5>
+        <a class="btn btn-sm btn-light" [routerLink]="['/products/items']">Back</a>
+    </div>
+    <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="save()">
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter item name">
+                <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Item Name
+                    is required</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="sku" class="form-label">SKU</label>
+                <input type="text" class="form-control" id="sku" formControlName="sku" placeholder="Enter SKU">
+                <div class="text-danger small" *ngIf="form.get('sku')?.touched && form.get('sku')?.invalid">SKU is
+                    required</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="unitOfMeasureId" class="form-label">Unit of Measure</label>
+                <select class="form-select" id="unitOfMeasureId" formControlName="unitOfMeasureId">
+                    <option value="" disabled>Select Unit of Measure</option>
+                    <option *ngFor="let uom of uoms" [value]="uom.id">{{ uom.name }} ({{ uom.symbol }})</option>
+                </select>
+                <div class="text-danger small"
+                    *ngIf="form.get('unitOfMeasureId')?.touched && form.get('unitOfMeasureId')?.invalid">Unit of Measure
+                    is required</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create'
+                    }}</button>
+                <a class="btn btn-light" [routerLink]="['/products/items']">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

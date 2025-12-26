@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace IMS.Infrastructure.Services.Product
 {
@@ -22,18 +23,30 @@ namespace IMS.Infrastructure.Services.Product
 
         public async Task<IEnumerable<ItemDto>> GetAllAsync()
         {
-            var items = await _repository.GetAllAsync();
+            var items = await _repository.GetAllAsync(i => i.UnitOfMeasure);
             return items.Select(i => new ItemDto
             {
                 Id = i.Id,
                 Name = i.Name,
-                SKU = i.SKU
+                SKU = i.SKU,
+                UnitOfMeasure = i.UnitOfMeasure != null ? new UnitOfMeasureDto
+                {
+                    Id = i.UnitOfMeasure.Id,
+                    Name = i.UnitOfMeasure.Name,
+                    Symbol = i.UnitOfMeasure.Symbol
+                } : null
             }).ToList();
         }
 
         public async Task<ItemDetailsDto?> GetByIdAsync(Guid id)
         {
-            var entity = await _repository.GetByIdAsync(id, i => i.UnitOfMeasure, i => i.Images, i => i.Prices);
+            var entity = await _repository.GetQueryable()
+                .Include(i => i.UnitOfMeasure)
+                .Include(i => i.Images)
+                .Include(i => i.Prices)
+                    .ThenInclude(p => p.PriceList)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            
             if (entity == null) return null;
 
             return new ItemDetailsDto

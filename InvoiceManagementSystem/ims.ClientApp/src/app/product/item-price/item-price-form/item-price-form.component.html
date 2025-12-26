@@ -1,0 +1,58 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ id ? 'Edit Item Price' : 'Create Item Price' }}</h5>
+        <a class="btn btn-sm btn-light" [routerLink]="['/products/prices']">Back</a>
+    </div>
+    <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="save()">
+
+            <div class="mb-3">
+                <label for="itemId" class="form-label">Item</label>
+                <select class="form-select" id="itemId" formControlName="itemId">
+                    <option value="" disabled>Select Item</option>
+                    <option *ngFor="let item of items" [value]="item.id">{{ item.name }} ({{ item.sku }})</option>
+                </select>
+                <div class="text-danger small" *ngIf="form.get('itemId')?.touched && form.get('itemId')?.invalid">Item
+                    is required</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="priceListId" class="form-label">Price List</label>
+                <select class="form-select" id="priceListId" formControlName="priceListId">
+                    <option value="" disabled>Select Price List</option>
+                    <option *ngFor="let pl of priceLists" [value]="pl.id">{{ pl.name }}</option>
+                </select>
+                <div class="text-danger small"
+                    *ngIf="form.get('priceListId')?.touched && form.get('priceListId')?.invalid">Price List is required
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Price</label>
+                <input type="number" class="form-control" id="price" formControlName="price" placeholder="Enter price">
+                <div class="text-danger small" *ngIf="form.get('price')?.touched && form.get('price')?.invalid">Valid
+                    price is required</div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="effectiveFrom" class="form-label">Effective From</label>
+                    <input type="date" class="form-control" id="effectiveFrom" formControlName="effectiveFrom">
+                    <div class="text-danger small"
+                        *ngIf="form.get('effectiveFrom')?.touched && form.get('effectiveFrom')?.invalid">Effective From
+                        date is required</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="effectiveTo" class="form-label">Effective To</label>
+                    <input type="date" class="form-control" id="effectiveTo" formControlName="effectiveTo">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create'
+                    }}</button>
+                <a class="btn btn-light" [routerLink]="['/products/prices']">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
