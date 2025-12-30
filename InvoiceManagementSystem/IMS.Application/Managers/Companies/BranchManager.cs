@@ -32,7 +32,7 @@ namespace IMS.Application.Managers.Companies
 
         public async Task<IEnumerable<BranchDto>> GetByCompanyIdAsync(Guid companyId)
         {
-            return await _branchService.GetByCompanyIdAsync(companyId);
+            throw new System.NotSupportedException("Branches are independent; use GetAllAsync and filter client-side if needed.");
         }
 
         public async Task<BranchDto> CreateAsync(CreateBranchDto dto)

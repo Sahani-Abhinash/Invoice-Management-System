@@ -36,6 +36,8 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<Branch> Branches => Set<Branch>();
         // Vendors (suppliers)
         public DbSet<Vendor> Vendors => Set<Vendor>();
+        // Customers
+        public DbSet<Customer> Customers => Set<Customer>();
 
         // ---------------------
         // Warehouses / Inventory
@@ -92,6 +94,13 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
         public DbSet<Payment> Payments => Set<Payment>();
 
+        // ---------------------
+        // Accounting / Finance
+        // ---------------------
+        public DbSet<IMS.Domain.Entities.Accounting.Account> Accounts => Set<IMS.Domain.Entities.Accounting.Account>();
+        public DbSet<IMS.Domain.Entities.Accounting.TransactionCategory> TransactionCategories => Set<IMS.Domain.Entities.Accounting.TransactionCategory>();
+        public DbSet<IMS.Domain.Entities.Accounting.IncomeExpenseTransaction> IncomeExpenseTransactions => Set<IMS.Domain.Entities.Accounting.IncomeExpenseTransaction>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()
@@ -102,8 +111,8 @@ namespace IMS.Infrastructure.Persistence
 
             modelBuilder.Entity<IMS.Domain.Entities.Common.EntityAddress>(b =>
             {
-                // composite key using enum OwnerType + OwnerId + AddressId
-                b.HasKey(ea => new { ea.OwnerType, ea.OwnerId, ea.AddressId });
+                // Use Id from BaseEntity as primary key (allows AddressId to be updated)
+                b.HasKey(ea => ea.Id);
 
                 // store enum as string for readability and extensibility
                 b.Property(e => e.OwnerType)
@@ -112,6 +121,16 @@ namespace IMS.Infrastructure.Persistence
 
                 // index to speed lookups by owner
                 b.HasIndex(e => new { e.OwnerType, e.OwnerId });
+
+                // Prevent duplicate active links to the same address for an owner
+                b.HasIndex(e => new { e.OwnerType, e.OwnerId, e.AddressId })
+                    .HasFilter("[IsDeleted] = 0")
+                    .IsUnique();
+
+                // Ensure only one PRIMARY address per owner while allowing multiple non-primary
+                b.HasIndex(e => new { e.OwnerType, e.OwnerId })
+                    .HasFilter("[IsDeleted] = 0 AND [IsPrimary] = 1")
+                    .IsUnique();
             });
 
             // Configure RowVersion and soft-delete filter for BaseEntity

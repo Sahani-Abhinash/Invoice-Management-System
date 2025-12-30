@@ -27,6 +27,7 @@ export class ItemListComponent implements OnInit {
         this.itemService.getAll().subscribe(
             data => {
                 this.items = data;
+                console.log(this.items);
                 this.cdr.detectChanges();
             },
             error => {

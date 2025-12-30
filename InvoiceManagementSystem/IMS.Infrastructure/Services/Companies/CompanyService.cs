@@ -37,7 +37,10 @@ namespace IMS.Infrastructure.Services.Companies
             {
                 Id = c.Id,
                 Name = c.Name,
-                TaxNumber = c.TaxNumber
+                TaxNumber = c.TaxNumber,
+                Email = c.Email,
+                Phone = c.Phone,
+                LogoUrl = c.LogoUrl
             }).ToList();
         }
 
@@ -54,6 +57,10 @@ namespace IMS.Infrastructure.Services.Companies
                 Id = companyEntity.Id,
                 Name = companyEntity.Name,
                 TaxNumber = companyEntity.TaxNumber
+                ,
+                Email = companyEntity.Email,
+                Phone = companyEntity.Phone,
+                LogoUrl = companyEntity.LogoUrl
             };
         }
 
@@ -67,6 +74,10 @@ namespace IMS.Infrastructure.Services.Companies
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 TaxNumber = dto.TaxNumber
+                ,
+                Email = dto.Email,
+                Phone = dto.Phone,
+                LogoUrl = dto.LogoUrl
                 // BaseEntity defaults will be enforced in repository AddAsync
             };
 
@@ -78,6 +89,10 @@ namespace IMS.Infrastructure.Services.Companies
                 Id = companyEntity.Id,
                 Name = companyEntity.Name,
                 TaxNumber = companyEntity.TaxNumber
+                ,
+                Email = companyEntity.Email,
+                Phone = companyEntity.Phone,
+                LogoUrl = companyEntity.LogoUrl
             };
         }
 
@@ -93,6 +108,10 @@ namespace IMS.Infrastructure.Services.Companies
 
             companyEntity.Name = dto.Name;
             companyEntity.TaxNumber = dto.TaxNumber;
+            companyEntity.Email = dto.Email;
+            companyEntity.Phone = dto.Phone;
+            companyEntity.LogoUrl = dto.LogoUrl;
+            // Address linking should be done via AddressService EntityAddress links, not a direct property on Company.
 
             _repository.Update(companyEntity);
             await _repository.SaveChangesAsync();

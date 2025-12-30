@@ -1,0 +1,84 @@
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Invoices</h4>
+            <div class="page-title-right">
+                <button (click)="createInvoice()" class="btn btn-primary">
+                    <i class="las la-plus-circle me-1"></i> Add Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Branch</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="isLoading">
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr *ngIf="!isLoading && invoices.length === 0">
+                                <td colspan="7" class="text-center py-4">No invoices found</td>
+                            </tr>
+                            <tr *ngFor="let invoice of invoices" (click)="viewInvoice(invoice.id)"
+                                class="clickable-row">
+                                <td>
+                                    <span class="fw-medium">#{{ invoice.reference }}</span>
+                                </td>
+                                <td>{{ invoice.invoiceDate | date:'mediumDate' }}</td>
+                                <td>{{ invoice.dueDate ? (invoice.dueDate | date:'mediumDate') : '-' }}</td>
+                                <td>{{ getBranchName(invoice.branchId || '') }}</td>
+                                <td>{{ invoice.total | currency }}</td>
+                                <td>
+                                    <span class="badge"
+                                        [ngClass]="invoice.isPaid ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                                        {{ invoice.isPaid ? 'Paid' : 'Unpaid' }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-success"
+                                            (click)="payInvoice(invoice.id, $event)" title="Mark as Paid">
+                                            <i class="las la-check-double fs-15"></i>
+                                        </button>
+                                        <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-info"
+                                            (click)="editInvoice(invoice.id, $event)" title="Edit">
+                                            <i class="las la-edit fs-15"></i>
+                                        </button>
+                                        <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-danger"
+                                            (click)="deleteInvoice(invoice.id, $event)" title="Delete">
+                                            <i class="las la-trash fs-15"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-soft-primary" (click)="viewInvoice(invoice.id)"
+                                            title="View">
+                                            <i class="las la-eye fs-15"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

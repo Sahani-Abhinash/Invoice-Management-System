@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace IMS.Infrastructure.Services.Warehouses
 {
@@ -27,24 +28,78 @@ namespace IMS.Infrastructure.Services.Warehouses
 
         public async Task<IEnumerable<StockDto>> GetAllAsync()
         {
-            var stocks = await _repository.GetAllAsync(s => s.Item, s => s.Warehouse);
-            var tasks = stocks.Select(s => MapToDtoAsync(s, s.Item!, s.Warehouse!));
-            return (await Task.WhenAll(tasks)).ToList();
+            try 
+            {
+                var stocks = await _repository.GetQueryable()
+                    .Include(s => s.Item)
+                    .Include(s => s.Warehouse)
+                        .ThenInclude(w => w.Branch)
+                    .Where(s => s.IsActive && !s.IsDeleted)
+                    .ToListAsync();
+
+                var result = new List<StockDto>();
+                foreach (var s in stocks)
+                {
+                    if (s.Item != null && s.Warehouse != null && s.Warehouse.Branch != null)
+                    {
+                        result.Add(await MapToDtoAsync(s, s.Item, s.Warehouse));
+                    }
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("StockService.GetAllAsync Error: " + ex.Message);
+                return new List<StockDto>();
+            }
         }
 
         public async Task<StockDto?> GetByIdAsync(Guid id)
         {
-            var entity = await _repository.GetByIdAsync(id, s => s.Item, s => s.Warehouse);
-            if (entity == null) return null;
-            return await MapToDtoAsync(entity, entity.Item!, entity.Warehouse!);
+            try
+            {
+                var entity = await _repository.GetQueryable()
+                    .Include(s => s.Item)
+                    .Include(s => s.Warehouse)
+                        .ThenInclude(w => w.Branch)
+                    .FirstOrDefaultAsync(s => s.Id == id && s.IsActive && !s.IsDeleted);
+
+                if (entity == null || entity.Item == null || entity.Warehouse == null || entity.Warehouse.Branch == null) return null;
+                return await MapToDtoAsync(entity, entity.Item, entity.Warehouse);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"StockService.GetByIdAsync Error: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<IEnumerable<StockDto>> GetByWarehouseIdAsync(Guid warehouseId)
         {
-            var stocks = await _repository.GetAllAsync(s => s.Item, s => s.Warehouse);
-            stocks = stocks.Where(s => s.WarehouseId == warehouseId);
-            var tasks = stocks.Select(s => MapToDtoAsync(s, s.Item!, s.Warehouse!));
-            return (await Task.WhenAll(tasks)).ToList();
+            try
+            {
+                var stocks = await _repository.GetQueryable()
+                    .Include(s => s.Item)
+                    .Include(s => s.Warehouse)
+                        .ThenInclude(w => w.Branch)
+                    .Where(s => s.WarehouseId == warehouseId && s.IsActive && !s.IsDeleted)
+                    .ToListAsync();
+
+                var result = new List<StockDto>();
+                foreach (var s in stocks)
+                {
+                    if (s.Item != null && s.Warehouse != null && s.Warehouse.Branch != null)
+                    {
+                        result.Add(await MapToDtoAsync(s, s.Item, s.Warehouse));
+                    }
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"StockService.GetByWarehouseIdAsync Error: {ex.Message}");
+                return new List<StockDto>();
+            }
         }
 
         public async Task<StockDto> CreateAsync(CreateStockDto dto)
@@ -63,7 +118,7 @@ namespace IMS.Infrastructure.Services.Warehouses
             await _repository.SaveChangesAsync();
 
             var item = await _itemRepository.GetByIdAsync(entity.ItemId);
-            var warehouse = await _warehouseRepository.GetByIdAsync(entity.WarehouseId);
+            var warehouse = await _warehouseRepository.GetByIdAsync(entity.WarehouseId, w => w.Branch);
             return await MapToDtoAsync(entity, item!, warehouse!);
         }
 
@@ -81,7 +136,7 @@ namespace IMS.Infrastructure.Services.Warehouses
             await _repository.SaveChangesAsync();
 
             var item = await _itemRepository.GetByIdAsync(entity.ItemId);
-            var warehouse = await _warehouseRepository.GetByIdAsync(entity.WarehouseId);
+            var warehouse = await _warehouseRepository.GetByIdAsync(entity.WarehouseId, w => w.Branch);
             return await MapToDtoAsync(entity, item!, warehouse!);
         }
 
@@ -98,9 +153,7 @@ namespace IMS.Infrastructure.Services.Warehouses
 
         private async Task<StockDto> MapToDtoAsync(Stock s, Item i, Warehouse w)
         {
-            var linked = await _addressService.GetForOwnerAsync(IMS.Domain.Enums.OwnerType.Branch, w.Branch.Id);
-            var primary = linked.FirstOrDefault();
-
+            // Simplified mapping to avoid expensive N+1 address queries
             return new StockDto
             {
                 Id = s.Id,
@@ -119,14 +172,8 @@ namespace IMS.Infrastructure.Services.Warehouses
                     {
                         Id = w.Branch.Id,
                         Name = w.Branch.Name,
-                        AddressId = primary?.Id,
-                        Address = primary,
-                        Company = new IMS.Application.DTOs.Companies.CompanyDto
-                        {
-                            Id = w.Branch.Company.Id,
-                            Name = w.Branch.Company.Name,
-                            TaxNumber = w.Branch.Company.TaxNumber
-                        }
+                        AddressId = null,
+                        Address = null
                     }
                 }
             };

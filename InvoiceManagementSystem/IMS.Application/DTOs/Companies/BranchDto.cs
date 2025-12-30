@@ -22,9 +22,6 @@ namespace IMS.Application.DTOs.Companies
         public Guid? AddressId { get; set; }
         public AddressDto? Address { get; set; }
 
-        /// <summary>
-        /// Parent company information.
-        /// </summary>
-        public CompanyDto Company { get; set; } = null!;
+        // Branch is independent; company relation removed from DTO.
     }
 }

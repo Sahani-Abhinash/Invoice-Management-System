@@ -1,29 +1,40 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface Branch {
   id: string;
   name: string;
-  companyId: string;
   addressId?: string;
   address?: string;
-  company?: {
-    id: string;
-    name: string;
-  };
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class BranchService {
-  private apiUrl = 'https://localhost:7276/api/branch';
+  private apiUrl = '/api/branch';
 
   constructor(private http: HttpClient) { }
 
   getAll(): Observable<Branch[]> {
-    return this.http.get<Branch[]>(this.apiUrl);
+    return this.http.get<any>(this.apiUrl).pipe(
+      map(response => {
+        const data = Array.isArray(response) ? response : (response?.$values || []);
+        return data.map((b: any) => this.mapToCamelCase(b));
+      })
+    );
+  }
+
+  private mapToCamelCase(data: any): Branch {
+    const id = data.id || data.Id;
+    const addressId = data.addressId || data.AddressId;
+    return {
+      id: id ? id.toString().toLowerCase() : '',
+      name: data.name || data.Name || '',
+      addressId: addressId ? addressId.toString().toLowerCase() : undefined,
+      address: data.address || data.Address
+    };
   }
 
   getById(id: string): Observable<Branch> {

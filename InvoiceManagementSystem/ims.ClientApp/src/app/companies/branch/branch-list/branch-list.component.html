@@ -8,7 +8,6 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Company</th>
         <th>Address</th>
         <th>Actions</th>
       </tr>
@@ -16,7 +15,6 @@
     <tbody>
       <tr *ngFor="let branch of branches">
         <td>{{ branch.name }}</td>
-        <td>{{ companyName(branch) }}</td>
         <td>{{ address(branch) }}</td>
         <td>
           <button class="btn btn-sm btn-info me-2" (click)="editBranch(branch.id)">Edit</button>

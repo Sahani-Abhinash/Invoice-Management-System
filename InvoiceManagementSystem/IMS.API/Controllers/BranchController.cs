@@ -42,15 +42,7 @@ namespace IMS.API.Controllers
             return Ok(branch);
         }
 
-        /// <summary>
-        /// Get branches for a specific company.
-        /// </summary>
-        [HttpGet("company/{companyId}")]
-        public async Task<IActionResult> GetByCompanyId(Guid companyId)
-        {
-            var branches = await _branchManager.GetByCompanyIdAsync(companyId);
-            return Ok(branches);
-        }
+        // Company-scoped branch retrieval removed; use GET /api/branch and client-side filtering.
 
         /// <summary>
         /// Create a new branch.

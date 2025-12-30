@@ -74,10 +74,10 @@ namespace IMS.API.Controllers
         /// Link an address to an owner.
         /// </summary>
         [HttpPost("link")]
-        public async Task<IActionResult> Link([FromQuery] Guid addressId, [FromQuery] string ownerType, [FromQuery] Guid ownerId, [FromQuery] bool primary = false)
+        public async Task<IActionResult> Link([FromQuery] Guid addressId, [FromQuery] string ownerType, [FromQuery] Guid ownerId, [FromQuery] bool primary = false, [FromQuery] bool allowMultiple = false)
         {
             if (!System.Enum.TryParse<IMS.Domain.Enums.OwnerType>(ownerType, true, out var ot)) return BadRequest("Invalid ownerType");
-            var ok = await _service.LinkToOwnerAsync(addressId, ot, ownerId, primary);
+            var ok = await _service.LinkToOwnerAsync(addressId, ot, ownerId, primary, allowMultiple);
             if (!ok) return NotFound();
             return NoContent();
         }

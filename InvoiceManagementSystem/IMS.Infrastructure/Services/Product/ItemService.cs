@@ -23,12 +23,22 @@ namespace IMS.Infrastructure.Services.Product
 
         public async Task<IEnumerable<ItemDto>> GetAllAsync()
         {
-            var items = await _repository.GetAllAsync(i => i.UnitOfMeasure);
+            var items = await _repository.GetQueryable()
+                .Include(i => i.UnitOfMeasure)
+                .Include(i => i.Prices)
+                    .ThenInclude(p => p.PriceList)
+                .ToListAsync();
+
             return items.Select(i => new ItemDto
             {
                 Id = i.Id,
                 Name = i.Name,
                 SKU = i.SKU,
+                Price = i.Prices
+                    .Where(p => p.PriceList != null && p.PriceList.IsDefault)
+                    .OrderByDescending(p => p.EffectiveFrom)
+                    .Select(p => p.Price)
+                    .FirstOrDefault(),
                 UnitOfMeasure = i.UnitOfMeasure != null ? new UnitOfMeasureDto
                 {
                     Id = i.UnitOfMeasure.Id,

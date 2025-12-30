@@ -12,7 +12,7 @@ export enum AddressType {
   Office = 6
 }
 
-export type OwnerType = 'User' | 'Branch' | 'Customer' | 'Company';
+export type OwnerType = 'User' | 'Branch' | 'Customer' | 'Company' | 'Vendor';
 
 export interface Address {
   id: string;
@@ -54,12 +54,13 @@ export class AddressService {
   update(id: string, dto: CreateAddress): Observable<Address> { return this.http.put<Address>(`${this.apiUrl}/${id}`, dto); }
   delete(id: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/${id}`); }
 
-  link(addressId: string, ownerType: OwnerType, ownerId: string, primary = false): Observable<void> {
+  link(addressId: string, ownerType: OwnerType, ownerId: string, primary = false, allowMultiple = false): Observable<void> {
     const params = new HttpParams()
       .set('addressId', addressId)
       .set('ownerType', ownerType)
       .set('ownerId', ownerId)
-      .set('primary', String(primary));
+      .set('primary', String(primary))
+      .set('allowMultiple', String(allowMultiple));
     return this.http.post<void>(`${this.apiUrl}/link`, null, { params });
   }
 

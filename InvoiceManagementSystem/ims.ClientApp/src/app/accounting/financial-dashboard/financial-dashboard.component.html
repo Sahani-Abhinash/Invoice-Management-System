@@ -1,0 +1,177 @@
+<div class="financial-dashboard">
+  <div class="page-header">
+    <h1>Financial Dashboard</h1>
+    <div class="header-actions">
+      <a routerLink="/accounting/accounts" class="btn btn-outline-primary me-2">
+        <i class="las la-wallet"></i> Manage Accounts
+      </a>
+      <a routerLink="/accounting/categories" class="btn btn-outline-primary me-2">
+        <i class="las la-tags"></i> Manage Categories
+      </a>
+      <a routerLink="/accounting/transactions" class="btn btn-outline-primary me-2">
+        <i class="las la-exchange-alt"></i> Manage Transactions
+      </a>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa fa-refresh"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading financial data...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="summary && !loading" class="dashboard-content">
+    <div class="summary-date">
+      As of {{ formatDate(summary.asOfDate) }}
+    </div>
+
+    <!-- Financial Position Section -->
+    <div class="section">
+      <h2>Financial Position</h2>
+      <div class="cards">
+        <div class="card asset">
+          <div class="card-icon">
+            <i class="fa fa-university"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Assets</div>
+            <div class="card-value">{{ formatCurrency(summary.totalAssets) }}</div>
+          </div>
+        </div>
+
+        <div class="card liability">
+          <div class="card-icon">
+            <i class="fa fa-credit-card"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Liabilities</div>
+            <div class="card-value">{{ formatCurrency(summary.totalLiabilities) }}</div>
+          </div>
+        </div>
+
+        <div class="card equity">
+          <div class="card-icon">
+            <i class="fa fa-pie-chart"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Equity</div>
+            <div class="card-value">{{ formatCurrency(summary.totalEquity) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profitability Section -->
+    <div class="section">
+      <h2>Profitability</h2>
+      <div class="cards">
+        <div class="card revenue">
+          <div class="card-icon">
+            <i class="fa fa-arrow-up"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Revenue</div>
+            <div class="card-value">{{ formatCurrency(summary.totalRevenue) }}</div>
+          </div>
+        </div>
+
+        <div class="card expense">
+          <div class="card-icon">
+            <i class="fa fa-arrow-down"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Expenses</div>
+            <div class="card-value">{{ formatCurrency(summary.totalExpenses) }}</div>
+          </div>
+        </div>
+
+        <div class="card net-income" [ngClass]="{'positive': summary.netIncome > 0, 'negative': summary.netIncome < 0}">
+          <div class="card-icon">
+            <i class="fa fa-line-chart"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Net Income</div>
+            <div class="card-value">{{ formatCurrency(summary.netIncome) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Balances Section -->
+    <div class="section">
+      <h2>Key Account Balances</h2>
+      <div class="cards">
+        <div class="card cash">
+          <div class="card-icon">
+            <i class="fa fa-money"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Cash</div>
+            <div class="card-value">{{ formatCurrency(summary.cash) }}</div>
+          </div>
+        </div>
+
+        <div class="card ar">
+          <div class="card-icon">
+            <i class="fa fa-file-invoice-dollar"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Accounts Receivable</div>
+            <div class="card-value">{{ formatCurrency(summary.accountsReceivable) }}</div>
+          </div>
+        </div>
+
+        <div class="card ap">
+          <div class="card-icon">
+            <i class="fa fa-file-invoice"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Accounts Payable</div>
+            <div class="card-value">{{ formatCurrency(summary.accountsPayable) }}</div>
+          </div>
+        </div>
+
+        <div class="card inventory">
+          <div class="card-icon">
+            <i class="fa fa-boxes"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Inventory</div>
+            <div class="card-value">{{ formatCurrency(summary.inventory) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="section">
+      <h2>Quick Access</h2>
+      <div class="quick-links">
+        <a routerLink="/accounting/accounts" class="link-button">
+          <i class="fa fa-wallet"></i> Manage Accounts
+        </a>
+        <a routerLink="/accounting/categories" class="link-button">
+          <i class="fa fa-tags"></i> Manage Categories
+        </a>
+        <a routerLink="/accounting/transactions" class="link-button">
+          <i class="fa fa-exchange-alt"></i> Manage Transactions
+        </a>
+        <a routerLink="/accounting/balance-sheet" class="link-button">
+          <i class="fa fa-balance-scale"></i> Balance Sheet
+        </a>
+        <a routerLink="/accounting/income-statement" class="link-button">
+          <i class="fa fa-chart-line"></i> Income Statement
+        </a>
+        <a routerLink="/accounting/trial-balance" class="link-button">
+          <i class="fa fa-list-alt"></i> Trial Balance
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

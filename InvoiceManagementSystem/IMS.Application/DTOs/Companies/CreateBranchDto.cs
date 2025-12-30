@@ -9,7 +9,6 @@ namespace IMS.Application.DTOs.Companies
 {
     public class CreateBranchDto
     {
-        public Guid CompanyId { get; set; }
         public string Name { get; set; } = string.Empty;
         // Optional link to an existing Address entity
         public Guid? AddressId { get; set; }

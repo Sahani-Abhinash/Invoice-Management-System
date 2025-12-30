@@ -1,9 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { BranchService, Branch } from '../branch.service';
-import { CompanyService, Company } from '../../company/company.service';
 
 @Component({
   selector: 'app-branch-list',
@@ -14,32 +13,29 @@ import { CompanyService, Company } from '../../company/company.service';
 })
 export class BranchListComponent implements OnInit {
   branches: Branch[] = [];
-  companies: Company[] = [];
-  private companyMap = new Map<string, string>();
+  
 
   constructor(
     private branchService: BranchService,
-    private companyService: CompanyService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.loadData();
+    // Ensure data refresh when navigating back from create/edit
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+      this.loadData();
+    });
   }
 
   loadData() {
-    forkJoin({
-      branches: this.branchService.getAll(),
-      companies: this.companyService.getAll()
-    }).subscribe(({ branches, companies }) => {
-      this.branches = branches;
-      this.companies = companies;
-      this.companyMap = new Map(companies.map(c => [String(c.id), c.name]));
-      console.log(this.branches);
+    this.branchService.getAll().subscribe(branches => {
+      // Assign new array reference to help view updates
+      this.branches = [...branches];
       this.cdr.detectChanges();
     }, error => {
-      console.error('Error loading branches or companies:', error);
+      console.error('Error loading branches:', error);
     });
   }
 
@@ -57,16 +53,10 @@ export class BranchListComponent implements OnInit {
     this.router.navigate(['/branches/create']);
   }
 
-  companyName(branch: Branch): string {
-    if (!branch) return '—';
-
-    const nameFromBranch = (branch as any).company?.name;
-
-    return nameFromBranch ?? '—';
-  }
-
   address(branch: Branch): string {
+    console.log(branch);
     const addr = (branch as any).address;
+    console.log(addr);
     if (!addr) return '—';
     
     const parts = [];

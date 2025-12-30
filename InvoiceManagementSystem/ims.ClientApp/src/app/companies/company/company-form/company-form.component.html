@@ -17,6 +17,29 @@
         <div class="text-danger small" *ngIf="form.get('taxNumber')?.touched && form.get('taxNumber')?.invalid">Tax Number is required</div>
       </div>
 
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" formControlName="email" placeholder="Enter email">
+      </div>
+
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="text" class="form-control" id="phone" formControlName="phone" placeholder="Enter phone number">
+      </div>
+
+      <div class="mb-3">
+        <label for="logoUrl" class="form-label">Logo URL</label>
+        <input type="text" class="form-control" id="logoUrl" formControlName="logoUrl" placeholder="Enter logo URL">
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Address</label>
+        <select class="form-select" id="address" formControlName="addressId">
+          <option value="">Select address (optional)</option>
+          <option *ngFor="let addr of addresses" [value]="addr.id">{{ formatAddress(addr) }}</option>
+        </select>
+      </div>
+
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create' }}</button>
         <a class="btn btn-light" [routerLink]="['/companies']">Cancel</a>

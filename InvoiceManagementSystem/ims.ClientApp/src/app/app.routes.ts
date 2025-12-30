@@ -11,6 +11,7 @@ export const routes: Routes = [
   { path: 'companies', loadChildren: () => import('./companies/company/company.module').then(m => m.CompanyModule) },
   { path: 'branches', loadChildren: () => import('./companies/branch/branch.module').then(m => m.BranchModule) },
   { path: 'vendors', loadChildren: () => import('./companies/vendor/vendor.module').then(m => m.VendorModule) },
+  { path: 'customers', loadChildren: () => import('./companies/customer/customer.routes').then(m => m.customerRoutes) },
   { path: 'users', loadChildren: () => import('./security/users/user.module').then(m => m.UserModule) },
   { path: 'roles', loadChildren: () => import('./security/roles/role.module').then(m => m.RoleModule) },
   { path: 'permissions', loadChildren: () => import('./security/permissions/permission.module').then(m => m.PermissionModule) },
@@ -19,6 +20,8 @@ export const routes: Routes = [
   { path: 'products', loadChildren: () => import('./product/product.routes').then(m => m.PRODUCT_ROUTES) },
   { path: 'purchase-orders', loadChildren: () => import('./purchase/purchase-order/purchase-order.routes').then(m => m.PURCHASE_ORDER_ROUTES) },
   { path: 'grns', loadChildren: () => import('./purchase/grn/grn.routes').then(m => m.GRN_ROUTES) },
+  { path: 'invoices', loadChildren: () => import('./invoices/invoice.routes').then(m => m.INVOICE_ROUTES) },
+  { path: 'accounting', loadChildren: () => import('./accounting/accounting.routes.js').then(m => m.ACCOUNTING_ROUTES) },
   { path: '**', redirectTo: 'home' },
   // TODO: Add routes for the following components:
   // { path: 'about', component: AboutComponent },

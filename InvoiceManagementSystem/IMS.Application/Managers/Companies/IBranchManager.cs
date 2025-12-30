@@ -19,10 +19,7 @@ namespace IMS.Application.Managers.Companies
         /// </summary>
         Task<BranchDto?> GetByIdAsync(Guid id);
 
-        /// <summary>
-        /// Retrieves branches by company identifier.
-        /// </summary>
-        Task<IEnumerable<BranchDto>> GetByCompanyIdAsync(Guid companyId);
+        // Branches are independent now; no company-specific retrieval method.
 
         /// <summary>
         /// Creates a new branch.

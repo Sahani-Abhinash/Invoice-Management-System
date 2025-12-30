@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { VendorService, Vendor } from '../vendor.service';
 import { Address } from '../../../Master/geography/address/address.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-vendor-list',
@@ -22,12 +23,17 @@ export class VendorListComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    // Refresh list when navigating back from create/edit
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+      this.load();
+    });
   }
 
   load() {
     this.vendorService.getAll().subscribe({
       next: data => {
-        this.vendors = data;
+        // Assign new array reference to ensure view updates
+        this.vendors = [...data];
         this.cdr.detectChanges();
       },
       error: err => console.error('Error loading vendors:', err)

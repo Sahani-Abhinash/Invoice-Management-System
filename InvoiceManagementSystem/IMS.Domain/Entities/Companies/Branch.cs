@@ -5,8 +5,7 @@ namespace IMS.Domain.Entities.Companies
 {
     public class Branch : BaseEntity
     {
-        public Guid CompanyId { get; set; }
-        public Company Company { get; set; } = null!;
+        // Branch is independent and does not reference Company in the domain model.
 
         public string Name { get; set; } = string.Empty;
 

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Folder Include="Identity\" />
+    <Folder Include="Repositories\Invoicing\" />
   </ItemGroup>
 
 </Project>

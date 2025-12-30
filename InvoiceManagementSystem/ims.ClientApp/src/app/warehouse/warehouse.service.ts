@@ -18,9 +18,9 @@ export interface CreateWarehouse {
   providedIn: 'root'
 })
 export class WarehouseService {
-  private apiUrl = 'https://localhost:7276/api/warehouse';
+  private apiUrl = '/api/warehouse';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll(): Observable<Warehouse[]> {
     return this.http.get<Warehouse[]>(this.apiUrl);

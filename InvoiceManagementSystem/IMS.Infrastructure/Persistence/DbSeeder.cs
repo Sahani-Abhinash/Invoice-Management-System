@@ -101,8 +101,12 @@ public static class DbSeeder
             var company2 = new Company { Id = Guid.NewGuid(), Name = "XYZ GmbH", TaxNumber = "TAX654321", IsActive = true, IsDeleted = false };
             context.Companies.AddRange(company1, company2);
             context.SaveChanges();
-            var branch1 = new Branch { Id = Guid.NewGuid(), Name = "ABC Delhi Branch", CompanyId = company1.Id, IsActive = true, IsDeleted = false };
-            var branch2 = new Branch { Id = Guid.NewGuid(), Name = "XYZ Berlin Branch", CompanyId = company2.Id, IsActive = true, IsDeleted = false };
+        }
+
+        if (!context.Branches.Any())
+        {
+            var branch1 = new Branch { Id = Guid.NewGuid(), Name = "ABC Delhi Branch", IsActive = true, IsDeleted = false };
+            var branch2 = new Branch { Id = Guid.NewGuid(), Name = "XYZ Berlin Branch", IsActive = true, IsDeleted = false };
             context.Branches.AddRange(branch1, branch2);
             context.SaveChanges();
 
@@ -116,6 +120,41 @@ public static class DbSeeder
             var ea2 = new IMS.Domain.Entities.Common.EntityAddress { Id = Guid.NewGuid(), AddressId = addr2.Id, OwnerType = IMS.Domain.Enums.OwnerType.Branch, OwnerId = branch2.Id, IsPrimary = true, IsActive = true, IsDeleted = false };
             context.EntityAddresses.AddRange(ea1, ea2);
             context.SaveChanges();
+
+            // --------------------------
+            // Sample Customers
+            // --------------------------
+            if (!context.Customers.Any())
+            {
+                var cust1 = new Customer
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "John Enterprises",
+                    ContactName = "John Smith",
+                    Email = "john@abc.com",
+                    Phone = "+91-9000000001",
+                    TaxNumber = "CUST-TAX-001",
+                    BranchId = branch1.Id,
+                    IsActive = true,
+                    IsDeleted = false
+                };
+
+                var cust2 = new Customer
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Berlin Supplies",
+                    ContactName = "Anna Muller",
+                    Email = "anna@xyz.de",
+                    Phone = "+49-300000000",
+                    TaxNumber = "CUST-TAX-002",
+                    BranchId = branch2.Id,
+                    IsActive = true,
+                    IsDeleted = false
+                };
+
+                context.Customers.AddRange(cust1, cust2);
+                context.SaveChanges();
+            }
         }
 
         // --------------------------
@@ -129,6 +168,39 @@ public static class DbSeeder
             var warehouse1 = new Warehouse { Id = Guid.NewGuid(), Name = "ABC Delhi Main Warehouse", BranchId = branch1.Id, IsActive = true, IsDeleted = false };
             var warehouse2 = new Warehouse { Id = Guid.NewGuid(), Name = "XYZ Berlin Central Warehouse", BranchId = branch2.Id, IsActive = true, IsDeleted = false };
             context.Warehouses.AddRange(warehouse1, warehouse2);
+            context.SaveChanges();
+        }
+
+        // --------------------------
+        // Vendors
+        // --------------------------
+        if (!context.Vendors.Any())
+        {
+            var vendor1 = new IMS.Domain.Entities.Companies.Vendor
+            {
+                Id = Guid.NewGuid(),
+                Name = "ABC Supplies Co.",
+                ContactName = "Raj Patel",
+                Email = "raj@abcsupplies.com",
+                Phone = "+91-8888888888",
+                TaxNumber = "VEND-TAX-001",
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            var vendor2 = new IMS.Domain.Entities.Companies.Vendor
+            {
+                Id = Guid.NewGuid(),
+                Name = "Berlin Industrial",
+                ContactName = "Klaus Mueller",
+                Email = "klaus@berlinind.de",
+                Phone = "+49-400000001",
+                TaxNumber = "VEND-TAX-002",
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            context.Vendors.AddRange(vendor1, vendor2);
             context.SaveChanges();
         }
 

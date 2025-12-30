@@ -38,6 +38,10 @@ namespace IMS.Application.Common
         public const string ViewVendors = "Vendors.View";
         public const string ManageVendors = "Vendors.Manage";
 
+        // Customers
+        public const string ViewCustomers = "Customers.View";
+        public const string ManageCustomers = "Customers.Manage";
+
         // Purchase Orders
         public const string ViewPurchaseOrders = "PurchaseOrders.View";
         public const string ManagePurchaseOrders = "PurchaseOrders.Manage";

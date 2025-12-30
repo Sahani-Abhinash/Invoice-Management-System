@@ -6,6 +6,9 @@ export interface Company {
   id: string;
   name: string;
   taxNumber: string;
+  email?: string;
+  phone?: string;
+  logoUrl?: string;
 }
 
 @Injectable({

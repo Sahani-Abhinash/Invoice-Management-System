@@ -1,10 +1,8 @@
 using IMS.Application.DTOs.Common;
 using IMS.Application.Interfaces.Common;
 using IMS.Domain.Entities.Common;
-using IMS.Application.Interfaces.Common;
 using Microsoft.EntityFrameworkCore;
 using IMS.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,14 +29,15 @@ namespace IMS.Infrastructure.Services.Common
                 a => a.CityRef,
                 a => a.PostalCodeRef
             );
-            
+
             Console.WriteLine($"📊 GetAllAsync: Loaded {list.Count()} addresses");
             foreach (var a in list)
             {
                 Console.WriteLine($"  Address: {a.Line1}, CountryRef: {a.CountryRef?.Name ?? "NULL"}, StateRef: {a.StateRef?.Name ?? "NULL"}, CityRef: {a.CityRef?.Name ?? "NULL"}");
             }
-            
-            return list.Select(a => new AddressDto {
+
+            return list.Select(a => new AddressDto
+            {
                 Id = a.Id,
                 Line1 = a.Line1,
                 Line2 = a.Line2,
@@ -65,7 +64,8 @@ namespace IMS.Infrastructure.Services.Common
                 a => a.PostalCodeRef
             );
             if (a == null) return null;
-            return new AddressDto {
+            return new AddressDto
+            {
                 Id = a.Id,
                 Line1 = a.Line1,
                 Line2 = a.Line2,
@@ -130,21 +130,122 @@ namespace IMS.Infrastructure.Services.Common
             return true;
         }
 
-        public async Task<bool> LinkToOwnerAsync(Guid addressId, IMS.Domain.Enums.OwnerType ownerType, Guid ownerId, bool isPrimary = false)
+        public async Task<bool> LinkToOwnerAsync(Guid addressId, IMS.Domain.Enums.OwnerType ownerType, Guid ownerId, bool isPrimary = false, bool allowMultiple = false)
         {
             var addr = await _addrRepo.GetByIdAsync(addressId);
             if (addr == null) return false;
-            var existing = await _eaRepo.GetQueryable().FirstOrDefaultAsync(ea => ea.AddressId == addressId && ea.OwnerType == ownerType && ea.OwnerId == ownerId);
-            if (existing != null) return true;
-            var ea = new EntityAddress { Id = Guid.NewGuid(), AddressId = addressId, OwnerType = ownerType, OwnerId = ownerId, IsPrimary = isPrimary };
-            await _eaRepo.AddAsync(ea);
+
+            // Default: one-to-one link per owner (upsert single row for owner)
+            if (!allowMultiple)
+            {
+                // Find existing link for this owner - bypass global query filter to find even soft-deleted or inactive records
+                var existingActive = await _eaRepo.GetQueryable()
+                    .IgnoreQueryFilters()  // Bypass EF global query filter
+                    .Where(ea => ea.OwnerType == ownerType && ea.OwnerId == ownerId)
+                    .FirstOrDefaultAsync();
+
+                if (existingActive != null)
+                {
+                    // Batch changes: update AddressId, ensure IsActive, and update primary flag
+                    if (existingActive.AddressId != addressId)
+                    {
+                        existingActive.AddressId = addressId;
+                    }
+
+                    if (!existingActive.IsActive)
+                    {
+                        existingActive.IsActive = true;
+                    }
+
+                    if (existingActive.IsDeleted)
+                    {
+                        existingActive.IsDeleted = false;
+                    }
+
+                    if (isPrimary && !existingActive.IsPrimary)
+                    {
+                        existingActive.IsPrimary = true;
+                    }
+
+                    _eaRepo.Update(existingActive);
+                    await _eaRepo.SaveChangesAsync();
+                    return true;
+                }
+
+                // Create new single link for owner - Repository.AddAsync will set IsActive/IsDeleted defaults
+                var newLink = new EntityAddress
+                {
+                    Id = Guid.NewGuid(),
+                    AddressId = addressId,
+                    OwnerType = ownerType,
+                    OwnerId = ownerId,
+                    IsPrimary = isPrimary
+                    // IsActive and IsDeleted will be set by Repository.AddAsync and BaseEntity defaults
+                };
+                await _eaRepo.AddAsync(newLink);
+                await _eaRepo.SaveChangesAsync();
+                return true;
+            }
+
+            // allowMultiple: prevent exact duplicates and enforce single primary
+            var existing = await _eaRepo.GetQueryable()
+                .FirstOrDefaultAsync(ea => ea.AddressId == addressId && ea.OwnerType == ownerType && ea.OwnerId == ownerId && ea.IsActive && !ea.IsDeleted);
+            if (existing != null)
+            {
+                if (isPrimary && !existing.IsPrimary)
+                {
+                    existing.IsPrimary = true;
+                    _eaRepo.Update(existing);
+                    // ensure only one primary per owner
+                    var others = await _eaRepo.GetQueryable()
+                        .Where(ea => ea.OwnerType == ownerType && ea.OwnerId == ownerId && ea.Id != existing.Id && ea.IsPrimary && ea.IsActive && !ea.IsDeleted)
+                        .ToListAsync();
+                    if (others.Any())
+                    {
+                        foreach (var o in others)
+                        {
+                            o.IsPrimary = false;
+                        }
+                        _eaRepo.UpdateRange(others);
+                    }
+                    await _eaRepo.SaveChangesAsync();
+                }
+                return true;
+            }
+
+            // Create new link - Repository.AddAsync will set IsActive/IsDeleted defaults
+            var newEa = new EntityAddress
+            {
+                Id = Guid.NewGuid(),
+                AddressId = addressId,
+                OwnerType = ownerType,
+                OwnerId = ownerId,
+                IsPrimary = isPrimary
+                // IsActive and IsDeleted will be set by Repository.AddAsync and BaseEntity defaults
+            };
+            await _eaRepo.AddAsync(newEa);
+            if (isPrimary)
+            {
+                var others = await _eaRepo.GetQueryable()
+                    .Where(ea => ea.OwnerType == ownerType && ea.OwnerId == ownerId && ea.IsPrimary && ea.IsActive && !ea.IsDeleted)
+                    .ToListAsync();
+                if (others.Any())
+                {
+                    foreach (var o in others)
+                    {
+                        o.IsPrimary = false;
+                    }
+                    _eaRepo.UpdateRange(others);
+                }
+            }
             await _eaRepo.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> UnlinkFromOwnerAsync(Guid addressId, IMS.Domain.Enums.OwnerType ownerType, Guid ownerId)
         {
-            var ea = await _eaRepo.GetQueryable().FirstOrDefaultAsync(e => e.AddressId == addressId && e.OwnerType == ownerType && e.OwnerId == ownerId);
+            var ea = await _eaRepo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.AddressId == addressId && e.OwnerType == ownerType && e.OwnerId == ownerId && e.IsActive && !e.IsDeleted);
             if (ea == null) return false;
             _eaRepo.Delete(ea);
             await _eaRepo.SaveChangesAsync();
@@ -154,7 +255,7 @@ namespace IMS.Infrastructure.Services.Common
         public async Task<IEnumerable<AddressDto>> GetForOwnerAsync(IMS.Domain.Enums.OwnerType ownerType, Guid ownerId)
         {
             var list = await _eaRepo.GetQueryable()
-                .Where(ea => ea.OwnerType == ownerType && ea.OwnerId == ownerId)
+                .Where(ea => ea.OwnerType == ownerType && ea.OwnerId == ownerId && ea.IsActive && !ea.IsDeleted)
                 .Include(ea => ea.Address)
                     .ThenInclude(a => a.CountryRef)
                 .Include(ea => ea.Address)
@@ -163,7 +264,8 @@ namespace IMS.Infrastructure.Services.Common
                     .ThenInclude(a => a.CityRef)
                 .Include(ea => ea.Address)
                     .ThenInclude(a => a.PostalCodeRef)
-                .Select(ea => new AddressDto {
+                .Select(ea => new AddressDto
+                {
                     Id = ea.Address.Id,
                     Line1 = ea.Address.Line1,
                     Line2 = ea.Address.Line2,

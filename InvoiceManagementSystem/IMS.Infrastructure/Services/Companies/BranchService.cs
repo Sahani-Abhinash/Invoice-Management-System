@@ -15,44 +15,41 @@ namespace IMS.Infrastructure.Services.Companies
     public class BranchService : IBranchService
     {
         private readonly IRepository<Branch> _repository;
-        private readonly IRepository<Company> _companyRepository;
         private readonly IMS.Application.Interfaces.Common.IAddressService _addressService;
 
-        public BranchService(IRepository<Branch> repository, IRepository<Company> companyRepository, IMS.Application.Interfaces.Common.IAddressService addressService)
+        public BranchService(IRepository<Branch> repository, IMS.Application.Interfaces.Common.IAddressService addressService)
         {
             _repository = repository;
-            _companyRepository = companyRepository;
             _addressService = addressService;
         }
 
         public async Task<IEnumerable<BranchDto>> GetAllAsync()
         {
-            var branches = await _repository.GetAllAsync(b => b.Company);
-            var tasks = branches.Select(b => MapToDtoAsync(b, b.Company!));
-            return (await Task.WhenAll(tasks)).ToList();
+            var branches = await _repository.GetAllAsync();
+            var list = new List<BranchDto>();
+            // Map sequentially to avoid concurrent DbContext operations (EF Core DbContext is not thread-safe)
+            foreach (var b in branches)
+            {
+                list.Add(await MapToDtoAsync(b));
+            }
+
+            return list;
         }
 
         public async Task<BranchDto?> GetByIdAsync(Guid id)
         {
-            var branchEntity = await _repository.GetByIdAsync(id, b => b.Company);
+            var branchEntity = await _repository.GetByIdAsync(id);
             if (branchEntity == null) return null;
-            return await MapToDtoAsync(branchEntity, branchEntity.Company!);
+            return await MapToDtoAsync(branchEntity);
         }
 
-        public async Task<IEnumerable<BranchDto>> GetByCompanyIdAsync(Guid companyId)
-        {
-            var branches = await _repository.GetAllAsync(b => b.Company);
-            branches = branches.Where(b => b.CompanyId == companyId);
-            var tasks = branches.Select(b => MapToDtoAsync(b, b.Company!));
-            return (await Task.WhenAll(tasks)).ToList();
-        }
+        // Company-scoped retrieval removed; branches are independent.
 
         public async Task<BranchDto> CreateAsync(CreateBranchDto dto)
         {
             var branchEntity = new Branch
             {
                 Id = Guid.NewGuid(),
-                CompanyId = dto.CompanyId,
                 Name = dto.Name,
                 IsActive = true,
                 IsDeleted = false
@@ -67,8 +64,7 @@ namespace IMS.Infrastructure.Services.Companies
                 await _addressService.LinkToOwnerAsync(dto.AddressId.Value, IMS.Domain.Enums.OwnerType.Branch, branchEntity.Id, true);
             }
 
-            var company = await _companyRepository.GetByIdAsync(branchEntity.CompanyId);
-            return await MapToDtoAsync(branchEntity, company!);
+            return await MapToDtoAsync(branchEntity);
         }
 
         public async Task<BranchDto?> UpdateAsync(Guid id, CreateBranchDto dto)
@@ -82,7 +78,6 @@ namespace IMS.Infrastructure.Services.Companies
             var previousLinked = (await _addressService.GetForOwnerAsync(IMS.Domain.Enums.OwnerType.Branch, branchEntity.Id)).FirstOrDefault();
             Guid? previousAddressId = previousLinked?.Id;
 
-            branchEntity.CompanyId = dto.CompanyId;
             branchEntity.Name = dto.Name;
 
             _repository.Update(branchEntity);
@@ -101,8 +96,7 @@ namespace IMS.Infrastructure.Services.Companies
                 }
             }
 
-            var company = await _companyRepository.GetByIdAsync(branchEntity.CompanyId);
-            return await MapToDtoAsync(branchEntity, company!);
+            return await MapToDtoAsync(branchEntity);
         }
 
         public async Task<bool> DeleteAsync(Guid id)
@@ -125,7 +119,7 @@ namespace IMS.Infrastructure.Services.Companies
             return true;
         }
 
-        private async Task<BranchDto> MapToDtoAsync(Branch branch, Company company)
+        private async Task<BranchDto> MapToDtoAsync(Branch branch)
         {
             // Fetch linked addresses for this branch (via EntityAddress)
             var linked = await _addressService.GetForOwnerAsync(IMS.Domain.Enums.OwnerType.Branch, branch.Id);
@@ -137,12 +131,7 @@ namespace IMS.Infrastructure.Services.Companies
                 Name = branch.Name,
                 AddressId = primary?.Id,
                 Address = primary,
-                Company = new CompanyDto
-                {
-                    Id = company.Id,
-                    Name = company.Name,
-                    TaxNumber = company.TaxNumber
-                }
+                // Company relation removed
             };
         }
     }

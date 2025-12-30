@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface UnitOfMeasure {
     id: string;
@@ -14,6 +14,7 @@ export interface Item {
     sku: string;
     unitOfMeasureId: string;
     unitOfMeasure?: UnitOfMeasure;
+    price?: number;
 }
 
 export interface CreateItemDto {
@@ -26,13 +27,29 @@ export interface CreateItemDto {
     providedIn: 'root'
 })
 export class ItemService {
-    private apiUrl = 'https://localhost:7276/api/item';
-    private uomUrl = 'https://localhost:7276/api/unitofmeasure';
+    private apiUrl = '/api/item';
+    private uomUrl = '/api/unitofmeasure';
 
     constructor(private http: HttpClient) { }
 
     getAll(): Observable<Item[]> {
-        return this.http.get<Item[]>(this.apiUrl);
+        return this.http.get<any>(this.apiUrl).pipe(
+            map(response => {
+                const data = Array.isArray(response) ? response : (response?.$values || []);
+                return data.map((i: any) => this.mapToCamelCase(i));
+            })
+        );
+    }
+
+    private mapToCamelCase(data: any): Item {
+        return {
+            id: (data.id || data.Id || '').toString().toLowerCase(),
+            name: data.name || data.Name || '',
+            sku: data.sku || data.SKU || '',
+            unitOfMeasure: data.unitOfMeasure || data.UnitOfMeasure || null,
+            unitOfMeasureId: (data.unitOfMeasureId || data.UnitOfMeasureId || '').toString().toLowerCase(),
+            price: data.price || data.Price || 0
+        };
     }
 
     getById(id: string): Observable<Item> {

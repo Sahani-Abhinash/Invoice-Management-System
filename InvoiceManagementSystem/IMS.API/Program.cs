@@ -41,6 +41,14 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 // Register Generic Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// Register Accounting Repositories
+builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IAccountRepository, IMS.Infrastructure.Repositories.Accounting.AccountRepository>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.ITransactionCategoryRepository, IMS.Infrastructure.Repositories.Accounting.TransactionCategoryRepository>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IIncomeExpenseTransactionRepository, IMS.Infrastructure.Repositories.Accounting.IncomeExpenseTransactionRepository>();
+
+// Register Accounting Service
+builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IAccountingService, IMS.Infrastructure.Services.Accounting.AccountingService>();
+
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
@@ -111,6 +119,16 @@ builder.Services.AddScoped<IMS.Application.Managers.Security.IRolePermissionMana
 // Vendor service & manager
 builder.Services.AddScoped<IMS.Application.Interfaces.Companies.IVendorService, IMS.Infrastructure.Services.Companies.VendorService>();
 builder.Services.AddScoped<IMS.Application.Managers.Companies.IVendorManager, IMS.Application.Managers.Companies.VendorManager>();
+// Customer service & manager
+builder.Services.AddScoped<IMS.Application.Interfaces.Companies.ICustomerService, IMS.Infrastructure.Services.Companies.CustomerService>();
+builder.Services.AddScoped<IMS.Application.Managers.Companies.ICustomerManager, IMS.Application.Managers.Companies.CustomerManager>();
+// Invoice service & manager
+builder.Services.AddScoped<IMS.Application.Interfaces.Invoicing.IInvoiceService, IMS.Infrastructure.Services.Invoicing.InvoiceService>();
+builder.Services.AddScoped<IMS.Application.Managers.Invoicing.IInvoiceManager, IMS.Application.Managers.Invoicing.InvoiceManager>();
+// Payment service (uses IRepository<Payment> - no custom repository needed)
+builder.Services.AddScoped<IMS.Application.Interfaces.Invoicing.IPaymentService, IMS.Infrastructure.Services.Invoicing.PaymentService>();
+// Accounting service (uses DbContext directly - no custom repositories)
+builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IAccountingService, IMS.Infrastructure.Services.Accounting.AccountingService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(

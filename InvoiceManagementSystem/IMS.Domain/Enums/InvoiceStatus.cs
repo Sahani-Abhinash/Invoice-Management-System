@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace IMS.Domain.Enums
+﻿namespace IMS.Domain.Enums
 {
-    internal class InvoiceStatus
+    public enum PaymentStatus
     {
+        Unpaid = 0,
+        PartiallyPaid = 1,
+        FullyPaid = 2,
+        Overdue = 3
     }
 }

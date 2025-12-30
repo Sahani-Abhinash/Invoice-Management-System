@@ -1,0 +1,173 @@
+<div class="container mt-4">
+    <h2>Record Payment</h2>
+
+    <div *ngIf="isLoading" class="alert alert-info">
+        Loading invoice details...
+    </div>
+
+    <div *ngIf="!isLoading && errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+    </div>
+
+    <div *ngIf="!isLoading && invoiceDetails" class="row">
+        <!-- Invoice Summary -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Invoice Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label"><strong>Invoice #</strong></label>
+                            <p>{{ invoiceDetails.reference }}</p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label"><strong>Payment Status</strong></label>
+                            <p class="fw-bold" [ngClass]="getPaymentStatusColor()">
+                                {{ invoiceDetails.paymentStatus }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label"><strong>Total Amount</strong></label>
+                            <p class="h6">${{ invoiceDetails.total.toFixed(2) }}</p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label"><strong>Paid Amount</strong></label>
+                            <p class="h6 text-success">${{ invoiceDetails.paidAmount.toFixed(2) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning" *ngIf="invoiceDetails.balanceDue > 0">
+                        <strong>Balance Due:</strong>
+                        <h5 class="mb-0 mt-2">${{ invoiceDetails.balanceDue.toFixed(2) }}</h5>
+                    </div>
+
+                    <div class="alert alert-success" *ngIf="invoiceDetails.balanceDue <= 0">
+                        <strong>This invoice has been fully paid!</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment History -->
+            <div class="card" *ngIf="invoiceDetails.payments.length > 0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Payment History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let payment of invoiceDetails.payments">
+                                    <td>{{ payment.paidAt | date: 'short' }}</td>
+                                    <td>${{ payment.amount.toFixed(2) }}</td>
+                                    <td>{{ getPaymentMethodName(payment.method) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Record New Payment</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show">
+                        {{ successMessage }}
+                        <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = ''"></button>
+                    </div>
+
+                    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+                        {{ errorMessage }}
+                        <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+                    </div>
+
+                    <form [formGroup]="paymentForm" (ngSubmit)="recordPayment()" *ngIf="canMakePayment()">
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">
+                                <strong>Payment Amount</strong>
+                                <span class="text-muted">(Max: ${{ invoiceDetails.balanceDue.toFixed(2) }})</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input
+                                    type="number"
+                                    id="amount"
+                                    class="form-control"
+                                    formControlName="amount"
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    min="0.01"
+                                    [max]="invoiceDetails.balanceDue"
+                                />
+                            </div>
+                            <small class="form-text text-muted d-block mt-1">
+                                *Required: Enter amount between $0.01 and ${{ invoiceDetails.balanceDue.toFixed(2) }}
+                            </small>
+                            <div *ngIf="paymentForm.get('amount')?.hasError('required')" class="text-danger small mt-1">
+                                Amount is required
+                            </div>
+                            <div *ngIf="paymentForm.get('amount')?.hasError('min')" class="text-danger small mt-1">
+                                Amount must be greater than 0
+                            </div>
+                            <div *ngIf="paymentForm.get('amount')?.hasError('max')" class="text-danger small mt-1">
+                                Amount cannot exceed balance due
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="method" class="form-label"><strong>Payment Method</strong></label>
+                            <select id="method" class="form-select" formControlName="method">
+                                <option *ngFor="let method of paymentMethods" [value]="method.value">
+                                    {{ method.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                            [disabled]="!paymentForm.valid || isSubmitting"
+                        >
+                            <span *ngIf="!isSubmitting">Record Payment</span>
+                            <span *ngIf="isSubmitting">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Processing...
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary w-100 mt-2"
+                            (click)="goBack()"
+                        >
+                            Back to Invoices
+                        </button>
+                    </form>
+
+                    <div class="alert alert-success" *ngIf="!canMakePayment()">
+                        <strong>No payment needed!</strong> This invoice has been fully paid.
+                        <button type="button" class="btn btn-secondary w-100 mt-2" (click)="goBack()">
+                            Back to Invoices
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

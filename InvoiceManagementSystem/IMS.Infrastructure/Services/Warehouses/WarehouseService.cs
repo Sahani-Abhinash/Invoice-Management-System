@@ -25,24 +25,33 @@ namespace IMS.Infrastructure.Services.Warehouses
 
         public async Task<IEnumerable<WarehouseDto>> GetAllAsync()
         {
-            var warehouses = await _repository.GetAllAsync(w => w.Branch, w => w.Branch.Company);
-            var tasks = warehouses.Select(w => MapToDtoAsync(w, w.Branch!));
-            return (await Task.WhenAll(tasks)).ToList();
+            var warehouses = await _repository.GetAllAsync(w => w.Branch);
+            var result = new List<WarehouseDto>();
+            // Map sequentially to avoid concurrent DbContext operations (EF Core DbContext is not thread-safe)
+            foreach (var w in warehouses)
+            {
+                result.Add(await MapToDtoAsync(w, w.Branch!));
+            }
+            return result;
         }
 
         public async Task<WarehouseDto?> GetByIdAsync(Guid id)
         {
-            var entity = await _repository.GetByIdAsync(id, w => w.Branch, w => w.Branch.Company);
+            var entity = await _repository.GetByIdAsync(id, w => w.Branch);
             if (entity == null) return null;
             return await MapToDtoAsync(entity, entity.Branch!);
         }
 
         public async Task<IEnumerable<WarehouseDto>> GetByBranchIdAsync(Guid branchId)
         {
-            var warehouses = await _repository.GetAllAsync(w => w.Branch, w => w.Branch.Company);
+            var warehouses = await _repository.GetAllAsync(w => w.Branch);
             warehouses = warehouses.Where(w => w.BranchId == branchId);
-            var tasks = warehouses.Select(w => MapToDtoAsync(w, w.Branch!));
-            return (await Task.WhenAll(tasks)).ToList();
+            var result = new List<WarehouseDto>();
+            foreach (var w in warehouses)
+            {
+                result.Add(await MapToDtoAsync(w, w.Branch!));
+            }
+            return result;
         }
 
         public async Task<WarehouseDto> CreateAsync(CreateWarehouseDto dto)
@@ -58,7 +67,7 @@ namespace IMS.Infrastructure.Services.Warehouses
 
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
-            var branch = await _branchRepository.GetByIdAsync(entity.BranchId, b => b.Company);
+            var branch = await _branchRepository.GetByIdAsync(entity.BranchId);
             return await MapToDtoAsync(entity, branch!);
         }
 
@@ -73,7 +82,7 @@ namespace IMS.Infrastructure.Services.Warehouses
 
             _repository.Update(entity);
             await _repository.SaveChangesAsync();
-            var branch = await _branchRepository.GetByIdAsync(entity.BranchId, b => b.Company);
+            var branch = await _branchRepository.GetByIdAsync(entity.BranchId);
             return await MapToDtoAsync(entity, branch!);
         }
 
@@ -102,13 +111,7 @@ namespace IMS.Infrastructure.Services.Warehouses
                     Id = b.Id,
                     Name = b.Name,
                     AddressId = primary?.Id,
-                    Address = primary,
-                    Company = new IMS.Application.DTOs.Companies.CompanyDto
-                    {
-                        Id = b.Company.Id,
-                        Name = b.Company.Name,
-                        TaxNumber = b.Company.TaxNumber
-                    }
+                    Address = primary
                 }
             };
         }

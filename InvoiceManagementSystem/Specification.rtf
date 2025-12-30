@@ -1,0 +1,213 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Arial;}}
+\f0\fs24 Invoice Management System - Detailed Specification\par
+\par
+1. Purpose and Scope\par
+- Provide a unified platform to manage companies, branches, addresses, products, pricing, inventory, invoicing, payments, and accounting (chart of accounts, journal entries, posting).\par
+- Serve internal operations users with role/permission-based access. Supports multi-company and branch-level segregation.\par
+\par
+2. High-Level Architecture\par
+- Backend: ASP.NET Core 8 Web API (IMS.API) exposing REST endpoints under /api, layered architecture:\par
+  - Domain (IMS.Domain): entities, value objects, enums, base classes.\par
+  - Application (IMS.Application): DTOs, interfaces, managers, features, validation, business rules.\par
+  - Infrastructure (IMS.Infrastructure): EF Core persistence, repositories, migrations, identity, services.\par
+- Frontend: Angular standalone components (ims.ClientApp) using HttpClient with dev proxy to /api.\par
+- Database: SQL via EF Core migrations (IMS.Infrastructure/Migrations).\par
+- AuthN/Z: JWT; permission-based authorization using custom requirements/handlers.\par
+- Dev API Base URL: https://localhost:7276 (proxied from Angular via /api). Swagger at /swagger/index.html.\par
+\par
+3. Key Modules, Features, and Use\par
+- Security\par
+  - Users, roles, permissions. JWT issuance.\par
+  - Usage: Admin assigns permissions; UI hides or blocks routes without permission.\par
+- Companies & Branches\par
+  {\rtf1\ansi\deff0
+  {\fonttbl{\f0 Arial;}}
+  \f0\fs24 Invoice Management System - Full Specification (RTF)\par
+  \par
+  Purpose\par
+  This document is a Word-openable specification covering architecture, modules, class/DB diagrams (text), schema, API, UI, security, deployment, and testing.\par
+  \par
+  1. Scope and Objectives\par
+  - Manage companies, branches, addresses, products, pricing, warehouses, inventory, invoicing, payments, and accounting (chart of accounts, journal entries, posting).\par
+  - Multi-company and branch-level context; permission-based access; auditable financial lifecycle.\par
+  \par
+  2. Architecture Overview\par
+  - Frontend: Angular (ims.ClientApp), standalone components, HttpClient via /api proxy; manual ChangeDetectorRef where needed.\par
+  - Backend: ASP.NET Core 8 Web API (IMS.API) layered: Domain -> Application -> Infrastructure -> API.\par
+  - Persistence: EF Core, SQL Server; migrations in IMS.Infrastructure/Migrations.\par
+  - Auth: JWT with custom permission handler/attribute.\par
+  - Dev base URL: https://localhost:7276 (proxied); swagger /swagger/index.html.\par
+  \par
+  3. Module Breakdown\par
+  - Security: users, roles, permissions; JWT issuance; permission enforcement; UI gating.\par
+  - Geography: countries, cities, addresses (typed).\par
+  - Companies & Branches: master data, address linkage.\par
+  - Products & Pricing: catalog, units, price lists, taxes.\par
+  - Warehouses & Inventory: warehouses, stock transactions, movement types.\par
+  - Invoicing: invoices, invoice lines, status, payments.\par
+  - Accounting: chart of accounts, journal entries/lines, posting, transaction types, financial dashboard.\par
+  \par
+  4. Textual Class Diagram (UML-style)\par
+  Company 1---* Branch\par
+  Company 1---1 Address\par
+  Branch 1---1 Address\par
+  Address *---1 City *---1 Country\par
+  Product 1---* InvoiceLine *---1 Invoice 1---* Payment\par
+  Warehouse 1---* StockTransaction *---1 Product\par
+  Account 1---* JournalEntryLine *---1 JournalEntry\par
+  User *---* Role *---* Permission\par
+  \par
+  5. Database Schema (columns, types, constraints)\par
+  Company(Id uniqueidentifier PK, Name nvarchar(200) not null, TaxNumber nvarchar(50), AddressId FK, CreatedAt datetime2, UpdatedAt datetime2)\par
+  Branch(Id uniqueidentifier PK, CompanyId FK, Name nvarchar(200) not null, AddressId FK, CreatedAt datetime2, UpdatedAt datetime2)\par
+  Country(Id int identity PK, Name nvarchar(150), Code nvarchar(10))\par
+  City(Id int identity PK, CountryId FK, Name nvarchar(150))\par
+  Address(Id uniqueidentifier PK, Line1 nvarchar(200), Line2 nvarchar(200), CityId FK, CountryId FK, PostalCode nvarchar(20), AddressType int)\par
+  Product(Id uniqueidentifier PK, Name nvarchar(200), Code nvarchar(50) unique, Unit nvarchar(50), PriceListId FK, TaxRate decimal(5,2), IsActive bit, CreatedAt datetime2, UpdatedAt datetime2)\par
+  PriceList(Id uniqueidentifier PK, Name nvarchar(150), Currency nvarchar(10), IsDefault bit)\par
+  Warehouse(Id uniqueidentifier PK, Name nvarchar(150), BranchId FK)\par
+  StockTransaction(Id uniqueidentifier PK, ProductId FK, WarehouseId FK, Quantity decimal(18,4), TransactionType int, Reference nvarchar(100), CreatedAt datetime2)\par
+  Invoice(Id uniqueidentifier PK, CompanyId FK, BranchId FK, CustomerName nvarchar(200), Status int, InvoiceDate datetime2, DueDate datetime2, Total decimal(18,2), CreatedAt datetime2, UpdatedAt datetime2)\par
+  InvoiceLine(Id uniqueidentifier PK, InvoiceId FK, ProductId FK, Quantity decimal(18,4), UnitPrice decimal(18,4), TaxRate decimal(5,2), LineTotal decimal(18,2))\par
+  Payment(Id uniqueidentifier PK, InvoiceId FK, Amount decimal(18,2), PaymentDate datetime2, Method nvarchar(50), Reference nvarchar(100), CreatedAt datetime2)\par
+  Account(Id uniqueidentifier PK, Code nvarchar(20) unique, Name nvarchar(200), AccountType int, IsActive bit, ParentAccountId FK null)\par
+  JournalEntry(Id uniqueidentifier PK, Reference nvarchar(100), Description nvarchar(500), EntryDate datetime2, IsPosted bit, CreatedAt datetime2, UpdatedAt datetime2)\par
+  JournalEntryLine(Id uniqueidentifier PK, JournalEntryId FK, AccountId FK, Debit decimal(18,2), Credit decimal(18,2), Memo nvarchar(200))\par
+  User(Id uniqueidentifier PK, UserName nvarchar(100) unique, FirstName nvarchar(100), LastName nvarchar(100), Email nvarchar(200), PasswordHash nvarchar(500), Status int)\par
+  Role(Id uniqueidentifier PK, Name nvarchar(100))\par
+  Permission(Id uniqueidentifier PK, Name nvarchar(150), Code nvarchar(150))\par
+  RolePermission(RoleId FK, PermissionId FK) PK(RoleId, PermissionId)\par
+  UserRole(UserId FK, RoleId FK) PK(UserId, RoleId)\par
+  Constraints and Rules\par
+  - JournalEntryLine sums must balance: SUM(Debit) == SUM(Credit) per JournalEntry.\par
+  - Account.Code unique; enforce 4-6 digit length in validation/UI.\par
+  - Invoice totals derived from lines; payments must not exceed outstanding.\par
+  - Enforce referential integrity on all FKs.\par
+  Indexes\par
+  - Invoice(InvoiceDate, Status); InvoiceLine(InvoiceId); Payment(InvoiceId).\par
+  - JournalEntry(EntryDate, IsPosted); JournalEntryLine(AccountId).\par
+  - Product(Code); Account(Code); StockTransaction(ProductId, WarehouseId).\par
+  Migrations\par
+  - IMS.Infrastructure/Migrations; apply via dotnet ef database update (run from IMS.Infrastructure).\par
+  \par
+  6. Text ER Diagram\par
+  [Company] 1---* [Branch]\par
+  [Company] 1---1 [Address]\par
+  [Branch] 1---1 [Address]\par
+  [Address] *---1 [City] *---1 [Country]\par
+  [Product] 1---* [InvoiceLine] *---1 [Invoice] 1---* [Payment]\par
+  [Warehouse] 1---* [StockTransaction] *---1 [Product]\par
+  [Account] 1---* [JournalEntryLine] *---1 [JournalEntry]\par
+  [User] *---* [Role] *---* [Permission]\par
+  \par
+  7. API Surface (representative)\par
+  - Accounting: GET /api/accounting/accounts; POST /api/accounting/accounts {code,name,accountType,parentAccountId?}; PUT /api/accounting/accounts/{id};\par
+    GET /api/accounting/journal-entries; POST /api/accounting/journal-entries {entryDate,description,lines[{accountId,debit,credit,memo}]};\par
+    GET /api/accounting/journal-entries/{id}; POST /api/accounting/journal-entries/{id}/post.\par
+  - Invoices: GET /api/invoices; POST /api/invoices; POST /api/invoices/{id}/payments {amount,paymentDate,method,reference}.\par
+  - Master Data: GET /api/companies; /api/branches; /api/countries; /api/cities; /api/products.\par
+  \par
+  8. Frontend (Angular)\par
+  - Shell: app.html with permission-aware sidebar and accounting menu.\par
+  - Routes: accounting.routes.ts -> dashboard; accounts (list/create/edit); journal entries (list/create/detail).\par
+  - Components: financial-dashboard (cards, ChangeDetectorRef); account-list (filter/spinner fix); account-form (code length, type);\par
+    journal-entry-list (posted/unposted, spinner fix); journal-entry-form (FormArray, balance check); journal-entry-detail (view/post, spinner fix); payment-record (loading fix).\par
+  - Proxy: proxy.conf.json -> https://localhost:7276 (secure:false).\par
+  \par
+  9. Security Model\par
+  - Backend: PermissionRequirement + Handler; HasPermissionAttribute on controllers/actions.\par
+  - Frontend: authStore.hasAnyPermission guards menus/routes.\par
+  - JWT: configured in appsettings; include role/permission claims.\par
+  \par
+  10. Deployment and Environment\par
+  - Backend: set connection strings + JWT; dotnet ef database update; dotnet run IMS.API (HTTPS).\par
+  - Frontend: npm install; npm start -- --proxy-config proxy.conf.json.\par
+  - Certificates: trust dev cert or rely on secure:false proxy.\par
+  \par
+  11. Testing and Quality\par
+  - Backend: integration tests for journal posting, account creation, invoice/payment lifecycle.\par
+  - Frontend: npm test; add component tests for accounting UI and payment-record.\par
+  - Rule: enforce SUM(debit) == SUM(credit) before posting.\par
+  \par
+  12. Operations and Monitoring\par
+  - Logging: ASP.NET Core logging; return ProblemDetails on errors.\par
+  - Auditing: BaseEntity timestamps; consider extended audit for financial tables.\par
+  \par
+  13. Recent Fixes\par
+  - Accounting service URL now /api/accounting (removed hardcoded localhost:5001).\par
+  - Spinners fixed with ChangeDetectorRef in financial-dashboard, account-list, journal-entry-list, journal-entry-detail, payment-record.\par
+  \par
+  14. Open Actions\par
+  - Validate account-form and journal-entry-form end-to-end with API.\par
+  - Confirm permission coverage across accounting routes.\par
+  - Ensure SSL trust on dev machines to avoid CORS/HTTPS prompts.\par
+  \par
+  15. Implementation Checklist\par
+  - Backend: configure appsettings -> dotnet ef database update -> dotnet run IMS.API (HTTPS).\par
+  - Frontend: npm install -> npm start with proxy.conf.json -> verify /accounting screens load.\par
+  \par
+  End of Specification.\par
+  }
+- Accounting\par
+  GET /api/accounting/accounts\par
+  POST /api/accounting/accounts { code, name, accountType, parentAccountId? }\par
+  PUT /api/accounting/accounts/{id}\par
+  GET /api/accounting/journal-entries\par
+  POST /api/accounting/journal-entries { entryDate, description, lines:[{accountId,debit,credit,memo}]}\par
+  GET /api/accounting/journal-entries/{id}\par
+  POST /api/accounting/journal-entries/{id}/post\par
+- Invoices\par
+  GET /api/invoices\par
+  POST /api/invoices\par
+  POST /api/invoices/{id}/payments { amount, paymentDate, method, reference }\par
+- Master Data\par
+  GET /api/companies, /api/branches, /api/countries, /api/cities, /api/products\par
+\par
+8. Frontend (Angular)\par
+- Shell: app.html with permission-aware sidebar; accounting menu.\par
+- Routes: accounting.routes.ts -> dashboard, accounts(list/create/edit), journal entries(list/create/detail).\par
+- Components:\par
+  financial-dashboard: summary cards; ChangeDetectorRef to stop spinner.\par
+  account-list: fetch/filter accounts; ChangeDetectorRef added.\par
+  account-form: create/edit accounts; code length validation; type selection.\par
+  journal-entry-list: list/filter posted/unposted; ChangeDetectorRef added.\par
+  journal-entry-form: FormArray lines; balanced debit/credit check; add/remove lines.\par
+  journal-entry-detail: view/post entry; ChangeDetectorRef added.\par
+  payment-record: loading fixed with finalize + ChangeDetectorRef.\par
+- Proxy: proxy.conf.json -> https://localhost:7276 (secure:false).\par
+\par
+9. Security Model\par
+- Backend: PermissionRequirement + PermissionHandler; HasPermissionAttribute on controllers/actions.\par
+- Frontend: authStore.hasAnyPermission for menu and route guarding.\par
+- JWT: configured in appsettings; include role/permission claims.\par
+\par
+10. Deployment and Environment\par
+- Backend: .NET 8 SDK; configure connection strings + JWT; dotnet ef database update; dotnet run IMS.API (HTTPS).\par
+- Frontend: npm install; npm start -- --proxy-config proxy.conf.json.\par
+- Certificates: trust dev cert or rely on secure:false proxy.\par
+\par
+11. Testing and Quality\par
+- Backend: integration tests for journal posting, account creation, invoice/payment lifecycle.\par
+- Frontend: npm test; add component tests for accounting UI and payment-record.\par
+- Balancing: enforce SUM(debit) == SUM(credit) before posting journal entries.\par
+\par
+12. Operations and Monitoring\par
+- Logging: ASP.NET Core logging; return ProblemDetails on errors.\par
+- Auditing: BaseEntity timestamps; consider extended audit for financial tables.\par
+\par
+13. Recent Fixes\par
+- Accounting service URL set to /api/accounting (removed hardcoded localhost:5001).\par
+- Spinners fixed with ChangeDetectorRef in financial-dashboard, account-list, journal-entry-list, journal-entry-detail, payment-record.\par
+\par
+14. Open Actions\par
+- Validate account-form and journal-entry-form end-to-end with API.\par
+- Confirm permission coverage across accounting routes.\par
+- Ensure SSL trust on dev machines to avoid CORS/HTTPS prompts.\par
+\par
+15. Implementation Checklist (quick start)\par
+Backend: configure appsettings -> dotnet ef database update -> dotnet run IMS.API (HTTPS).\par
+Frontend: npm install -> npm start with proxy.conf.json -> navigate /accounting to verify data loads.\par
+\par
+End of Specification.\par
+}

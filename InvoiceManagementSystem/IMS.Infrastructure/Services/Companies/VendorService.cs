@@ -62,8 +62,14 @@ namespace IMS.Infrastructure.Services.Companies
         public async Task<IEnumerable<VendorDto>> GetAllAsync()
         {
             var list = await _repository.GetAllAsync();
-            var tasks = list.Select(MapAsync);
-            return await Task.WhenAll(tasks);
+            var result = new List<VendorDto>();
+            // Map sequentially to avoid concurrent DbContext operations (EF Core DbContext is not thread-safe)
+            foreach (var v in list)
+            {
+                result.Add(await MapAsync(v));
+            }
+
+            return result;
         }
 
         public async Task<VendorDto?> GetByIdAsync(Guid id)

@@ -25,5 +25,22 @@ namespace IMS.Application.DTOs.Companies
         /// Tax registration number.
         /// </summary>
         public string TaxNumber { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Contact email for the company (used on invoices/POs).
+        /// </summary>
+        public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Contact phone for the company.
+        /// </summary>
+        public string Phone { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Optional URL to a company logo to show on printed documents.
+        /// </summary>
+        public string? LogoUrl { get; set; }
+
+        // Addresses are provided by AddressService via EntityAddress links. See AddressController for linking.
     }
 }

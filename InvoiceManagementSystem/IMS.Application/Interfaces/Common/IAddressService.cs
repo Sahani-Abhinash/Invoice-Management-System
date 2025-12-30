@@ -12,7 +12,7 @@ namespace IMS.Application.Interfaces.Common
         Task<AddressDto> CreateAsync(CreateAddressDto dto);
         Task<AddressDto?> UpdateAsync(Guid id, CreateAddressDto dto);
         Task<bool> DeleteAsync(Guid id);
-        Task<bool> LinkToOwnerAsync(Guid addressId, IMS.Domain.Enums.OwnerType ownerType, Guid ownerId, bool isPrimary = false);
+    Task<bool> LinkToOwnerAsync(Guid addressId, IMS.Domain.Enums.OwnerType ownerType, Guid ownerId, bool isPrimary = false, bool allowMultiple = false);
         Task<bool> UnlinkFromOwnerAsync(Guid addressId, IMS.Domain.Enums.OwnerType ownerType, Guid ownerId);
         Task<IEnumerable<AddressDto>> GetForOwnerAsync(IMS.Domain.Enums.OwnerType ownerType, Guid ownerId);
     }

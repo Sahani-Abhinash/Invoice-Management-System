@@ -1,4 +1,5 @@
 using IMS.Domain.Common;
+using IMS.Domain.Enums;
 using System;
 
 namespace IMS.Domain.Entities.Invoicing
@@ -8,6 +9,6 @@ namespace IMS.Domain.Entities.Invoicing
         public Guid InvoiceId { get; set; }
         public decimal Amount { get; set; }
         public DateTime PaidAt { get; set; }
-        public string Method { get; set; } = string.Empty;
+        public PaymentMethod Method { get; set; } = PaymentMethod.Other;
     }
 }

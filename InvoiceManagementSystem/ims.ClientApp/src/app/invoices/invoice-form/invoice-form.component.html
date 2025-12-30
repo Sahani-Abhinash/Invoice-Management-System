@@ -1,0 +1,205 @@
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ isEdit ? 'Edit Invoice' : 'Create Invoice' }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row" *ngIf="!isLoading">
+    <div class="col-lg-12">
+        <form [formGroup]="invoiceForm" (ngSubmit)="onSubmit()">
+            <div class="card overflow-hidden">
+                <div class="card-header bg-primary-subtle border-0">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-0">Invoice Information</h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-primary-subtle text-primary fs-12 border border-primary-subtle">
+                                <i class="las la-sync-alt me-1"></i> Real-time Stock Syncing
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4 align-items-start mb-4">
+                        <div class="col-lg-7">
+                            <div class="p-3 rounded border border-dashed bg-light-subtle h-100">
+                                <div class="text-uppercase text-muted fs-12 fw-semibold mb-2">Bill To</div>
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="form-label text-muted fw-semibold mb-0">Customer</label>
+                                            <a class="small text-primary" [routerLink]="['/companies']">
+                                                Manage Customers
+                                            </a>
+                                        </div>
+                                        <select class="form-select border-dashed" formControlName="customerId" aria-label="Customer" title="Customer">
+                                            <option value="">Select Customer</option>
+                                            <option *ngFor="let c of customers" [value]="(c.id || '').toLowerCase()">{{ c.name }}</option>
+                                        </select>
+                                        <div *ngIf="invoiceForm.get('customerId')?.touched && invoiceForm.get('customerId')?.invalid" class="text-danger small mt-1">
+                                            Customer is required
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label text-muted fw-semibold">Branch</label>
+                                        <select class="form-select border-dashed" formControlName="branchId" aria-label="Branch" title="Branch">
+                                            <option value="">Select Branch</option>
+                                            <option *ngFor="let branch of branches" [value]="(branch.id || '').toLowerCase()">{{ branch.name }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="p-3 rounded border border-dashed bg-light-subtle h-100">
+                                <div class="text-uppercase text-muted fs-12 fw-semibold mb-2">Invoice Details</div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted fw-semibold">Invoice #</label>
+                                        <input type="text" class="form-control border-dashed bg-white" formControlName="reference" placeholder="INV-001" aria-label="Invoice number">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted fw-semibold">Tax %</label>
+                                        <input type="number" class="form-control border-dashed" formControlName="taxRate" aria-label="Tax rate" placeholder="Tax rate">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted fw-semibold">Invoice Date</label>
+                                        <input type="date" class="form-control border-dashed" formControlName="invoiceDate" aria-label="Invoice date" placeholder="Invoice date">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted fw-semibold">Due Date</label>
+                                        <input type="date" class="form-control border-dashed" formControlName="dueDate" aria-label="Due date" placeholder="Due date">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <h5 class="mb-0 flex-grow-1">Invoice Lines</h5>
+                        <div class="text-muted small">
+                            <i class="las la-info-circle"></i> Stock is validated in real time per branch.
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-nowrap align-middle table-borderless">
+                            <thead class="bg-light text-muted">
+                                <tr>
+                                    <th class="text-center col-qty">Qty</th>
+                                    <th class="col-desc">Item / Description</th>
+                                    <th class="text-end col-price">Unit Price</th>
+                                    <th class="text-end col-amount">Amount</th>
+                                    <th class="text-center col-actions"></th>
+                                </tr>
+                            </thead>
+                            <tbody formArrayName="lines">
+                                <tr *ngFor="let line of lines.controls; let i = index" [formGroupName]="i"
+                                    class="border-bottom-dashed">
+                                    <td class="text-center align-middle col-qty">
+                                        <input type="number" class="form-control text-center"
+                                            formControlName="quantity" aria-label="Quantity" placeholder="Qty">
+                                        <div *ngIf="line.get('quantity')?.errors?.['insufficientStock']"
+                                            class="text-danger small mt-1">
+                                            Exceeds Stock
+                                        </div>
+                                        <div *ngIf="!line.get('quantity')?.errors?.['insufficientStock'] && line.get('itemId')?.value"
+                                            class="text-success small mt-1">
+                                            {{ getRemainingStock(line.get('itemId')?.value, i) -
+                                            line.get('quantity')?.value }} left
+                                        </div>
+                                    </td>
+                                    <td class="col-desc">
+                                        <select class="form-select" formControlName="itemId" (change)="onItemChange(i)" aria-label="Item" title="Item">
+                                            <option value="">Choose Item...</option>
+                                            <option *ngFor="let item of items" [value]="(item.id || '').toLowerCase()">
+                                                {{ item.name }} ({{ item.sku }})
+                                            </option>
+                                        </select>
+                                        <div class="d-flex justify-content-between mt-1 small text-muted">
+                                            <span>Stock: {{ getAvailableStock(line.get('itemId')?.value) }}</span>
+                                            <span *ngIf="line.get('itemId')?.touched && line.get('itemId')?.invalid"
+                                                class="text-danger">Required</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end col-price">
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control text-end" formControlName="unitPrice" [disabled]="true" aria-label="Unit price" placeholder="0.00">
+                                        </div>
+                                    </td>
+                                    <td class="text-end col-amount">
+                                        <div class="fs-15 fw-bold px-2">
+                                            {{ ((line.get('quantity')?.value || 0) * (line.get('unitPrice')?.value || 0)) | currency }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center col-actions">
+                                        <button type="button" class="btn btn-icon btn-sm btn-soft-danger rounded-circle" aria-label="Remove line" title="Remove line"
+                                            (click)="removeLine(i)">
+                                            <i class="las la-trash-alt fs-18"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="lines.length === 0">
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="mb-3">
+                                            <i class="las la-shopping-cart fs-48 text-muted"></i>
+                                        </div>
+                                        <h6 class="text-muted">Start by adding line items to this invoice.</h6>
+                                        <p class="text-muted small">Only items with available stock can be selected.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" (click)="addLine()"
+                            [disabled]="!invoiceForm.get('branchId')?.value">
+                            <i class="las la-plus me-1"></i> Add New Row
+                        </button>
+                    </div>
+
+                    <div class="row justify-content-end mt-4">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded shadow-none border border-light">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="text-muted">Sub Total</span>
+                                    <span class="fw-semibold text-dark">{{ getSubTotal() | currency }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="text-muted">Tax ({{ invoiceForm.get('taxRate')?.value }}%)</span>
+                                    <span class="fw-semibold text-dark">{{ getTaxAmount() | currency }}</span>
+                                </div>
+                                <div class="border-top border-top-dashed my-3"></div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="fs-18 fw-bold">Grand Total</span>
+                                    <span class="fs-18 fw-bold text-primary">{{ getTotal() | currency }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top border-light text-end py-3">
+                    <button type="button" class="btn btn-ghost-dark me-2" [routerLink]="['/invoices']">Discard</button>
+                    <button type="submit" class="btn btn-success px-5"
+                        [disabled]="invoiceForm.invalid || lines.length === 0">
+                        <i class="las la-check-circle me-1"></i> {{ isEdit ? 'Update Invoice' : 'Generate Invoice' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-3" *ngIf="isLoading">
+    <div class="col-12 text-center py-5">
+        <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="mt-3 fs-15 text-muted fw-medium">Preparing Invoice Workspace & Stock Data...</div>
+    </div>
+</div>
