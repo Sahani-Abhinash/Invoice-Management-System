@@ -1,0 +1,148 @@
+<div class="category-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h2>Category Management</h2>
+        <p>Organize your income and expense categories</p>
+      </div>
+      <button 
+        class="btn btn-primary btn-lg"
+        (click)="addCategory()">
+        <i class="bi bi-plus-circle me-2"></i>
+        Add Category
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+  </div>
+
+  <!-- Tabs Container -->
+  <div class="tabs-container">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link all-tab"
+          [class.active]="activeTab === 'all'"
+          (click)="setActiveTab('all')"
+          type="button"
+          role="tab">
+          <i class="bi bi-list"></i>
+          All Categories
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link income-tab"
+          [class.active]="activeTab === CategoryType.Income"
+          (click)="setActiveTab(CategoryType.Income)"
+          type="button"
+          role="tab">
+          <i class="bi bi-arrow-up-circle"></i>
+          Income Categories
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link expense-tab"
+          [class.active]="activeTab === CategoryType.Expense"
+          (click)="setActiveTab(CategoryType.Expense)"
+          type="button"
+          role="tab">
+          <i class="bi bi-arrow-down-circle"></i>
+          Expense Categories
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="spinner-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Content When Not Loading -->
+      <div *ngIf="!loading">
+        <!-- Tab Header -->
+        <div class="tab-header">
+          <h4>
+            <span *ngIf="activeTab === 'all'">
+              <i class="bi bi-list me-2"></i>All Categories
+            </span>
+            <span *ngIf="activeTab === CategoryType.Expense">
+              <i class="bi bi-arrow-down-circle text-danger me-2"></i>Expense Categories
+            </span>
+            <span *ngIf="activeTab === CategoryType.Income">
+              <i class="bi bi-arrow-up-circle text-success me-2"></i>Income Categories
+            </span>
+          </h4>
+        </div>
+
+        <!-- Categories Table -->
+        <div class="table-responsive" *ngIf="filteredCategories.length > 0">
+          <table class="table table-modern">
+            <thead>
+              <tr>
+                <th>Category Name</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let category of filteredCategories">
+                <td>
+                  <strong>{{ category.name }}</strong>
+                </td>
+                <td>{{ category.description || '-' }}</td>
+                <td>
+                  <span class="badge badge-type" 
+                    [ngClass]="category.type === CategoryType.Income ? 'badge-income' : 'badge-expense'">
+                    <i class="bi" 
+                      [ngClass]="category.type === CategoryType.Income ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle'"></i>
+                    {{ category.typeName }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button 
+                    class="btn btn-sm btn-action btn-edit" 
+                    (click)="editCategory(category.id)"
+                    [disabled]="category.isSystemCategory"
+                    title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-sm btn-action btn-delete" 
+                    (click)="deleteCategory(category)"
+                    [disabled]="category.isSystemCategory"
+                    title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredCategories.length === 0" class="empty-state">
+          <i class="bi" 
+            [ngClass]="activeTab === 'all' ? 'bi-inbox' : (activeTab === CategoryType.Income ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle')"></i>
+          <h5>
+            <span *ngIf="activeTab === 'all'">No Categories Yet</span>
+            <span *ngIf="activeTab === CategoryType.Income">No Income Categories Yet</span>
+            <span *ngIf="activeTab === CategoryType.Expense">No Expense Categories Yet</span>
+          </h5>
+          <p>Create your first category to get started</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

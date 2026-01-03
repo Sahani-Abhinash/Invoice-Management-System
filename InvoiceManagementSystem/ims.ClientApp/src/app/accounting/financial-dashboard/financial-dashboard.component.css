@@ -194,6 +194,154 @@
   font-size: 18px;
 }
 
+/* GL Accounts Table Styles */
+.gl-accounts-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.accounts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.accounts-table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.accounts-table th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.accounts-table th.text-right {
+  text-align: right;
+}
+
+.accounts-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.accounts-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.accounts-table td {
+  padding: 12px 15px;
+  font-size: 14px;
+  color: #333;
+}
+
+.accounts-table td.account-code {
+  font-weight: 600;
+  color: #007bff;
+  font-family: 'Courier New', monospace;
+}
+
+.accounts-table td.account-name {
+  max-width: 200px;
+}
+
+.accounts-table td.balance {
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  text-align: right;
+  color: #28a745;
+}
+
+.accounts-table td.balance.negative {
+  color: #dc3545;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.type-asset {
+  background-color: #d1e7f5;
+  color: #004085;
+}
+
+.badge.type-liability {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge.type-equity {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge.type-revenue {
+  background-color: #c3e6cb;
+  color: #155724;
+}
+
+.badge.type-expense {
+  background-color: #f5c6cb;
+  color: #721c24;
+}
+
+.accounts-table tbody tr.asset {
+  border-left: 4px solid #007bff;
+}
+
+.accounts-table tbody tr.liability {
+  border-left: 4px solid #dc3545;
+}
+
+.accounts-table tbody tr.equity {
+  border-left: 4px solid #28a745;
+}
+
+.accounts-table tbody tr.revenue {
+  border-left: 4px solid #17a2b8;
+}
+
+.accounts-table tbody tr.expense {
+  border-left: 4px solid #ffc107;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-outline-primary {
+  border: 1px solid #007bff;
+  color: #007bff;
+  background: white;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.mt-3 {
+  margin-top: 1.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .cards {
     grid-template-columns: 1fr;
@@ -203,5 +351,16 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+
+  .accounts-table th,
+  .accounts-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }

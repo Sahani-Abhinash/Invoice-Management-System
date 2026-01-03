@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -41,6 +41,7 @@ export class AddressFormComponent implements OnInit {
     { label: 'Residence', value: AddressType.Residence },
     { label: 'Office', value: AddressType.Office },
   ];
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(
     private fb: FormBuilder,
@@ -109,6 +110,7 @@ export class AddressFormComponent implements OnInit {
         console.log('✅ Countries loaded:', d.length);
         console.table(d);
         this.countries = d;
+        this.cdr.detectChanges();
         this.filterStatesByCountry();
       },
       error: err => console.error('❌ Error loading countries:', err)
@@ -117,6 +119,7 @@ export class AddressFormComponent implements OnInit {
       next: d => {
         console.log('States loaded:', d.length, d);
         this.states = d;
+        this.cdr.detectChanges();
         this.filterStatesByCountry();
       },
       error: err => console.error('Error loading states:', err)
@@ -125,6 +128,7 @@ export class AddressFormComponent implements OnInit {
       next: d => {
         console.log('Cities loaded:', d.length, d);
         this.cities = d;
+        this.cdr.detectChanges();
         this.filterCitiesByState();
       },
       error: err => console.error('Error loading cities:', err)
@@ -133,6 +137,7 @@ export class AddressFormComponent implements OnInit {
       next: d => {
         console.log('Postal codes loaded:', d.length, d);
         this.postalCodes = d;
+        this.cdr.detectChanges();
         this.filterPostalCodesByCity();
       },
       error: err => console.error('Error loading postal codes:', err)

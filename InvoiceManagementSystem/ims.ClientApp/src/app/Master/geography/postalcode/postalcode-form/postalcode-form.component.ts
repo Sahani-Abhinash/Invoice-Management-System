@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,6 +17,7 @@ export class PostalCodeFormComponent implements OnInit {
   id: string | null = null;
   cities: City[] = [];
   private pendingCityId: string | null = null;
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(
     private fb: FormBuilder,
@@ -50,6 +51,7 @@ export class PostalCodeFormComponent implements OnInit {
   loadCities() {
     this.cityService.getAll().subscribe(data => {
       this.cities = data.map(c => ({ ...c, id: String((c as any).id) } as City));
+      this.cdr.detectChanges();
       this.applyPendingCityId();
     }, error => console.error('Error loading cities:', error));
   }

@@ -4,6 +4,7 @@ import { Address, AddressService } from '../../../Master/geography/address/addre
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef } from '@angular/core';
+import { Currency, CurrencyService } from '../../../accounting/currency.service';
 
 @Component({
   selector: 'app-company-list',
@@ -17,13 +18,13 @@ export class CompanyListComponent implements OnInit {
 
   companies: Company[] = [];
   companyAddress: Address | null = null;
+  defaultCurrency: Currency | null = null;
 
   constructor(private companyService: CompanyService,
     private addressService: AddressService,
+    private currencyService: CurrencyService,
     private router: Router, 
-    private cdr: ChangeDetectorRef) { 
-      
-    }
+    private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     console.log('CompanyListComponent initialized');
@@ -38,6 +39,7 @@ export class CompanyListComponent implements OnInit {
         this.companies = data;
         if (data.length > 0) {
           this.loadCompanyAddress(data[0].id);
+          this.loadCompanyCurrency(data[0]);
         }
         this.cdr.detectChanges();
         console.log('Companies array updated:', this.companies);
@@ -65,6 +67,24 @@ export class CompanyListComponent implements OnInit {
     );
   }
 
+  loadCompanyCurrency(company: Company) {
+    if (!company.defaultCurrencyId) {
+      this.defaultCurrency = null;
+      return;
+    }
+
+    this.currencyService.getCurrencyById(company.defaultCurrencyId).subscribe(
+      currency => {
+        this.defaultCurrency = currency;
+        this.cdr.detectChanges();
+      },
+      error => {
+        console.error('Error loading company currency:', error);
+        this.defaultCurrency = null;
+      }
+    );
+  }
+
   formatAddress(addr: Address): string {
     const parts = [];
     if (addr.country?.name) parts.push(addr.country.name);
@@ -87,8 +107,10 @@ export class CompanyListComponent implements OnInit {
     this.router.navigate(['/companies/edit', id]);
   }
 
-  createCompany() {
-    this.router.navigate(['/companies/create']);
+  resolveLogoUrl(company: Company): string | null {
+    if (!company.logoUrl) return null;
+    const baseUrl = this.companyService.getBaseUrl();
+    return company.logoUrl.startsWith('http') ? company.logoUrl : `${baseUrl}${company.logoUrl}`;
   }
 
 }

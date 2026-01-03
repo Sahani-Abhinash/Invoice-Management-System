@@ -40,7 +40,8 @@ namespace IMS.Infrastructure.Services.Companies
                 TaxNumber = c.TaxNumber,
                 Email = c.Email,
                 Phone = c.Phone,
-                LogoUrl = c.LogoUrl
+                LogoUrl = c.LogoUrl,
+                DefaultCurrencyId = c.DefaultCurrencyId
             }).ToList();
         }
 
@@ -60,7 +61,8 @@ namespace IMS.Infrastructure.Services.Companies
                 ,
                 Email = companyEntity.Email,
                 Phone = companyEntity.Phone,
-                LogoUrl = companyEntity.LogoUrl
+                LogoUrl = companyEntity.LogoUrl,
+                DefaultCurrencyId = companyEntity.DefaultCurrencyId
             };
         }
 
@@ -77,7 +79,8 @@ namespace IMS.Infrastructure.Services.Companies
                 ,
                 Email = dto.Email,
                 Phone = dto.Phone,
-                LogoUrl = dto.LogoUrl
+                LogoUrl = dto.LogoUrl,
+                DefaultCurrencyId = dto.DefaultCurrencyId
                 // BaseEntity defaults will be enforced in repository AddAsync
             };
 
@@ -92,7 +95,8 @@ namespace IMS.Infrastructure.Services.Companies
                 ,
                 Email = companyEntity.Email,
                 Phone = companyEntity.Phone,
-                LogoUrl = companyEntity.LogoUrl
+                LogoUrl = companyEntity.LogoUrl,
+                DefaultCurrencyId = companyEntity.DefaultCurrencyId
             };
         }
 
@@ -111,6 +115,7 @@ namespace IMS.Infrastructure.Services.Companies
             companyEntity.Email = dto.Email;
             companyEntity.Phone = dto.Phone;
             companyEntity.LogoUrl = dto.LogoUrl;
+            companyEntity.DefaultCurrencyId = dto.DefaultCurrencyId;
             // Address linking should be done via AddressService EntityAddress links, not a direct property on Company.
 
             _repository.Update(companyEntity);
@@ -120,7 +125,11 @@ namespace IMS.Infrastructure.Services.Companies
             {
                 Id = companyEntity.Id,
                 Name = companyEntity.Name,
-                TaxNumber = companyEntity.TaxNumber
+                TaxNumber = companyEntity.TaxNumber,
+                Email = companyEntity.Email,
+                Phone = companyEntity.Phone,
+                LogoUrl = companyEntity.LogoUrl,
+                DefaultCurrencyId = companyEntity.DefaultCurrencyId
             };
         }
 

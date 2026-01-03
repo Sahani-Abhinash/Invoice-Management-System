@@ -41,6 +41,11 @@ namespace IMS.Application.DTOs.Companies
         /// </summary>
         public string? LogoUrl { get; set; }
 
+        /// <summary>
+        /// Default currency ID for the company.
+        /// </summary>
+        public Guid? DefaultCurrencyId { get; set; }
+
         // Addresses are provided by AddressService via EntityAddress links. See AddressController for linking.
     }
 }

@@ -50,6 +50,7 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<IMS.Domain.Entities.Purchase.PurchaseOrderLine> PurchaseOrderLines => Set<IMS.Domain.Entities.Purchase.PurchaseOrderLine>();
         public DbSet<IMS.Domain.Entities.Purchase.GoodsReceivedNote> GoodsReceivedNotes => Set<IMS.Domain.Entities.Purchase.GoodsReceivedNote>();
         public DbSet<IMS.Domain.Entities.Purchase.GoodsReceivedNoteLine> GoodsReceivedNoteLines => Set<IMS.Domain.Entities.Purchase.GoodsReceivedNoteLine>();
+        public DbSet<IMS.Domain.Entities.Purchase.GrnPayment> GrnPayments => Set<IMS.Domain.Entities.Purchase.GrnPayment>();
 
         // ---------------------
         // Geography
@@ -97,9 +98,14 @@ namespace IMS.Infrastructure.Persistence
         // ---------------------
         // Accounting / Finance
         // ---------------------
-        public DbSet<IMS.Domain.Entities.Accounting.Account> Accounts => Set<IMS.Domain.Entities.Accounting.Account>();
-        public DbSet<IMS.Domain.Entities.Accounting.TransactionCategory> TransactionCategories => Set<IMS.Domain.Entities.Accounting.TransactionCategory>();
-        public DbSet<IMS.Domain.Entities.Accounting.IncomeExpenseTransaction> IncomeExpenseTransactions => Set<IMS.Domain.Entities.Accounting.IncomeExpenseTransaction>();
+        // Currency (kept)
+        public DbSet<IMS.Domain.Entities.Accounting.Currency> Currencies => Set<IMS.Domain.Entities.Accounting.Currency>();
+
+        // ---------------------
+        // Transactions / Categories
+        // ---------------------
+        public DbSet<IMS.Domain.Entities.Transaction.Transaction> Transactions => Set<IMS.Domain.Entities.Transaction.Transaction>();
+        public DbSet<IMS.Domain.Entities.Transaction.Category> Categories => Set<IMS.Domain.Entities.Transaction.Category>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

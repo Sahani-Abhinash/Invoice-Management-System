@@ -12,5 +12,7 @@ namespace IMS.Application.Managers.Warehouses
         Task<GrnDto> CreateAsync(CreateGrnDto dto);
         Task<GrnDto?> UpdateAsync(Guid id, CreateGrnDto dto);
         Task<bool> ReceiveAsync(Guid id);
+        Task<GrnPaymentDto> RecordPaymentAsync(Guid grnId, RecordGrnPaymentDto dto);
+        Task<GrnPaymentDetailsDto?> GetPaymentDetailsAsync(Guid grnId);
     }
 }

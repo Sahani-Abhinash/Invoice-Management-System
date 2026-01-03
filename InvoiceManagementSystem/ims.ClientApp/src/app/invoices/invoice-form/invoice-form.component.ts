@@ -7,6 +7,7 @@ import { BranchService, Branch } from '../../companies/branch/branch.service';
 import { ItemService, Item } from '../../product/items/item.service';
 import { StockService, Stock } from '../../warehouse/stock.service';
 import { CustomerService, Customer } from '../../companies/customer/customer.service';
+import { AccountingService, Account } from '../../accounting/accounting.service';
 import { forkJoin, catchError, of } from 'rxjs';
 
 @Component({
@@ -25,6 +26,7 @@ export class InvoiceFormComponent implements OnInit {
     customers: Customer[] = [];
     items: Item[] = [];
     stocks: Stock[] = [];
+    accounts: Account[] = [];
     branchStockMap: { [key: string]: { [itemId: string]: number } } = {};
     today = new Date().toISOString().split('T')[0];
 
@@ -35,6 +37,7 @@ export class InvoiceFormComponent implements OnInit {
         private customerService: CustomerService,
         private itemService: ItemService,
         private stockService: StockService,
+        private accountingService: AccountingService,
         private route: ActivatedRoute,
         private router: Router,
         private cdr: ChangeDetectorRef
@@ -75,7 +78,8 @@ export class InvoiceFormComponent implements OnInit {
             branches: this.branchService.getAll().pipe(catchError(err => { console.error('Failed to load branches', err); return of([]); })),
             customers: this.customerService.getAll().pipe(catchError(err => { console.error('Failed to load customers', err); return of([]); })),
             items: this.itemService.getAll().pipe(catchError(err => { console.error('Failed to load items', err); return of([]); })),
-            stocks: this.stockService.getAll().pipe(catchError(err => { console.error('Failed to load stocks', err); return of([]); }))
+            stocks: this.stockService.getAll().pipe(catchError(err => { console.error('Failed to load stocks', err); return of([]); })),
+            accounts: this.accountingService.getAllAccounts().pipe(catchError(err => { console.error('Failed to load accounts', err); return of([]); }))
         };
 
         if (this.isEdit && this.invoiceId) {
@@ -94,6 +98,7 @@ export class InvoiceFormComponent implements OnInit {
                 this.branches = data.branches || [];
                 this.items = data.items || [];
                 this.stocks = data.stocks || [];
+                this.accounts = data.accounts || [];
                 this.customers = (data.customers || []).map((c: Customer) => ({
                     ...c,
                     id: (c.id || '').toString().toLowerCase()

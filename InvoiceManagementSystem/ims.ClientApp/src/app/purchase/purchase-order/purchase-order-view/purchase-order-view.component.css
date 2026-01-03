@@ -1,9 +1,9 @@
 .invoice-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 40px;
     background: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     font-family: 'Inter', sans-serif;
     color: #333;
 }
@@ -20,6 +20,8 @@
 .company-section {
     display: flex;
     justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
     margin-bottom: 40px;
 }
 
@@ -33,6 +35,16 @@
     font-size: 32px;
     font-weight: 800;
     color: #444;
+}
+
+.supplier-wrapper {
+    min-width: 360px;
+    max-width: 420px;
+    margin-left: auto;
+}
+
+.supplier-card {
+    height: 100%;
 }
 
 .po-details {

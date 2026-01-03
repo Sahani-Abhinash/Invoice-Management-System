@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,6 +17,7 @@ export class CityFormComponent implements OnInit {
   id: string | null = null;
   states: State[] = [];
   private pendingStateId: string | null = null;
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(
     private fb: FormBuilder,
@@ -49,6 +50,7 @@ export class CityFormComponent implements OnInit {
 
   loadStates() {
     this.stateService.getAll().subscribe(data => {
+      this.cdr.detectChanges();
       this.states = data.map(s => ({ ...s, id: String((s as any).id) } as State));
       this.applyPendingStateId();
     }, error => console.error('Error loading states:', error));

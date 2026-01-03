@@ -64,6 +64,35 @@
     text-transform: uppercase;
 }
 
+/* Vendor and Warehouse Info Display */
+.vendor-info,
+.warehouse-info {
+    padding: 8px 0;
+}
+
+.vendor-info p,
+.warehouse-info p {
+    color: #2d3748;
+}
+
+.vendor-info a,
+.warehouse-info a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.vendor-info a:hover,
+.warehouse-info a:hover {
+    text-decoration: underline;
+}
+
+.form-label.text-muted {
+    color: #6c757d !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.35rem;
+}
+
 @media print {
     .no-print {
         display: none !important;

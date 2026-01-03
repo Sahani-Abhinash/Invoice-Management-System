@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,6 +17,7 @@ export class CountryFormComponent implements OnInit {
   loading = false;
   error: string | null = null;
   success = false;
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(
     private fb: FormBuilder,
@@ -40,11 +41,12 @@ export class CountryFormComponent implements OnInit {
         next: (data) => {
           console.log('Country data received:', data);
           this.form.patchValue(data);
-          this.loading = false;
+          this.cdr.detectChanges();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.error = 'Failed to load country: ' + err.message;
           this.loading = false;
+          this.cdr.detectChanges();
           console.error('Error loading country:', err);
         }
       });

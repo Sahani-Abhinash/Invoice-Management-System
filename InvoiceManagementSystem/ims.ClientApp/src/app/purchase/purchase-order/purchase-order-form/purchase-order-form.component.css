@@ -2,7 +2,7 @@
 .invoice-container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 40px;
+    padding: 20px 24px;
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     font-family: 'Inter', sans-serif;
@@ -14,14 +14,16 @@
     font-weight: 700;
     text-transform: uppercase;
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     letter-spacing: 1px;
 }
 
 .company-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 40px;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
 .company-info h4 {
@@ -34,6 +36,19 @@
     font-size: 32px;
     font-weight: 800;
     color: #444;
+}
+
+.company-info {
+    flex: 0 0 calc(5 / 12 * 100%);
+}
+
+.supplier-wrapper {
+    flex: 0 0 calc(7 / 12 * 100%);
+    min-width: 0;
+}
+
+.supplier-card {
+    height: 100%;
 }
 
 .po-details {
@@ -61,7 +76,7 @@
 .items-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 30px;
+    margin: 16px 0;
 }
 
 .items-table th {
@@ -82,7 +97,7 @@
 .totals-section {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 40px;
+    margin: 16px 0;
 }
 
 .totals-table td {

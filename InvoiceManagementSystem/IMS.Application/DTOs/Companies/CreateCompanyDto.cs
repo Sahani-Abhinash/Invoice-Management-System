@@ -37,6 +37,11 @@ namespace IMS.Application.DTOs.Companies
         public string? LogoUrl { get; set; }
 
         /// <summary>
+        /// Default currency ID for the company.
+        /// </summary>
+        public Guid? DefaultCurrencyId { get; set; }
+
+        /// <summary>
         /// Optional address id referencing structured addresses table.
         /// </summary>
         // Addresses are linked via EntityAddress; do not include AddressId on company create DTO.

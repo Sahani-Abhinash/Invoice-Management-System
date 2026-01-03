@@ -32,23 +32,27 @@
             <div class="card mb-4 border-0 shadow-sm bg-light-subtle">
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold small">GRN Reference / Slip No <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="reference"
                                 placeholder="e.g. GRN-2023-001">
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Link to Purchase Order (Optional)</label>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">Link to Purchase Order <span class="text-danger">*</span></label>
                             <select class="form-select" formControlName="purchaseOrderId"
                                 (change)="onPoChange(grnForm.get('purchaseOrderId')?.value)">
-                                <option value="">-- Manual GRN / No PO --</option>
+                                <option value="">-- Select PO --</option>
                                 <option *ngFor="let po of purchaseOrders" [value]="(po.id || '').toLowerCase()">
                                     {{ po.reference }} - {{ getPoVendorName(po.vendorId) }}
                                 </option>
                             </select>
+                            <div *ngIf="grnForm.get('purchaseOrderId')?.touched && grnForm.get('purchaseOrderId')?.invalid"
+                                class="text-danger small mt-1">
+                                Purchase Order is required
+                            </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold small">Received Date</label>
                             <input type="text" class="form-control" [value]="today | date:'mediumDate'" readonly
                                 disabled>
@@ -64,15 +68,22 @@
                         <div class="card-header bg-primary text-white py-2">
                             <h6 class="m-0"><i class="las la-truck"></i> Ship From (Vendor)</h6>
                         </div>
-                        <div class="card-body">
-                            <select class="form-select mb-2" formControlName="vendorId">
-                                <option value="">Select Vendor</option>
-                                <option *ngFor="let vendor of vendors" [value]="(vendor.id || '').toLowerCase()">{{
-                                    vendor.name }}</option>
-                            </select>
-                            <div *ngIf="grnForm.get('vendorId')?.touched && grnForm.get('vendorId')?.invalid"
-                                class="text-danger small">
-                                Vendor is required
+                        <div class="card-body p-2">
+                            <div class="vendor-info">
+                                <p class="mb-1 fs-6 fw-semibold">{{ getVendorInfo(grnForm.get('vendorId')?.value)?.name || 'Select a PO' }}</p>
+                                <div *ngIf="grnForm.get('vendorId')?.value">
+                                    <ng-container *ngIf="getVendorInfo(grnForm.get('vendorId')?.value)?.address as vendorAddress">
+                                        <p class="mb-0 small text-muted">
+                                            {{ vendorAddress.line1 }}<br>
+                                            <ng-container *ngIf="vendorAddress.line2">{{ vendorAddress.line2 }}<br></ng-container>
+                                            <ng-container *ngIf="vendorAddress.city">{{ vendorAddress.city.name }}, </ng-container>
+                                            <ng-container *ngIf="vendorAddress.state">{{ vendorAddress.state.name }} </ng-container>
+                                            <ng-container *ngIf="vendorAddress.postalCode">{{ vendorAddress.postalCode.code }}</ng-container><br>
+                                            <ng-container *ngIf="vendorAddress.country">{{ vendorAddress.country.name }}</ng-container>
+                                        </p>
+                                    </ng-container>
+                                    <p *ngIf="!getVendorInfo(grnForm.get('vendorId')?.value)?.address" class="mb-0 small text-muted">No Address</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -82,15 +93,25 @@
                         <div class="card-header bg-info text-white py-2">
                             <h6 class="m-0"><i class="las la-warehouse"></i> Ship To (Warehouse)</h6>
                         </div>
-                        <div class="card-body">
-                            <select class="form-select mb-2" formControlName="warehouseId">
-                                <option value="">Select Warehouse</option>
-                                <option *ngFor="let wh of warehouses" [value]="(wh.id || '').toLowerCase()">{{ wh.name
-                                    }}</option>
-                            </select>
-                            <div *ngIf="grnForm.get('warehouseId')?.touched && grnForm.get('warehouseId')?.invalid"
-                                class="text-danger small">
-                                Warehouse is required
+                        <div class="card-body p-2">
+                            <div class="warehouse-info">
+                                <p class="mb-1 fs-6 fw-semibold">{{ getWarehouseInfo(grnForm.get('warehouseId')?.value)?.name || 'Select a PO' }}</p>
+                                <div *ngIf="grnForm.get('warehouseId')?.value">
+                                    <ng-container *ngIf="getWarehouseInfo(grnForm.get('warehouseId')?.value)?.branch as warehouseBranch">
+                                        <p class="mb-0 small text-muted">
+                                            {{ warehouseBranch.name }}<br>
+                                            <ng-container *ngIf="warehouseBranch.address">
+                                                {{ warehouseBranch.address.line1 }}<br>
+                                                <ng-container *ngIf="warehouseBranch.address.line2">{{ warehouseBranch.address.line2 }}<br></ng-container>
+                                                <ng-container *ngIf="warehouseBranch.address.city">{{ warehouseBranch.address.city.name }}, </ng-container>
+                                                <ng-container *ngIf="warehouseBranch.address.state">{{ warehouseBranch.address.state.name }} </ng-container>
+                                                <ng-container *ngIf="warehouseBranch.address.postalCode">{{ warehouseBranch.address.postalCode.code }}</ng-container><br>
+                                                <ng-container *ngIf="warehouseBranch.address.country">{{ warehouseBranch.address.country.name }}</ng-container>
+                                            </ng-container>
+                                        </p>
+                                    </ng-container>
+                                    <p *ngIf="!getWarehouseInfo(grnForm.get('warehouseId')?.value)?.branch" class="mb-0 small text-muted">No Branch Info</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -138,7 +159,7 @@
                                     </td>
                                     <td>
                                         <input type="number" class="form-control form-control-sm text-end"
-                                            formControlName="unitPrice" min="0" step="0.01">
+                                            formControlName="unitPrice" min="0" step="0.01" readonly>
                                     </td>
                                     <td style="text-align: right;" class="fw-bold">
                                         {{ calculateLineTotal(i) | currency }}

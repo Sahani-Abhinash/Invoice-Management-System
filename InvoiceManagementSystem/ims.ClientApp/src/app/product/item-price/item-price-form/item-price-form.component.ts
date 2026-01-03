@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -18,6 +18,7 @@ export class ItemPriceFormComponent implements OnInit {
     items: Item[] = [];
     priceLists: PriceList[] = [];
     isEditMode = false;
+    private cdr = inject(ChangeDetectorRef);
 
     constructor(
         private fb: FormBuilder,
@@ -55,8 +56,14 @@ export class ItemPriceFormComponent implements OnInit {
     }
 
     loadDependencies() {
-        this.itemPriceService.getItems().subscribe(data => this.items = data);
-        this.itemPriceService.getPriceLists().subscribe(data => this.priceLists = data);
+        this.itemPriceService.getItems().subscribe(data => {
+            this.items = data;
+            this.cdr.detectChanges();
+        });
+        this.itemPriceService.getPriceLists().subscribe(data => {
+            this.priceLists = data;
+            this.cdr.detectChanges();
+        });
     }
 
     save() {

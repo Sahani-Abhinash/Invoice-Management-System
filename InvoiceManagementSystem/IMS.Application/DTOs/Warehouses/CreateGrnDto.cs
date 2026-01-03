@@ -12,11 +12,10 @@ namespace IMS.Application.DTOs.Warehouses
 
     public class CreateGrnDto
     {
-        public Guid VendorId { get; set; }
-        public Guid WarehouseId { get; set; }
-        // Optional link to originating purchase order
-        public Guid? PurchaseOrderId { get; set; }
+        // REQUIRED link to originating purchase order
+        public Guid PurchaseOrderId { get; set; }
         public string Reference { get; set; } = string.Empty;
+        public Guid? AccountId { get; set; }
         public List<CreateGrnLineDto> Lines { get; set; } = new List<CreateGrnLineDto>();
     }
 }

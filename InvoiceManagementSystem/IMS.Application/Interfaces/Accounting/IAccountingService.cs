@@ -23,18 +23,5 @@ namespace IMS.Application.Interfaces.Accounting
 
         // Chart of Accounts Setup
         Task InitializeChartOfAccountsAsync();
-
-        // Income/Expense Categories
-        Task<List<IncomeExpenseCategoryDto>> GetCategoriesAsync(IncomeExpenseType? type = null);
-        Task<IncomeExpenseCategoryDto?> GetCategoryByIdAsync(Guid id);
-        Task<IncomeExpenseCategoryDto> CreateCategoryAsync(CreateIncomeExpenseCategoryDto dto);
-        Task<IncomeExpenseCategoryDto> UpdateCategoryAsync(Guid id, CreateIncomeExpenseCategoryDto dto);
-        Task<bool> DeleteCategoryAsync(Guid id);
-
-        // Income/Expense Transactions
-        Task<List<IncomeExpenseTransactionDto>> GetTransactionsAsync(IncomeExpenseType? type = null, DateTime? startDate = null, DateTime? endDate = null, Guid? categoryId = null);
-        Task<IncomeExpenseTransactionDto?> GetTransactionByIdAsync(Guid id);
-        Task<IncomeExpenseTransactionDto> CreateTransactionAsync(CreateIncomeExpenseTransactionDto dto);
-        Task<bool> PostTransactionAsync(Guid id);
     }
 }

@@ -38,9 +38,9 @@ export class GrnFormComponent implements OnInit {
         private cdr: ChangeDetectorRef
     ) {
         this.grnForm = this.fb.group({
-            vendorId: ['', Validators.required],
-            warehouseId: ['', Validators.required],
-            purchaseOrderId: [''],
+            vendorId: [''], // Auto-filled from PO
+            warehouseId: [''], // Auto-filled from PO
+            purchaseOrderId: ['', Validators.required], // PO is REQUIRED
             reference: ['', Validators.required],
             lines: this.fb.array([], Validators.required)
         });
@@ -69,7 +69,23 @@ export class GrnFormComponent implements OnInit {
                 this.vendors = data.vendors;
                 this.warehouses = data.warehouses;
                 this.items = data.items;
-                this.purchaseOrders = data.pos;
+                // Filter to show only approved purchase orders
+                this.purchaseOrders = (data.pos || []).filter((po: any) => po.isApproved === true);
+
+                // Detailed logging for debugging
+                console.log('=== GRN FORM DATA LOADED ===');
+                console.log('All POs returned from backend:', data.pos);
+                console.log('Approved POs (filtered):', this.purchaseOrders);
+                console.log('Vendors:', this.vendors);
+                console.log('Warehouses:', this.warehouses);
+                console.log('Items:', this.items);
+                console.log('Summary:', {
+                    totalPos: (data.pos || []).length,
+                    approvedPosCount: this.purchaseOrders.length,
+                    vendorsCount: this.vendors.length,
+                    warehousesCount: this.warehouses.length,
+                    itemsCount: this.items.length
+                });
 
                 if (this.isEdit && data.grn) {
                     if (data.grn.isReceived) {
@@ -240,9 +256,7 @@ export class GrnFormComponent implements OnInit {
         this.isSaving = true;
         const formValue = this.grnForm.value;
         const dto: CreateGrnDto = {
-            vendorId: formValue.vendorId,
-            warehouseId: formValue.warehouseId,
-            purchaseOrderId: formValue.purchaseOrderId || undefined,
+            purchaseOrderId: formValue.purchaseOrderId,
             reference: formValue.reference,
             lines: formValue.lines.map((l: any) => ({
                 itemId: l.itemId,
@@ -283,5 +297,15 @@ export class GrnFormComponent implements OnInit {
             const line = control.value;
             return acc + ((line.quantity || 0) * (line.unitPrice || 0));
         }, 0);
+    }
+
+    // Helper to get vendor details by ID
+    getVendorInfo(vendorId: string): Vendor | undefined {
+        return this.vendors.find(v => (v.id || '').toLowerCase() === (vendorId || '').toLowerCase());
+    }
+
+    // Helper to get warehouse details by ID
+    getWarehouseInfo(warehouseId: string): Warehouse | undefined {
+        return this.warehouses.find(w => (w.id || '').toLowerCase() === (warehouseId || '').toLowerCase());
     }
 }

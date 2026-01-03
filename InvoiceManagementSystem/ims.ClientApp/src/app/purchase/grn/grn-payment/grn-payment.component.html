@@ -1,0 +1,177 @@
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                <h2>Record GRN Payment</h2>
+                <button class="btn btn-secondary btn-sm" (click)="goBack()">
+                    <i class="las la-arrow-left"></i> Back to GRNs
+                </button>
+            </div>
+
+            <div *ngIf="isLoading" class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div *ngIf="!isLoading && grnDetails">
+                <!-- GRN Details Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="m-0"><i class="las la-file-invoice-dollar"></i> GRN Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <span class="text-muted small">GRN Reference</span>
+                                    <h6 class="m-0 fw-bold">{{ grnDetails.reference }}</h6>
+                                </div>
+                                <div class="mb-3">
+                                    <span class="text-muted small">Total Amount</span>
+                                    <h6 class="m-0 fw-bold">${{ grnDetails.total.toFixed(2) }}</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <span class="text-muted small">Paid Amount</span>
+                                    <h6 class="m-0 fw-bold">${{ grnDetails.paidAmount.toFixed(2) }}</h6>
+                                </div>
+                                <div class="mb-3">
+                                    <span class="text-muted small">Balance Due</span>
+                                    <h6 class="m-0 fw-bold" [ngClass]="grnDetails.balanceDue > 0 ? 'text-danger' : 'text-success'">
+                                        ${{ grnDetails.balanceDue.toFixed(2) }}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <span class="text-muted small">Payment Status</span>
+                                <h6 class="m-0 fw-bold" [ngClass]="getPaymentStatusColor()">
+                                    {{ grnDetails.paymentStatus }}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment History -->
+                <div class="card mb-4 border-0 shadow-sm" *ngIf="grnDetails.payments && grnDetails.payments.length > 0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="m-0"><i class="las la-history"></i> Payment History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Date Paid</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Due Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let payment of grnDetails.payments">
+                                        <td>{{ payment.date | date: 'mediumDate' }}</td>
+                                        <td class="fw-bold">${{ payment.amount.toFixed(2) }}</td>
+                                        <td>{{ getPaymentMethodName(payment.method) }}</td>
+                                        <td>{{ payment.dueDate ? (payment.dueDate | date: 'mediumDate') : 'N/A' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <div class="card border-0 shadow-sm" *ngIf="canMakePayment()">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="m-0"><i class="las la-plus-circle"></i> Record New Payment</h5>
+                    </div>
+                    <div class="card-body">
+                        <form [formGroup]="paymentForm" (ngSubmit)="recordPayment()">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Payment Amount <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" 
+                                            class="form-control" 
+                                            formControlName="amount"
+                                            [max]="grnDetails.balanceDue"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                            aria-label="Payment amount">
+                                    </div>
+                                    <div *ngIf="paymentForm.get('amount')?.touched && paymentForm.get('amount')?.invalid" class="text-danger small mt-1">
+                                        <span *ngIf="paymentForm.get('amount')?.errors?.['required']">Amount is required</span>
+                                        <span *ngIf="paymentForm.get('amount')?.errors?.['min']">Amount must be greater than 0</span>
+                                        <span *ngIf="paymentForm.get('amount')?.errors?.['max']">Amount cannot exceed balance due (${{ grnDetails.balanceDue.toFixed(2) }})</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Payment Method <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="method" aria-label="Payment method">
+                                        <option *ngFor="let method of paymentMethods" [value]="method.value">
+                                            {{ method.label }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Due Date <span class="text-danger">*</span></label>
+                                    <input type="date" 
+                                        class="form-control" 
+                                        formControlName="dueDate"
+                                        aria-label="Payment due date">
+                                    <div class="text-muted small mt-1">
+                                        <i class="las la-info-circle"></i> Default: Today (immediate payment)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <button type="submit" 
+                                    class="btn btn-success" 
+                                    [disabled]="!paymentForm.valid || isSubmitting">
+                                    <i class="las la-save"></i> 
+                                    {{ isSubmitting ? 'Recording Payment...' : 'Record Payment' }}
+                                </button>
+                                <button type="button" 
+                                    class="btn btn-outline-secondary ms-2" 
+                                    (click)="goBack()"
+                                    [disabled]="isSubmitting">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Paid Message -->
+                <div class="card border-0 shadow-sm bg-light-subtle" *ngIf="!canMakePayment()">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="las la-check-circle text-success fs-48"></i>
+                        </div>
+                        <h5 class="text-success fw-bold">GRN Fully Paid</h5>
+                        <p class="text-muted mb-0">This GRN has been fully paid. No further payments are needed.</p>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert" *ngIf="successMessage">
+                    <i class="las la-check-circle"></i> {{ successMessage }}
+                    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                </div>
+
+                <!-- Error Message -->
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert" *ngIf="errorMessage">
+                    <i class="las la-exclamation-circle"></i> {{ errorMessage }}
+                    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

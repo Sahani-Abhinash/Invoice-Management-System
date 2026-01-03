@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './auth/login/login.component';
+import { CategoryListComponent } from './accounting/categories/category-list/category-list.component';
+import { CategoryFormComponent } from './accounting/categories/category-form/category-form.component';
+import { TransactionListComponent } from './accounting/transactions/transaction-list/transaction-list.component';
+import { TransactionFormComponent } from './accounting/transactions/transaction-form/transaction-form.component';
 // Users, Roles, and Permissions now under security folder, lazy-loaded like Companies/Branches
 
 export const routes: Routes = [
@@ -21,6 +25,21 @@ export const routes: Routes = [
   { path: 'purchase-orders', loadChildren: () => import('./purchase/purchase-order/purchase-order.routes').then(m => m.PURCHASE_ORDER_ROUTES) },
   { path: 'grns', loadChildren: () => import('./purchase/grn/grn.routes').then(m => m.GRN_ROUTES) },
   { path: 'invoices', loadChildren: () => import('./invoices/invoice.routes').then(m => m.INVOICE_ROUTES) },
+  {
+    path: 'categories',
+    children: [
+      { path: '', component: CategoryListComponent },
+      { path: 'new', component: CategoryFormComponent },
+      { path: 'edit/:id', component: CategoryFormComponent }
+    ]
+  },
+  {
+    path: 'transactions',
+    children: [
+      { path: '', component: TransactionListComponent },
+      { path: 'new', component: TransactionFormComponent }
+    ]
+  },
   { path: 'accounting', loadChildren: () => import('./accounting/accounting.routes.js').then(m => m.ACCOUNTING_ROUTES) },
   { path: '**', redirectTo: 'home' },
   // TODO: Add routes for the following components:

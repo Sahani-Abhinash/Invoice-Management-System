@@ -15,6 +15,7 @@ namespace IMS.Application.DTOs.Warehouses
         public Guid VendorId { get; set; }
         public Guid WarehouseId { get; set; }
         public string Reference { get; set; } = string.Empty;
+        public Guid? AccountId { get; set; }
         public List<CreatePurchaseOrderLineDto> Lines { get; set; } = new List<CreatePurchaseOrderLineDto>();
     }
 }

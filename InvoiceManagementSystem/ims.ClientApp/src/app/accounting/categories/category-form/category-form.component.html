@@ -1,0 +1,89 @@
+<div class="category-form-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <a routerLink="/categories" class="back-link">
+      <i class="bi bi-arrow-left"></i>
+      Back to Categories
+    </a>
+    <h2>{{ isEditMode ? 'Edit Category' : 'Create New Category' }}</h2>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <!-- Type Selection Tabs -->
+    <div class="type-tabs">
+      <button 
+        type="button"
+        class="type-tab income"
+        [class.active]="selectedType === CategoryType.Income"
+        (click)="setType(CategoryType.Income)">
+        <i class="bi bi-arrow-up-circle"></i>
+        Income Category
+      </button>
+      <button 
+        type="button"
+        class="type-tab expense"
+        [class.active]="selectedType === CategoryType.Expense"
+        (click)="setType(CategoryType.Expense)">
+        <i class="bi bi-arrow-down-circle"></i>
+        Expense Category
+      </button>
+    </div>
+
+    <!-- Form Content -->
+    <div class="form-content">
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <!-- Name Field -->
+        <div class="form-group">
+          <label for="name" class="form-label">
+            Category Name<span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            formControlName="name"
+            placeholder="Enter category name"
+            [class.is-invalid]="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+          />
+          <div class="invalid-feedback" *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched">
+            Category name is required
+          </div>
+        </div>
+
+        <!-- Hidden Type Field -->
+        <input type="hidden" formControlName="type" />
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description" class="form-label">Description</label>
+          <textarea
+            id="description"
+            class="form-control"
+            formControlName="description"
+            rows="4"
+            placeholder="Enter category description (optional)"
+          ></textarea>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loading || categoryForm.invalid">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+            <i *ngIf="!loading" class="bi bi-check-circle"></i>
+            {{ loading ? 'Saving...' : (isEditMode ? 'Update Category' : 'Create Category') }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+            <i class="bi bi-x-circle"></i>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

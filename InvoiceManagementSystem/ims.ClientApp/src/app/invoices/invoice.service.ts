@@ -43,6 +43,7 @@ export interface Invoice {
     balanceDue: number;
     isPaid: boolean;
     paymentStatus: string;
+    accountId?: string;
     lines: InvoiceItem[];
     payments: Payment[];
 }
@@ -55,6 +56,7 @@ export interface CreateInvoiceDto {
     customerId?: string;
     branchId?: string;
     taxRate: number;
+    accountId?: string;
     lines: {
         itemId: string;
         quantity: number;

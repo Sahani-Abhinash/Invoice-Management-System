@@ -20,5 +20,7 @@ namespace IMS.Application.Managers.Warehouses
         public Task<IEnumerable<GrnDto>> GetAllAsync() => _service.GetAllAsync();
         public Task<GrnDto?> GetByIdAsync(Guid id) => _service.GetByIdAsync(id);
         public Task<bool> ReceiveAsync(Guid id) => _service.ReceiveAsync(id);
+        public Task<GrnPaymentDto> RecordPaymentAsync(Guid grnId, RecordGrnPaymentDto dto) => _service.RecordPaymentAsync(grnId, dto);
+        public Task<GrnPaymentDetailsDto?> GetPaymentDetailsAsync(Guid grnId) => _service.GetPaymentDetailsAsync(grnId);
     }
 }

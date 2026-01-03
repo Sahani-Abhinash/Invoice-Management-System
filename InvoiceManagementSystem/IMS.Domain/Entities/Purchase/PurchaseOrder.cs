@@ -12,6 +12,7 @@ namespace IMS.Domain.Entities.Purchase
         public string Reference { get; set; } = string.Empty;
         public bool IsApproved { get; set; }
         public bool IsClosed { get; set; }
+        public Guid? AccountId { get; set; }
 
         public ICollection<PurchaseOrderLine> Lines { get; set; } = new List<PurchaseOrderLine>();
     }

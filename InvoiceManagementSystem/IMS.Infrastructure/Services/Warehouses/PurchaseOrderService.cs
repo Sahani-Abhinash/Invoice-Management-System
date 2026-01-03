@@ -30,7 +30,8 @@ namespace IMS.Infrastructure.Services.Warehouses
                 OrderDate = DateTime.UtcNow,
                 Reference = dto.Reference,
                 IsApproved = false,
-                IsClosed = false
+                IsClosed = false,
+                AccountId = dto.AccountId
             };
             await _poRepo.AddAsync(po);
             foreach (var l in dto.Lines)
@@ -41,7 +42,7 @@ namespace IMS.Infrastructure.Services.Warehouses
             await _poRepo.SaveChangesAsync();
             await _poLineRepo.SaveChangesAsync();
 
-            return new PurchaseOrderDto { Id = po.Id, VendorId = po.VendorId, WarehouseId = po.WarehouseId, OrderDate = po.OrderDate, Reference = po.Reference, IsApproved = po.IsApproved, IsClosed = po.IsClosed, Lines = dto.Lines.Select(x => new PurchaseOrderLineDto { Id = Guid.Empty, ItemId = x.ItemId, QuantityOrdered = x.QuantityOrdered, UnitPrice = x.UnitPrice, ReceivedQuantity = 0 }).ToList() };
+            return new PurchaseOrderDto { Id = po.Id, VendorId = po.VendorId, WarehouseId = po.WarehouseId, OrderDate = po.OrderDate, Reference = po.Reference, IsApproved = po.IsApproved, IsClosed = po.IsClosed, AccountId = po.AccountId, Lines = dto.Lines.Select(x => new PurchaseOrderLineDto { Id = Guid.Empty, ItemId = x.ItemId, QuantityOrdered = x.QuantityOrdered, UnitPrice = x.UnitPrice, ReceivedQuantity = 0 }).ToList() };
         }
 
         public async Task<PurchaseOrderDto?> UpdateAsync(Guid id, CreatePurchaseOrderDto dto)
@@ -54,6 +55,7 @@ namespace IMS.Infrastructure.Services.Warehouses
             po.VendorId = dto.VendorId;
             po.WarehouseId = dto.WarehouseId;
             po.Reference = dto.Reference;
+            po.AccountId = dto.AccountId;
             // Note: OrderDate is typically not updated here, or set to now? keeping original order date.
 
             _poRepo.Update(po);
@@ -80,7 +82,36 @@ namespace IMS.Infrastructure.Services.Warehouses
         public async Task<IEnumerable<PurchaseOrderDto>> GetAllAsync()
         {
             var list = await _poRepo.GetAllAsync();
-            return list.Select(p => new PurchaseOrderDto { Id = p.Id, VendorId = p.VendorId, WarehouseId = p.WarehouseId, OrderDate = p.OrderDate, Reference = p.Reference, IsApproved = p.IsApproved, IsClosed = p.IsClosed }).ToList();
+            var result = new List<PurchaseOrderDto>();
+            
+            foreach (var p in list)
+            {
+                var lines = (await _poLineRepo.GetAllAsync())
+                    .Where(l => l.PurchaseOrderId == p.Id)
+                    .Select(l => new PurchaseOrderLineDto 
+                    { 
+                        Id = l.Id, 
+                        ItemId = l.ItemId, 
+                        QuantityOrdered = l.QuantityOrdered, 
+                        UnitPrice = l.UnitPrice,
+                        ReceivedQuantity = l.ReceivedQuantity
+                    }).ToList();
+                
+                result.Add(new PurchaseOrderDto 
+                { 
+                    Id = p.Id, 
+                    VendorId = p.VendorId, 
+                    WarehouseId = p.WarehouseId, 
+                    OrderDate = p.OrderDate, 
+                    Reference = p.Reference, 
+                    IsApproved = p.IsApproved, 
+                    IsClosed = p.IsClosed, 
+                    AccountId = p.AccountId,
+                    Lines = lines
+                });
+            }
+            
+            return result;
         }
 
         public async Task<PurchaseOrderDto?> GetByIdAsync(Guid id)
@@ -97,7 +128,7 @@ namespace IMS.Infrastructure.Services.Warehouses
                     UnitPrice = l.UnitPrice,
                     ReceivedQuantity = l.ReceivedQuantity
                 }).ToList();
-            return new PurchaseOrderDto { Id = p.Id, VendorId = p.VendorId, WarehouseId = p.WarehouseId, OrderDate = p.OrderDate, Reference = p.Reference, IsApproved = p.IsApproved, IsClosed = p.IsClosed, Lines = lines };
+            return new PurchaseOrderDto { Id = p.Id, VendorId = p.VendorId, WarehouseId = p.WarehouseId, OrderDate = p.OrderDate, Reference = p.Reference, IsApproved = p.IsApproved, IsClosed = p.IsClosed, AccountId = p.AccountId, Lines = lines };
         }
 
         public async Task<PurchaseOrderDto?> ApproveAsync(Guid id)

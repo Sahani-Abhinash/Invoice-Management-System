@@ -1,16 +1,23 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GrnService, Grn } from '../grn.service';
 import { Vendor } from '../../../companies/vendor/vendor.service';
 import { Warehouse } from '../../../warehouse/warehouse.service';
 import { Item } from '../../../product/items/item.service';
 import { forkJoin } from 'rxjs';
 
+export interface PurchaseOrder {
+    id: string;
+    reference: string;
+    vendorId: string;
+    warehouseId: string;
+}
+
 @Component({
     selector: 'app-grn-view',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
     templateUrl: './grn-view.component.html',
     styleUrls: ['./grn-view.component.css']
 })
@@ -18,6 +25,7 @@ export class GrnViewComponent implements OnInit {
     grn: Grn | null = null;
     isLoading = true;
     error: string | null = null;
+    purchaseOrder: PurchaseOrder | null = null;
     vendor: Vendor | null = null;
     warehouse: Warehouse | null = null;
     itemsMap: Map<string, Item> = new Map();
@@ -51,13 +59,15 @@ export class GrnViewComponent implements OnInit {
 
                 this.isLoadingDetails = true;
                 forkJoin({
+                    po: this.grnService.getPurchaseOrder(grn.purchaseOrderId),
                     vendors: this.grnService.getVendors(),
                     warehouses: this.grnService.getWarehouses(),
                     items: this.grnService.getItems()
                 }).subscribe({
                     next: (data) => {
-                        this.vendor = data.vendors.find(v => (v.id || '').toLowerCase() === (grn.vendorId || '').toLowerCase()) || null;
-                        this.warehouse = data.warehouses.find(w => (w.id || '').toLowerCase() === (grn.warehouseId || '').toLowerCase()) || null;
+                        this.purchaseOrder = data.po;
+                        this.vendor = data.vendors.find(v => (v.id || '').toLowerCase() === (data.po.vendorId || '').toLowerCase()) || null;
+                        this.warehouse = data.warehouses.find(w => (w.id || '').toLowerCase() === (data.po.warehouseId || '').toLowerCase()) || null;
 
                         this.itemsMap = new Map();
                         data.items.forEach(i => {
@@ -115,6 +125,22 @@ export class GrnViewComponent implements OnInit {
                 next: () => {
                     alert('GRN received successfully!');
                     this.loadData(this.grn!.id);
+                },
+                error: (err) => {
+                    console.error('Error receiving GRN:', err);
+                    alert('Failed to receive GRN');
+                }
+            });
+        }
+    }
+
+    receiveAndPay() {
+        if (!this.grn) return;
+        if (confirm('Mark this GRN as received and proceed to payment?')) {
+            this.grnService.receive(this.grn.id).subscribe({
+                next: () => {
+                    // Navigate to payment page after successful receive
+                    this.router.navigate(['/grns', this.grn!.id, 'payment']);
                 },
                 error: (err) => {
                     console.error('Error receiving GRN:', err);

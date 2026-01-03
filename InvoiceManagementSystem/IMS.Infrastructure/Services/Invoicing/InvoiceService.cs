@@ -1,6 +1,7 @@
 using IMS.Application.DTOs.Invoicing;
 using IMS.Application.Interfaces.Common;
 using IMS.Application.Interfaces.Invoicing;
+using IMS.Application.Interfaces.Transaction;
 using IMS.Domain.Entities.Invoicing;
 using IMS.Domain.Enums;
 using System;
@@ -18,13 +19,15 @@ namespace IMS.Infrastructure.Services.Invoicing
         private readonly IRepository<IMS.Domain.Entities.Warehouse.StockTransaction> _stockTxRepo;
         private readonly IRepository<IMS.Domain.Entities.Warehouse.Warehouse> _warehouseRepo;
         private readonly IPaymentService _paymentService;
+        private readonly ITransactionService? _transactionService;
 
         public InvoiceService(IRepository<Invoice> invoiceRepo,
             IRepository<InvoiceItem> itemRepo,
             IRepository<IMS.Domain.Entities.Warehouse.Stock> stockRepo,
             IRepository<IMS.Domain.Entities.Warehouse.StockTransaction> stockTxRepo,
             IRepository<IMS.Domain.Entities.Warehouse.Warehouse> warehouseRepo,
-            IPaymentService paymentService)
+            IPaymentService paymentService,
+            ITransactionService? transactionService = null)
         {
             _invoiceRepo = invoiceRepo;
             _itemRepo = itemRepo;
@@ -32,6 +35,7 @@ namespace IMS.Infrastructure.Services.Invoicing
             _stockTxRepo = stockTxRepo;
             _warehouseRepo = warehouseRepo;
             _paymentService = paymentService;
+            _transactionService = transactionService;
         }
 
         public async Task<IEnumerable<InvoiceDto>> GetAllAsync()

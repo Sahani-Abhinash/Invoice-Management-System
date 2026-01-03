@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -16,6 +16,7 @@ export class VendorFormComponent implements OnInit {
   form!: FormGroup;
   id: string | null = null;
   addresses: Address[] = [];
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(
     private fb: FormBuilder,
@@ -53,8 +54,11 @@ export class VendorFormComponent implements OnInit {
 
   loadAddresses() {
     this.addressService.getAll().subscribe({
-      next: data => (this.addresses = data),
-      error: err => console.error('Error loading addresses:', err)
+      next: data => {
+        this.addresses = data;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error loading addresses:', err)
     });
   }
 

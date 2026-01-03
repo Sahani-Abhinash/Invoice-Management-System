@@ -41,13 +41,10 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 // Register Generic Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// Register Accounting Repositories
-builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IAccountRepository, IMS.Infrastructure.Repositories.Accounting.AccountRepository>();
-builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.ITransactionCategoryRepository, IMS.Infrastructure.Repositories.Accounting.TransactionCategoryRepository>();
-builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IIncomeExpenseTransactionRepository, IMS.Infrastructure.Repositories.Accounting.IncomeExpenseTransactionRepository>();
-
-// Register Accounting Service
-builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IAccountingService, IMS.Infrastructure.Services.Accounting.AccountingService>();
+// Register Currency Repository (kept for potential future use)
+// Accounting module removed: rely on generic repository and simplified accounting service if present
+builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.ICurrencyRepository, IMS.Infrastructure.Repositories.Accounting.CurrencyRepository>();
+builder.Services.AddScoped<IMS.Infrastructure.Services.Accounting.CurrencyService>();
 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -127,8 +124,11 @@ builder.Services.AddScoped<IMS.Application.Interfaces.Invoicing.IInvoiceService,
 builder.Services.AddScoped<IMS.Application.Managers.Invoicing.IInvoiceManager, IMS.Application.Managers.Invoicing.InvoiceManager>();
 // Payment service (uses IRepository<Payment> - no custom repository needed)
 builder.Services.AddScoped<IMS.Application.Interfaces.Invoicing.IPaymentService, IMS.Infrastructure.Services.Invoicing.PaymentService>();
-// Accounting service (uses DbContext directly - no custom repositories)
-builder.Services.AddScoped<IMS.Application.Interfaces.Accounting.IAccountingService, IMS.Infrastructure.Services.Accounting.AccountingService>();
+// Category service (for transaction categorization)
+builder.Services.AddScoped<IMS.Application.Interfaces.Transaction.ICategoryService, IMS.Infrastructure.Services.Transaction.CategoryService>();
+// Transaction service (simplified accounting - no custom repository needed)
+builder.Services.AddScoped<IMS.Application.Interfaces.Transaction.ITransactionService, IMS.Infrastructure.Services.Transaction.TransactionService>();
+// Accounting service removed from DI registrations (module trimmed). Use CurrencyService and generic repositories instead.
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
@@ -189,6 +189,9 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
     {
+        // Ensure database schema is up-to-date before seeding.
+        // This applies any pending EF Core migrations (including the Category.Type column).
+        context.Database.Migrate();
         DbSeeder.Seed(context);
     }
     catch (Exception ex)
@@ -211,6 +214,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAngular");
 
 app.UseHttpsRedirection();
+
+// Enable serving static files from wwwroot (for uploaded logos, etc.)
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,13 +1,4 @@
 <div class="invoice-container">
-    <!-- Debug Info -->
-    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc;">
-        <strong>Debug Info:</strong><br>
-        isLoading: {{ isLoading }}<br>
-        error: {{ error }}<br>
-        po exists: {{ !!po }}<br>
-        po reference: {{ po?.reference }}
-    </div>
-
     <div *ngIf="isLoading" class="text-center p-5">Loading...</div>
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
@@ -30,59 +21,66 @@
             PURCHASE ORDER
         </div>
 
-        <!-- Company Info & Logo -->
-        <div class="company-section">
+        <!-- Company Info & Supplier -->
+        <div class="company-section align-items-start">
             <div class="company-info">
+                <div class="company-logo text-start mb-2">
+                    <i class="las la-shipping-fast text-primary"></i> IMS<span class="text-danger">.</span>
+                </div>
                 <h4>My Company Name LLC</h4>
-                <p>123 Business Rd.<br>
-                    Tech City, TC 90210<br>
-                    Mobile: +1 555-0123<br>
-                    Email: info@mycompany.com</p>
+                <p class="mb-1">123 Business Rd.</p>
+                <p class="mb-1">Tech City, TC 90210</p>
+                <p class="mb-1">Mobile: +1 555-0123</p>
+                <p class="mb-0">Email: info@mycompany.com</p>
             </div>
-            <div class="company-logo">
-                <i class="las la-shipping-fast text-primary"></i> IMS<span class="text-danger">.</span>
+            <div class="supplier-wrapper">
+                <div class="card shadow-sm supplier-card">
+                    <div class="card-header bg-light py-2">
+                        <strong>Supplier</strong>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="isLoadingDetails" class="text-muted small">Loading supplier info...</div>
+                        <div *ngIf="!isLoadingDetails && vendor">
+                            <div class="fw-semibold">{{ vendor.name }}</div>
+                            <div class="small text-muted">
+                                <ng-container *ngIf="vendor.address">
+                                    {{ vendor.address.line1 }}<br>
+                                    <ng-container *ngIf="vendor.address.line2">{{ vendor.address.line2 }}<br></ng-container>
+                                    <ng-container *ngIf="vendor.address.city">{{ vendor.address.city.name }}, </ng-container>
+                                    <ng-container *ngIf="vendor.address.state">{{ vendor.address.state.name }} </ng-container>
+                                    <ng-container *ngIf="vendor.address.postalCode">{{ vendor.address.postalCode.code }}</ng-container>
+                                    <ng-container *ngIf="vendor.address.country"><br>{{ vendor.address.country.name }}</ng-container>
+                                </ng-container>
+                                <ng-container *ngIf="!vendor.address">No Address Provided</ng-container>
+                                <div *ngIf="vendor.email">{{ vendor.email }}</div>
+                                <div *ngIf="vendor.phone">{{ vendor.phone }}</div>
+                            </div>
+                        </div>
+                        <div *ngIf="!isLoadingDetails && !vendor" class="text-danger small">Vendor not found (ID: {{ po.vendorId }})</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Supplier & PO Meta -->
-        <div class="po-details">
-            <div class="bill-to">
-                <h5 class="mb-2" style="font-weight: 700;">Supplier</h5>
-                <div *ngIf="isLoadingDetails" class="text-muted small">Loading supplier info...</div>
-                <div *ngIf="!isLoadingDetails && vendor">
-                    <p style="font-weight: 600;">{{ vendor.name }}</p>
-                    <p>
-                        <ng-container *ngIf="vendor.address">
-                            {{ vendor.address.line1 }}<br>
-                            <ng-container *ngIf="vendor.address.line2">{{ vendor.address.line2 }}<br></ng-container>
-                            <ng-container *ngIf="vendor.address.city">{{ vendor.address.city.name }}, </ng-container>
-                            <ng-container *ngIf="vendor.address.state">{{ vendor.address.state.name }} </ng-container>
-                            <ng-container *ngIf="vendor.address.postalCode">{{ vendor.address.postalCode.code
-                                }}</ng-container>
-                            <ng-container *ngIf="vendor.address.country"><br>{{ vendor.address.country.name
-                                }}</ng-container>
-                            <br>
-                        </ng-container>
-                        <ng-container *ngIf="!vendor.address">No Address Provided<br></ng-container>
-                        {{ vendor.email }}<br>
-                        {{ vendor.phone }}
-                    </p>
-                </div>
-                <div *ngIf="!isLoadingDetails && !vendor">
-                    <p class="text-danger">Vendor information not found (ID: {{ po.vendorId }})</p>
-                </div>
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-light py-2">
+                <strong>PO Details</strong>
             </div>
-            <div class="po-meta">
-                <table>
-                    <tr>
-                        <td class="label">PO No :</td>
-                        <td><strong>{{ po.reference }}</strong></td>
-                    </tr>
-                    <tr>
-                        <td class="label">Date :</td>
-                        <td>{{ po.orderDate | date:'mediumDate' }}</td>
-                    </tr>
-                </table>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="small text-muted">PO No</div>
+                        <div class="fw-semibold">{{ po.reference }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted">Date</div>
+                        <div class="fw-semibold">{{ po.orderDate | date:'mediumDate' }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted">Warehouse</div>
+                        <div class="fw-semibold">{{ warehouse?.name || 'N/A' }}</div>
+                    </div>
+                </div>
             </div>
         </div>
 

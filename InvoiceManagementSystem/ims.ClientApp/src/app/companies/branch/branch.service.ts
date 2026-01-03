@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { Address } from '../../Master/geography/address/address.service';
 
 export interface Branch {
   id: string;
   name: string;
   addressId?: string;
-  address?: string;
+  address?: Address;
 }
 
 @Injectable({

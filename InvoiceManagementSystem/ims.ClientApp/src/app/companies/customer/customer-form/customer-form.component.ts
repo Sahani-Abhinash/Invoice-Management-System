@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -23,6 +23,7 @@ export class CustomerFormComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isEdit = false;
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(
     private fb: FormBuilder,
@@ -53,6 +54,7 @@ export class CustomerFormComponent implements OnInit {
   loadBranches() {
     this.branchService.getAll().subscribe({
       next: data => {
+        this.cdr.detectChanges();
         this.branches = data;
         this.loadAddresses();
       },
@@ -67,6 +69,7 @@ export class CustomerFormComponent implements OnInit {
   loadAddresses() {
     this.addressService.getAll().subscribe({
       next: data => {
+        this.cdr.detectChanges();
         this.addresses = data; // keep original IDs for API calls
         if (this.id) {
           this.loadCustomer();

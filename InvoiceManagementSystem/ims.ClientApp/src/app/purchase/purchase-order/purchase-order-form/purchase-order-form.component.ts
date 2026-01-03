@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -6,6 +6,7 @@ import { PurchaseOrderService, CreatePurchaseOrderDto } from '../purchase-order.
 import { Vendor } from '../../../companies/vendor/vendor.service';
 import { Warehouse } from '../../../warehouse/warehouse.service';
 import { Item } from '../../../product/items/item.service';
+import { CompanyService, Company } from '../../../companies/company/company.service';
 
 @Component({
     selector: 'app-purchase-order-form',
@@ -15,25 +16,42 @@ import { Item } from '../../../product/items/item.service';
     styleUrls: ['./purchase-order-form.component.css']
 })
 export class PurchaseOrderFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private poService = inject(PurchaseOrderService);
+    private companyService = inject(CompanyService);
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private cdr = inject(ChangeDetectorRef);
+
     form: FormGroup;
     vendors: Vendor[] = [];
     warehouses: Warehouse[] = [];
     items: Item[] = [];
+    selectedVendor: Vendor | null = null;
     id: string | null = null;
     isEditMode = false;
     now = new Date();
+    companyInfo = {
+        name: '',
+        address: '',
+        cityStateZip: '',
+        email: '',
+        phone: '',
+        taxNumber: ''
+    };
 
-    constructor(
-        private fb: FormBuilder,
-        private poService: PurchaseOrderService,
-        private router: Router,
-        private route: ActivatedRoute
-    ) {
+    constructor() {
         this.form = this.fb.group({
             vendorId: ['', Validators.required],
             warehouseId: ['', Validators.required],
             reference: ['', Validators.required],
             lines: this.fb.array([])
+        });
+
+        // Listen to vendor selection changes
+        this.form.get('vendorId')?.valueChanges.subscribe(vendorId => {
+            this.selectedVendor = this.vendors.find(v => v.id === vendorId) || null;
+            this.cdr.detectChanges();
         });
     }
 
@@ -54,9 +72,44 @@ export class PurchaseOrderFormComponent implements OnInit {
     }
 
     loadDependencies() {
-        this.poService.getVendors().subscribe(v => this.vendors = v);
-        this.poService.getWarehouses().subscribe(w => this.warehouses = w);
-        this.poService.getItems().subscribe(i => this.items = i);
+        this.poService.getVendors().subscribe(v => {
+            this.vendors = v;
+            this.cdr.detectChanges();
+        });
+        this.poService.getWarehouses().subscribe(w => {
+            this.warehouses = w;
+            this.cdr.detectChanges();
+        });
+        this.poService.getItems().subscribe(i => {
+            this.items = i;
+            this.cdr.detectChanges();
+        });
+
+        this.companyService.getAll().subscribe({
+            next: companies => {
+                const company = companies && companies.length ? companies[0] : null;
+                if (company) {
+                    const anyCompany = company as any;
+                    this.companyInfo = {
+                        name: company.name || '',
+                        address: anyCompany?.address?.line1 || anyCompany?.addressLine1 || '',
+                        cityStateZip:
+                            [
+                                anyCompany?.address?.city?.name || anyCompany?.city || '',
+                                anyCompany?.address?.state?.name || anyCompany?.state || '',
+                                anyCompany?.address?.postalCode?.code || anyCompany?.postalCode || ''
+                            ].filter(Boolean).join(', ').trim(),
+                        email: company.email || '',
+                        phone: company.phone || '',
+                        taxNumber: company.taxNumber || ''
+                    };
+                }
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                // Fallback to defaults already set
+            }
+        });
     }
 
     loadPO(id: string) {

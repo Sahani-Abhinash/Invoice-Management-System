@@ -5,9 +5,6 @@
       <button class="btn btn-info" (click)="editCompany(companies[0]!.id)" [disabled]="!companies.length">
         <i class="ri-edit-line me-1"></i> Edit
       </button>
-      <button class="btn btn-primary" (click)="createCompany()" [disabled]="companies.length > 0">
-        Add Company
-      </button>
     </div>
   </div>
 
@@ -33,12 +30,21 @@
               <h5 class="mb-0">{{ companies[0].phone || '—' }}</h5>
             </div>
             <div class="mb-3">
+              <label class="text-muted text-uppercase fs-12 fw-semibold">Default Currency</label>
+              <h5 class="mb-0">{{ defaultCurrency ? defaultCurrency.code + ' - ' + defaultCurrency.name + ' (' + defaultCurrency.symbol + ')' : 'Not set' }}</h5>
+            </div>
+            <div class="mb-3">
               <label class="text-muted text-uppercase fs-12 fw-semibold">Logo URL</label>
               <h5 class="mb-0">
-                <a *ngIf="companies[0].logoUrl" [href]="companies[0].logoUrl" target="_blank" class="text-primary">
-                  View Logo
-                </a>
-                <span *ngIf="!companies[0].logoUrl" class="text-muted">Not set</span>
+                <ng-container *ngIf="resolveLogoUrl(companies[0]); else noLogo">
+                  <div class="d-flex align-items-center gap-2">
+                    <img [src]="resolveLogoUrl(companies[0])" alt="Company Logo" style="max-height: 60px; border: 1px solid #ddd; padding: 2px; border-radius: 4px;">
+                    <a [href]="resolveLogoUrl(companies[0])" target="_blank" class="text-primary">Open</a>
+                  </div>
+                </ng-container>
+                <ng-template #noLogo>
+                  <span class="text-muted">Not set</span>
+                </ng-template>
               </h5>
             </div>
           </div>
@@ -85,8 +91,7 @@
   <ng-template #noCompany>
     <div class="alert alert-info text-center py-5">
       <h5 class="mb-3">No Company Found</h5>
-      <p class="text-muted mb-3">You need to create a company to get started.</p>
-      <button class="btn btn-primary" (click)="createCompany()">Create Company</button>
+      <p class="text-muted mb-0">You need to create a company to get started.</p>
     </div>
   </ng-template>
 </div>

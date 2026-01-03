@@ -1,0 +1,196 @@
+<div class="transaction-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h2>Transaction Management</h2>
+        <p>Record and track all financial transactions</p>
+      </div>
+      <button 
+        class="btn btn-primary btn-lg"
+        (click)="addTransaction()">
+        <i class="bi bi-plus-circle me-2"></i>
+        Add Transaction
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4" *ngIf="summary && !loading">
+    <div class="col-md-3">
+      <div class="card summary-card debit">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="bi bi-arrow-down-circle"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Debits</div>
+            <div class="card-value">{{ summary.totalDebits | currency }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card summary-card credit">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="bi bi-arrow-up-circle"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Credits</div>
+            <div class="card-value">{{ summary.totalCredits | currency }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card summary-card balance" [ngClass]="summary.balance < 0 ? 'negative' : 'positive'">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="bi bi-percent"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Balance</div>
+            <div class="card-value">{{ summary.balance | currency }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card summary-card count">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="bi bi-list-check"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Total Transactions</div>
+            <div class="card-value">{{ summary.totalTransactions }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadTransactions()">Retry</button>
+  </div>
+
+  <!-- Tabs Container -->
+  <div class="tabs-container">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link all-tab"
+          [class.active]="activeTab === 'all'"
+          (click)="setActiveTab('all')"
+          type="button"
+          role="tab">
+          <i class="bi bi-list"></i>
+          All Transactions
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link credit-tab"
+          [class.active]="activeTab === 'credit'"
+          (click)="setActiveTab('credit')"
+          type="button"
+          role="tab">
+          <i class="bi bi-arrow-up-circle"></i>
+          Credit (Income)
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link debit-tab"
+          [class.active]="activeTab === 'debit'"
+          (click)="setActiveTab('debit')"
+          type="button"
+          role="tab">
+          <i class="bi bi-arrow-down-circle"></i>
+          Debit (Expenses)
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="spinner-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Content When Not Loading -->
+      <div *ngIf="!loading">
+        <!-- Empty State -->
+        <div *ngIf="filteredTransactions.length === 0" class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <h5>No transactions yet</h5>
+          <p>Start by adding your first transaction</p>
+          <button class="btn btn-primary" (click)="addTransaction()">
+            <i class="bi bi-plus-circle"></i> Add Transaction
+          </button>
+        </div>
+
+        <!-- Transactions Table -->
+        <div *ngIf="filteredTransactions.length > 0" class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Reference</th>
+                <th>Source</th>
+                <th class="text-end">Amount</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let transaction of filteredTransactions">
+                <td>{{ formatDate(transaction.transactionDate) }}</td>
+                <td>
+                  <span class="badge" [ngClass]="transaction.type === TransactionType.Debit ? 'bg-danger' : 'bg-success'">
+                    {{ transaction.type === TransactionType.Debit ? 'Debit' : 'Credit' }}
+                  </span>
+                </td>
+                <td>{{ transaction.categoryName }}</td>
+                <td>{{ transaction.description }}</td>
+                <td>{{ transaction.reference || '-' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="transaction.sourceType === 'Manual' ? 'bg-warning text-dark' : 'bg-info'">
+                    {{ transaction.sourceType }}
+                  </span>
+                </td>
+                <td class="text-end" [ngClass]="getTypeClass(transaction.type)">
+                  <strong>{{ transaction.amount | currency }}</strong>
+                </td>
+                <td class="text-end">
+                  <button 
+                    class="btn btn-sm btn-outline-primary" 
+                    (click)="editTransaction(transaction)"
+                    title="Edit transaction">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-sm btn-outline-danger" 
+                    (click)="deleteTransaction(transaction)"
+                    [disabled]="transaction.sourceType !== 'Manual'"
+                    [title]="transaction.sourceType !== 'Manual' ? 'Only manual transactions can be deleted' : ''">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

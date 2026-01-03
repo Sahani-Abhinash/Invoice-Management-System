@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -15,6 +15,7 @@ export class PriceListFormComponent implements OnInit {
     form: FormGroup;
     id: string | null = null;
     isEditMode = false;
+    private cdr = inject(ChangeDetectorRef);
 
     constructor(
         private fb: FormBuilder,

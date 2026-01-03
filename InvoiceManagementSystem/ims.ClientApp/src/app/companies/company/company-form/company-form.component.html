@@ -28,8 +28,29 @@
       </div>
 
       <div class="mb-3">
-        <label for="logoUrl" class="form-label">Logo URL</label>
-        <input type="text" class="form-control" id="logoUrl" formControlName="logoUrl" placeholder="Enter logo URL">
+        <label for="logoFile" class="form-label">Company Logo</label>
+        <div class="d-flex gap-2 align-items-center">
+          <input type="file" class="form-control" id="logoFile" (change)="onLogoSelected($event)" accept="image/*">
+          <button type="button" class="btn btn-info btn-sm" (click)="uploadLogo()" [disabled]="!selectedLogoFile || isUploading">
+            <span *ngIf="!isUploading"><i class="las la-cloud-upload-alt me-1"></i>Upload</span>
+            <span *ngIf="isUploading"><i class="las la-spinner spinning me-1"></i>Uploading...</span>
+          </button>
+        </div>
+        <small class="text-muted">Supported: JPG, PNG, GIF (Max 2MB)</small>
+        <div *ngIf="logoUrl" class="mt-2">
+          <div class="d-flex align-items-center gap-2">
+            <img [src]="logoUrl" alt="Company Logo" style="max-height: 80px; max-width: 200px; border-radius: 4px; border: 1px solid #ddd; padding: 4px;">
+            <button type="button" class="btn btn-sm btn-danger" (click)="removeLogo()"><i class="las la-trash me-1"></i>Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="defaultCurrencyId" class="form-label">Default Currency</label>
+        <select class="form-select" id="defaultCurrencyId" formControlName="defaultCurrencyId">
+          <option value="">Select currency (optional)</option>
+          <option *ngFor="let currency of currencies" [value]="currency.id">{{ currency.code }} - {{ currency.name }} ({{ currency.symbol }})</option>
+        </select>
       </div>
 
       <div class="mb-3">

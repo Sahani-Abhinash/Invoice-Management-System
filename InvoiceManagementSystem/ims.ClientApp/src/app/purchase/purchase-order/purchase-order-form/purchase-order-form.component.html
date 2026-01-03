@@ -12,51 +12,84 @@
             PURCHASE ORDER {{ isEditMode ? '(EDIT)' : '(NEW)' }}
         </div>
 
-        <div class="company-section">
+        <div class="company-section align-items-start">
             <div class="company-info">
-                <h4>My Company Name LLC</h4>
-                <p>123 Business Rd.<br>Tech City, TC 90210</p>
+                <div class="company-logo text-start mb-2">
+                    <i class="las la-shipping-fast text-primary"></i> IMS<span class="text-danger">.</span>
+                </div>
+                <h4 class="fw-bold">{{ companyInfo.name }}</h4>
+                <p class="mb-1">{{ companyInfo.address }}</p>
+                <p class="mb-1">{{ companyInfo.cityStateZip }}</p>
+                <div class="text-muted small" *ngIf="companyInfo.email || companyInfo.phone || companyInfo.taxNumber">
+                    <div *ngIf="companyInfo.email">Email: {{ companyInfo.email }}</div>
+                    <div *ngIf="companyInfo.phone">Phone: {{ companyInfo.phone }}</div>
+                    <div *ngIf="companyInfo.taxNumber">Tax #: {{ companyInfo.taxNumber }}</div>
+                </div>
             </div>
-            <div class="company-logo">
-                <i class="las la-shipping-fast text-primary"></i> IMS<span class="text-danger">.</span>
+            <div class="supplier-wrapper">
+                <div class="card shadow-sm supplier-card">
+                    <div class="card-header bg-light py-2">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                <strong>Select Supplier</strong>
+                            </div>
+                            <div class="col">
+                                <select class="form-select form-select-sm" formControlName="vendorId">
+                                    <option value="">-- Choose Supplier --</option>
+                                    <option *ngFor="let v of vendors" [value]="v.id">{{ v.name }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <div *ngIf="selectedVendor">
+                            <h6 class="mb-1">{{ selectedVendor.name }}</h6>
+                            <div class="small text-muted">
+                                <ng-container *ngIf="selectedVendor.address">
+                                    <div>{{ selectedVendor.address.line1 }}</div>
+                                    <div *ngIf="selectedVendor.address.line2">{{ selectedVendor.address.line2 }}</div>
+                                    <div>
+                                        <ng-container *ngIf="selectedVendor.address.city">{{ selectedVendor.address.city.name }}, </ng-container>
+                                        <ng-container *ngIf="selectedVendor.address.state">{{ selectedVendor.address.state.name }} </ng-container>
+                                        <ng-container *ngIf="selectedVendor.address.postalCode">{{ selectedVendor.address.postalCode.code }}</ng-container>
+                                    </div>
+                                    <div *ngIf="selectedVendor.address.country">{{ selectedVendor.address.country.name }}</div>
+                                </ng-container>
+                                <ng-container *ngIf="!selectedVendor.address">No Address Provided</ng-container>
+                            </div>
+                        </div>
+                        <div *ngIf="!selectedVendor" class="text-muted small">
+                            Select a supplier to view details
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="po-details">
-            <div class="bill-to col-md-5">
-                <h5>Supplier Details</h5>
-                <div class="mb-2">
-                    <label class="form-label small">Select Vendor</label>
-                    <select class="form-select" formControlName="vendorId">
-                        <option value="">-- Select Vendor --</option>
-                        <option *ngFor="let v of vendors" [value]="v.id">{{ v.name }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label small">Ship To Warehouse</label>
-                    <select class="form-select" formControlName="warehouseId">
-                        <option value="">-- Select Warehouse --</option>
-                        <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
-                    </select>
-                </div>
+        <div class="card shadow-sm mt-2">
+            <div class="card-header bg-light py-1">
+                <strong class="small">PO Details</strong>
             </div>
-            <div class="po-meta col-md-4">
-                <table>
-                    <tr>
-                        <td class="label">PO Number</td>
-                        <td>
-                            <input type="text" class="form-control form-control-sm" formControlName="reference"
-                                placeholder="PO-0000">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="label">Date</td>
-                        <td>
-                            <input type="text" class="form-control form-control-sm"
-                                value="{{ (form.get('orderDate')?.value || now) | date:'mediumDate' }}" disabled>
-                        </td>
-                    </tr>
-                </table>
+            <div class="card-body p-2">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label small">PO Number</label>
+                        <input type="text" class="form-control form-control-sm" formControlName="reference"
+                            placeholder="PO-0000">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Date</label>
+                        <input type="text" class="form-control form-control-sm"
+                            [value]="(form.get('orderDate')?.value || now) | date:'mediumDate'" disabled>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Warehouse</label>
+                        <select class="form-select" formControlName="warehouseId">
+                            <option value="">-- Select Warehouse --</option>
+                            <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -102,7 +135,7 @@
             </tbody>
         </table>
 
-        <div class="mb-4">
+        <div class="mb-2">
             <button type="button" class="btn btn-sm btn-outline-primary" (click)="addLine()">
                 <i class="las la-plus"></i> Add Item
             </button>

@@ -1,0 +1,68 @@
+/* GRN Payment Component Styles */
+
+.card {
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+    border-bottom: none;
+    font-weight: 600;
+}
+
+.form-label {
+    margin-bottom: 0.5rem;
+}
+
+.input-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-responsive {
+    border-radius: 0.25rem;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover:not(:disabled) {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.bg-light-subtle {
+    background-color: #f8f9fa;
+}
+
+.no-print {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+@media print {
+    .no-print {
+        display: none;
+    }
+    
+    .btn,
+    form {
+        display: none;
+    }
+}

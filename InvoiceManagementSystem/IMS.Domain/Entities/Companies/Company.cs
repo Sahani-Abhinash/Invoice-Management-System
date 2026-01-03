@@ -20,6 +20,9 @@ namespace IMS.Domain.Entities.Companies
         // Optional logo URL to display on printed documents
         public string? LogoUrl { get; set; }
 
+        // Default currency for the company
+        public Guid? DefaultCurrencyId { get; set; }
+
         // Addresses are handled via EntityAddress linking table; do not keep direct Address navigation here.
         // Company should not contain an in-memory collection of branches to avoid coupling.
     }

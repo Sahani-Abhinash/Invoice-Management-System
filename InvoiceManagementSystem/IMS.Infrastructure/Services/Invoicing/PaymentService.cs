@@ -1,6 +1,7 @@
 using IMS.Application.DTOs.Invoicing;
 using IMS.Application.Interfaces.Common;
 using IMS.Application.Interfaces.Invoicing;
+using IMS.Application.Interfaces.Transaction;
 using IMS.Domain.Entities.Invoicing;
 using IMS.Domain.Enums;
 using System;
@@ -14,11 +15,16 @@ namespace IMS.Infrastructure.Services.Invoicing
     {
         private readonly IRepository<Payment> _paymentRepository;
         private readonly IRepository<Invoice> _invoiceRepository;
+        private readonly ITransactionService? _transactionService;
 
-        public PaymentService(IRepository<Payment> paymentRepository, IRepository<Invoice> invoiceRepository)
+        public PaymentService(
+            IRepository<Payment> paymentRepository,
+            IRepository<Invoice> invoiceRepository,
+            ITransactionService? transactionService = null)
         {
             _paymentRepository = paymentRepository;
             _invoiceRepository = invoiceRepository;
+            _transactionService = transactionService;
         }
 
         public async Task<PaymentDto> RecordPaymentAsync(Guid invoiceId, RecordPaymentDto dto)
@@ -66,6 +72,20 @@ namespace IMS.Infrastructure.Services.Invoicing
             _invoiceRepository.Update(invoice);
             await _paymentRepository.SaveChangesAsync();
             await _invoiceRepository.SaveChangesAsync();
+
+            // Record transaction on payment (cash inflow)
+            if (_transactionService != null)
+            {
+                var methodName = dto.Method.ToString();
+                await _transactionService.CreateFromSourceAsync(
+                    payment.Id,
+                    "Invoice_Payment",
+                    TransactionType.Credit,
+                    dto.Amount,
+                    "Payment",
+                    $"Payment received for invoice {invoice.Reference} via {methodName}"
+                );
+            }
 
             return MapToDto(payment);
         }

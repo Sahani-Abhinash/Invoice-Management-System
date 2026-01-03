@@ -1,0 +1,35 @@
+/* Reuse invoice container styles */
+.invoice-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+}
+
+.header-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2563eb;
+    letter-spacing: 1px;
+}
+
+.company-logo {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .invoice-container {
+        padding: 0;
+    }
+    
+    body {
+        background: white !important;
+    }
+}

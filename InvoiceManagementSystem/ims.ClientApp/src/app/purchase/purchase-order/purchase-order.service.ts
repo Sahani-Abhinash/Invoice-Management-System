@@ -21,6 +21,7 @@ export interface PurchaseOrder {
     reference: string;
     isApproved: boolean;
     isClosed: boolean;
+    accountId?: string;
     lines: PurchaseOrderLine[];
 }
 
@@ -34,6 +35,7 @@ export interface CreatePurchaseOrderDto {
     vendorId: string;
     warehouseId: string;
     reference: string;
+    accountId?: string;
     lines: CreatePurchaseOrderLineDto[];
 }
 

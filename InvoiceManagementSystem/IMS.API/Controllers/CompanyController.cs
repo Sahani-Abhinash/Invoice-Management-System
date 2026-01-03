@@ -2,6 +2,7 @@
 using IMS.Application.Managers.Companies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 
 namespace IMS.API.Controllers
 {
@@ -85,6 +86,85 @@ namespace IMS.API.Controllers
             var result = await _companyManager.DeleteAsync(id);
             if (!result) return NotFound();
             return NoContent();
+        }
+
+        /// <summary>
+        /// Uploads a company logo (replaces existing logo if present).
+        /// </summary>
+        /// <param name="id">Company identifier.</param>
+        /// <returns>200 OK with logo URL or error response.</returns>
+        [HttpPost("{id}/upload-logo")]
+        public async Task<IActionResult> UploadLogo(Guid id, IFormFile file)
+        {
+            // Validate file
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            // Check file size (max 2MB)
+            if (file.Length > 10 * 1024 * 1024)
+                return BadRequest("File size exceeds 2MB limit");
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+                return BadRequest("Invalid file type. Allowed: JPG, PNG, GIF");
+
+            try
+            {
+                // Get company
+                var company = await _companyManager.GetByIdAsync(id);
+                if (company == null)
+                    return NotFound("Company not found");
+
+                // Create uploads directory if it doesn't exist
+                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "logos");
+                Directory.CreateDirectory(uploadsDir);
+
+                // Delete old logo if it exists
+                if (!string.IsNullOrEmpty(company.LogoUrl))
+                {
+                    // Extract filename from URL and delete file
+                    var oldFileName = Path.GetFileName(company.LogoUrl);
+                    var oldFilePath = Path.Combine(uploadsDir, oldFileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                // Save new file with simple naming: {companyId}.{extension}
+                var fileName = $"{id}{fileExtension}";
+                var filePath = Path.Combine(uploadsDir, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Build URL
+                var logoUrl = $"/uploads/logos/{fileName}";
+
+                // Update company with logo URL
+                var updateDto = new CreateCompanyDto
+                {
+                    Name = company.Name,
+                    TaxNumber = company.TaxNumber,
+                    Email = company.Email,
+                    Phone = company.Phone,
+                    LogoUrl = logoUrl,
+                    DefaultCurrencyId = company.DefaultCurrencyId
+                };
+
+                var updated = await _companyManager.UpdateAsync(id, updateDto);
+
+                return Ok(new { logoUrl = logoUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error uploading logo: {ex.Message}");
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -13,18 +13,19 @@ import { Branch, BranchService } from '../../companies/branch/branch.service';
   styleUrls: []
 })
 export class WarehouseFormComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private warehouseService = inject(WarehouseService);
+  private branchService = inject(BranchService);
+  private cdr = inject(ChangeDetectorRef);
+
   form!: FormGroup;
   id: string | null = null;
   branches: Branch[] = [];
   private pendingBranchId: string | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private warehouseService: WarehouseService,
-    private branchService: BranchService
-  ) {
+  constructor() {
     this.form = this.fb.group({
       name: ['', Validators.required],
       branchId: ['', Validators.required]
@@ -51,6 +52,7 @@ export class WarehouseFormComponent implements OnInit {
     this.branchService.getAll().subscribe(data => {
       this.branches = data.map(b => ({ ...b, id: String((b as any).id) } as Branch));
       this.applyPendingBranchId();
+      this.cdr.detectChanges();
     }, error => {
       console.error('Error loading branches:', error);
     });

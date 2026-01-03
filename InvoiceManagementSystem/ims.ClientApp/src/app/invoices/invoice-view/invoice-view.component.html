@@ -1,16 +1,16 @@
 <div class="row align-items-center mb-4 no-print">
     <div class="col-sm">
-        <h4 class="mb-sm-0">Invoice Details</h4>
+        <h4 class="mb-0">Invoice Details</h4>
     </div>
     <div class="col-sm-auto">
         <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-primary" (click)="printInvoice()">
+            <button class="btn btn-primary btn-sm" (click)="printInvoice()">
                 <i class="ri-printer-line align-bottom me-1"></i> Print
             </button>
-            <button *ngIf="invoice && !invoice.isPaid" class="btn btn-success" (click)="recordPayment()">
+            <button *ngIf="invoice && !invoice.isPaid" class="btn btn-success btn-sm" (click)="recordPayment()">
                 <i class="ri-cash-line align-bottom me-1"></i> Record Payment
             </button>
-            <button *ngIf="invoice && !invoice.isPaid" class="btn btn-info"
+            <button *ngIf="invoice && !invoice.isPaid" class="btn btn-info btn-sm"
                 [routerLink]="['/invoices/edit', invoice.id]">
                 <i class="ri-edit-line align-bottom me-1"></i> Edit
             </button>
@@ -19,150 +19,139 @@
 </div>
 
 <div class="row justify-content-center" *ngIf="!isLoading && invoice">
-    <div class="col-xxl-9">
+    <div class="col-xxl-8 col-lg-10">
         <div class="card" id="demo">
-            <div class="card-body p-5">
-                <div class="row border-bottom border-bottom-dashed pb-4">
+            <div class="card-body p-4">
+                <!-- Header -->
+                <div class="row border-bottom pb-3 mb-3">
                     <div class="col-lg-6">
-                        <div class="mb-4">
-                            <h2 class="text-primary fw-bold">IMS INVOICE</h2>
-                        </div>
-                        <div class="text-muted">
-                            <p class="mb-1">Branch: <span class="fw-semibold">{{ branchName }}</span></p>
-                            <p class="mb-0">Reference: <span class="fw-semibold">#{{ invoice.reference }}</span></p>
-                        </div>
+                        <h2 class="text-primary fw-bold mb-1">IMS INVOICE</h2>
+                        <p class="text-muted small mb-1">Ref: <span class="fw-semibold">#{{ invoice.reference }}</span></p>
+                        <p class="text-muted small mb-0">Branch: <span class="fw-semibold">{{ branchName }}</span></p>
+                    </div>
+                    <div class="col-lg-6 text-end">
+                        <p class="text-muted small mb-1">Invoice Date: <span class="fw-semibold">{{ invoice.invoiceDate | date:'mediumDate' }}</span></p>
+                        <p class="text-muted small mb-1">Due Date: <span class="fw-semibold">{{ invoice.dueDate ? (invoice.dueDate | date:'mediumDate') : 'Immediate' }}</span></p>
+                        <p class="text-muted small mb-0" *ngIf="invoice.poNumber">PO: <span class="fw-semibold">{{ invoice.poNumber }}</span></p>
                     </div>
                 </div>
 
-                <div class="row py-4">
+                <!-- Customer Info -->
+                <div class="row mb-3">
                     <div class="col-lg-6">
-                        <p class="text-muted text-uppercase fw-semibold mb-2">Ship To</p>
+                        <p class="text-muted text-uppercase fw-semibold small mb-2">Bill To</p>
                         <div *ngIf="customer && shippingAddress; else noShipTo">
-                            <h5 class="fs-14 mb-2">{{ customer.name }}</h5>
-                            <p class="mb-1">{{ shippingAddress.line1 }}</p>
-                            <p class="mb-1" *ngIf="shippingAddress.line2">{{ shippingAddress.line2 }}</p>
-                            <p class="mb-1">{{ shippingAddress.city?.name }}<span *ngIf="shippingAddress.state?.name">, {{ shippingAddress.state?.name }}</span> <span *ngIf="shippingAddress.postalCode?.code">{{ shippingAddress.postalCode?.code }}</span></p>
-                            <p class="mb-0">{{ shippingAddress.country?.name }}</p>
+                            <p class="fw-semibold mb-1">{{ customer.name }}</p>
+                            <p class="small text-muted mb-1">{{ shippingAddress.line1 }}</p>
+                            <p class="small text-muted mb-1" *ngIf="shippingAddress.line2">{{ shippingAddress.line2 }}</p>
+                            <p class="small text-muted mb-1">{{ shippingAddress.city?.name }}<span *ngIf="shippingAddress.state?.name">, {{ shippingAddress.state?.name }}</span></p>
+                            <p class="small text-muted mb-0">{{ shippingAddress.country?.name }}</p>
                         </div>
                         <ng-template #noShipTo>
-                            <p class="text-muted mb-0">No shipping information</p>
+                            <p class="text-muted small mb-0">No shipping information</p>
                         </ng-template>
                     </div>
-                </div>
-
-                <div class="row py-4 border-top border-top-dashed">
-                    <div class="col-lg-3 col-6">
-                        <p class="text-muted text-uppercase fw-semibold mb-2">Invoice Date</p>
-                        <h5 class="fs-14 mb-0">{{ invoice.invoiceDate | date:'mediumDate' }}</h5>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <p class="text-muted text-uppercase fw-semibold mb-2">Due Date</p>
-                        <h5 class="fs-14 mb-0">{{ invoice.dueDate ? (invoice.dueDate | date:'mediumDate') : 'Immediate'
-                            }}</h5>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <p class="text-muted text-uppercase fw-semibold mb-2">Payment Status</p>
-                        <span [ngClass]="getPaymentStatusClass()">
-                            {{ invoice.paymentStatus }}
-                        </span>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <p class="text-muted text-uppercase fw-semibold mb-2">Balance Due</p>
-                        <h5 class="fs-14 mb-0 text-danger">{{ invoice.balanceDue | currency }}</h5>
+                    <div class="col-lg-6">
+                        <p class="text-muted text-uppercase fw-semibold small mb-2">Status</p>
+                        <div class="row g-2">
+                            <div class="col-auto">
+                                <p class="text-muted small mb-1">Payment Status:</p>
+                                <span [ngClass]="getPaymentStatusClass()">{{ invoice.paymentStatus }}</span>
+                            </div>
+                            <div class="col-auto">
+                                <p class="text-muted small mb-1">Balance Due:</p>
+                                <p class="fw-semibold text-danger mb-0">{{ invoice.balanceDue | currency }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-responsive mt-4">
-                    <table class="table table-borderless text-center table-nowrap align-middle mb-0">
-                        <thead>
-                            <tr class="table-active">
-                                <th scope="col" class="col-index-narrow">#</th>
-                                <th scope="col" class="text-start">Item Details</th>
-                                <th scope="col">Rate</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col" class="text-end">Amount</th>
+                <!-- Items Table -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-borderless align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th class="text-start">Item Description</th>
+                                <th style="width: 100px;">Unit Price</th>
+                                <th style="width: 80px;">Qty</th>
+                                <th style="width: 120px;" class="text-end">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let line of invoice.lines; let i = index">
-                                <th scope="row">{{ i + 1 }}</th>
+                                <td>{{ i + 1 }}</td>
                                 <td class="text-start">
                                     <span class="fw-medium">{{ getItemName(line.itemId) }}</span>
-                                    <p class="text-muted mb-0">SKU: {{ getItemSku(line.itemId) }}</p>
+                                    <br>
+                                    <span class="text-muted small">SKU: {{ getItemSku(line.itemId) }}</span>
                                 </td>
-                                <td>{{ line.unitPrice | currency }}</td>
-                                <td>{{ line.quantity | number:'1.0-0' }}</td>
+                                <td class="text-end">{{ line.unitPrice | currency }}</td>
+                                <td class="text-center">{{ line.quantity | number:'1.0-0' }}</td>
                                 <td class="text-end fw-semibold">{{ line.lineTotal | currency }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="row justify-content-end mt-4">
-                    <div class="col-lg-4 col-sm-6">
-                        <div class="table-responsive">
-                            <table class="table table-borderless mb-0">
-                                <tbody>
-                                    <tr>
-                                        <th class="text-muted">Sub Total :</th>
-                                        <td class="text-end">{{ invoice.subTotal | currency }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-muted">Tax :</th>
-                                        <td class="text-end">{{ invoice.tax | currency }}</td>
-                                    </tr>
-                                    <tr class="border-top border-top-dashed fs-15">
-                                        <th scope="row">Total Amount :</th>
-                                        <th class="text-end text-primary">{{ invoice.total | currency }}</th>
-                                    </tr>
-                                    <tr *ngIf="invoice.paidAmount > 0" class="fs-15">
-                                        <th scope="row">Paid Amount :</th>
-                                        <th class="text-end text-success">{{ invoice.paidAmount | currency }}</th>
-                                    </tr>
-                                    <tr *ngIf="invoice.balanceDue > 0" class="border-top border-top-dashed fs-15">
-                                        <th scope="row">Balance Due :</th>
-                                        <th class="text-end text-danger">{{ invoice.balanceDue | currency }}</th>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <!-- Totals -->
+                <div class="row justify-content-end mb-3">
+                    <div class="col-lg-4 col-md-5">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Sub Total:</td>
+                                    <td class="text-end fw-semibold">{{ invoice.subTotal | currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Tax:</td>
+                                    <td class="text-end fw-semibold">{{ invoice.tax | currency }}</td>
+                                </tr>
+                                <tr class="border-top">
+                                    <td class="fw-semibold">Total:</td>
+                                    <td class="text-end fw-semibold text-primary">{{ invoice.total | currency }}</td>
+                                </tr>
+                                <tr *ngIf="invoice.paidAmount > 0">
+                                    <td class="text-muted">Paid:</td>
+                                    <td class="text-end fw-semibold text-success">{{ invoice.paidAmount | currency }}</td>
+                                </tr>
+                                <tr *ngIf="invoice.balanceDue > 0" class="border-top">
+                                    <td class="fw-semibold">Balance Due:</td>
+                                    <td class="text-end fw-semibold text-danger">{{ invoice.balanceDue | currency }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="mt-4 pt-3 border-top border-top-dashed no-print" *ngIf="invoice.payments && invoice.payments.length > 0">
-                    <div class="alert alert-light border-0 mb-0">
-                        <p class="mb-2">
-                            <span class="fw-semibold">PAYMENT HISTORY:</span>
-                        </p>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-borderless mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                        <th>Method</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let payment of invoice.payments">
-                                        <td>{{ payment.paidAt | date:'mediumDate' }}</td>
-                                        <td class="text-success fw-semibold">{{ payment.amount | currency }}</td>
-                                        <td>{{ getPaymentMethodName(payment.method) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <!-- Payment History -->
+                <div class="border-top pt-3 no-print" *ngIf="invoice.payments && invoice.payments.length > 0">
+                    <p class="fw-semibold mb-2 small">PAYMENT HISTORY</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 120px;">Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let payment of invoice.payments">
+                                    <td class="small">{{ payment.paidAt | date:'mediumDate' }}</td>
+                                    <td class="fw-semibold text-success small">{{ payment.amount | currency }}</td>
+                                    <td class="small">{{ getPaymentMethodName(payment.method) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="mt-4 pt-3 border-top border-top-dashed no-print">
-                    <div class="alert alert-info border-0 mb-0">
-                        <p class="mb-0">
-                            <span class="fw-semibold">NOTES:</span> All accounts are to be paid within 7 days from
-                            receipt of invoice.
-                            To be paid by Bank Transfer or Cash.
-                        </p>
-                    </div>
+                <!-- Footer Notes -->
+                <div class="border-top pt-3 mt-3 no-print">
+                    <p class="small text-muted mb-0">
+                        <span class="fw-semibold">Terms:</span> All accounts are to be paid within 7 days from receipt of invoice. Payment via Bank Transfer or Cash.
+                    </p>
                 </div>
             </div>
         </div>

@@ -9,6 +9,7 @@ export interface Company {
   email?: string;
   phone?: string;
   logoUrl?: string;
+  defaultCurrencyId?: string;
 }
 
 @Injectable({
@@ -16,9 +17,14 @@ export interface Company {
 })
 
 export class CompanyService {
-  private apiUrl = 'https://localhost:7276/api/company';
+  private baseUrl = 'https://localhost:7276';
+  private apiUrl = `${this.baseUrl}/api/company`;
 
   constructor(private http: HttpClient) { }
+
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
 
   getAll(): Observable<Company[]> {
     return this.http.get<Company[]>(this.apiUrl);
@@ -38,5 +44,9 @@ export class CompanyService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  uploadLogo(id: string, formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/upload-logo`, formData);
   }
 }

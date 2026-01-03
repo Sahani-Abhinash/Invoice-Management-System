@@ -87,5 +87,9 @@ namespace IMS.Application.Common
         public const string ManageCities = "Cities.Manage";
         public const string ViewPostalCodes = "PostalCodes.View";
         public const string ManagePostalCodes = "PostalCodes.Manage";
+
+        // Currencies
+        public const string ViewCurrencies = "Currencies.View";
+        public const string ManageCurrencies = "Currencies.Manage";
     }
 }

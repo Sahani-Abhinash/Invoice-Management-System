@@ -517,21 +517,18 @@
                         </a>
                     </li>
 
-                    <!-- Added: Companies and Branches links below Dashboard -->
+                    <!-- MASTER DATA SECTION -->
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-master">Master Data</span></li>
+
                     <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Companies.View', 'Companies.Manage'])">
                         <a class="nav-link menu-link" [routerLink]="['/companies']" routerLinkActive="active">
-                            <i class="las la-building"></i> <span data-key="t-companies">Companies</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Branches.View', 'Branches.Manage'])">
-                        <a class="nav-link menu-link" [routerLink]="['/branches']" routerLinkActive="active">
-                            <i class="las la-code-branch"></i> <span data-key="t-branches">Branches</span>
+                            <i class="las la-building"></i> <span data-key="t-companies">Company</span>
                         </a>
                     </li>
 
-                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Vendors.View', 'Vendors.Manage'])">
-                        <a class="nav-link menu-link" [routerLink]="['/vendors']" routerLinkActive="active">
-                            <i class="las la-store-alt"></i> <span data-key="t-vendors">Vendors</span>
+                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Branches.View', 'Branches.Manage'])">
+                        <a class="nav-link menu-link" [routerLink]="['/branches']" routerLinkActive="active">
+                            <i class="las la-code-branch"></i> <span data-key="t-branches">Branches</span>
                         </a>
                     </li>
 
@@ -541,58 +538,18 @@
                         </a>
                     </li>
 
-                    <!-- Warehouses link -->
+                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Vendors.View', 'Vendors.Manage'])">
+                        <a class="nav-link menu-link" [routerLink]="['/vendors']" routerLinkActive="active">
+                            <i class="las la-store-alt"></i> <span data-key="t-vendors">Vendors</span>
+                        </a>
+                    </li>
+
                     <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Warehouses.View', 'Warehouses.Manage'])">
                         <a class="nav-link menu-link" [routerLink]="['/warehouses']" routerLinkActive="active">
                             <i class="las la-warehouse"></i> <span data-key="t-warehouses">Warehouses</span>
                         </a>
                     </li>
 
-                    <!-- Purchasing -->
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" href="#sidebarPurchasing" data-bs-toggle="collapse" role="button"
-                            aria-expanded="false" aria-controls="sidebarPurchasing">
-                            <i class="las la-shopping-cart"></i> <span data-key="t-purchasing">Purchasing</span>
-                        </a>
-                        <div class="collapse menu-dropdown" id="sidebarPurchasing">
-                            <ul class="nav nav-sm flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" [routerLink]="['/purchase-orders']"
-                                        routerLinkActive="active">Purchase Orders</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" [routerLink]="['/grns']" routerLinkActive="active">Goods Receipt
-                                        Notes (GRN)</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <!-- Products (Items) -->
-                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Items.View', 'Items.Manage'])">
-                        <a class="nav-link menu-link" href="#sidebarProduct" data-bs-toggle="collapse" role="button"
-                            aria-expanded="false" aria-controls="sidebarProduct">
-                            <i class="las la-box"></i> <span data-key="t-products">Products</span>
-                        </a>
-                        <div class="collapse menu-dropdown" id="sidebarProduct">
-                            <ul class="nav nav-sm flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" [routerLink]="['/products/items']"
-                                        routerLinkActive="active">Items</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" [routerLink]="['/products/prices']"
-                                        routerLinkActive="active">Item Prices</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" [routerLink]="['/products/pricelists']"
-                                        routerLinkActive="active">Price Lists</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <!-- Geography Master -->
                     <li class="nav-item"
                         *ngIf="authStore.hasAnyPermission(['Countries.View', 'Countries.Manage', 'States.View', 'States.Manage', 'Cities.View', 'Cities.Manage', 'PostalCodes.View', 'PostalCodes.Manage'])">
                         <a class="nav-link menu-link" href="#sidebarGeography" data-bs-toggle="collapse" role="button"
@@ -625,12 +582,115 @@
                         </div>
                     </li>
 
-                    <!-- Security Management -->
+                    <!-- INVENTORY SECTION -->
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-inventory">Inventory</span></li>
+
+                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Items.View', 'Items.Manage'])">
+                        <a class="nav-link menu-link" href="#sidebarProduct" data-bs-toggle="collapse" role="button"
+                            aria-expanded="false" aria-controls="sidebarProduct">
+                            <i class="las la-box"></i> <span data-key="t-products">Products</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarProduct">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" [routerLink]="['/products/items']"
+                                        routerLinkActive="active">Items</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" [routerLink]="['/products/prices']"
+                                        routerLinkActive="active">Item Prices</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" [routerLink]="['/products/pricelists']"
+                                        routerLinkActive="active">Price Lists</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- PURCHASING SECTION -->
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-purchasing">Purchasing</span></li>
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarPurchasing" data-bs-toggle="collapse" role="button"
+                            aria-expanded="false" aria-controls="sidebarPurchasing">
+                            <i class="las la-shopping-cart"></i> <span data-key="t-purchase">Purchase</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarPurchasing">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" [routerLink]="['/purchase-orders']"
+                                        routerLinkActive="active">Purchase Orders</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" [routerLink]="['/grns']" routerLinkActive="active">Goods Receipt Notes (GRN)</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- SALES SECTION -->
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-sales">Sales</span></li>
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarInvoiceManagement" data-bs-toggle="collapse"
+                            role="button" aria-expanded="false" aria-controls="sidebarInvoiceManagement">
+                            <i class="las la-file-invoice"></i> <span data-key="t-invoices">Invoices</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarInvoiceManagement">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a [routerLink]="['/invoices']" class="nav-link" data-key="t-invoice">Invoice List</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a [routerLink]="['/invoices/create']" class="nav-link" data-key="t-add-invoice">Add Invoice</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- ACCOUNTING SECTION -->
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-accounting">Accounting</span></li>
+
+                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Payments.View', 'Payments.Manage', 'Invoices.View', 'Invoices.Manage'])">
+                        <a class="nav-link menu-link" href="#sidebarAccounting" data-bs-toggle="collapse" role="button"
+                            aria-expanded="false" aria-controls="sidebarAccounting">
+                            <i class="las la-balance-scale"></i> <span data-key="t-accounting-menu">Accounting</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarAccounting">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a [routerLink]="['/accounting/dashboard']" class="nav-link" data-key="t-dashboard">
+                                        <i class="las la-chart-line"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a [routerLink]="['/categories']" class="nav-link" data-key="t-categories">
+                                        <i class="las la-tags"></i> Categories
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a [routerLink]="['/transactions']" class="nav-link" data-key="t-transactions">
+                                        <i class="las la-exchange-alt"></i> Transactions
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a [routerLink]="['/accounting/currencies']" class="nav-link" data-key="t-currencies">
+                                        <i class="las la-money-bill"></i> Currencies
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- SECURITY SECTION -->
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-security">Security</span></li>
+
                     <li class="nav-item"
                         *ngIf="authStore.hasAnyPermission(['Users.View', 'Users.Manage', 'Roles.View', 'Roles.Manage', 'Permissions.View', 'Permissions.Manage'])">
                         <a class="nav-link menu-link" href="#sidebarSecurity" data-bs-toggle="collapse" role="button"
                             aria-expanded="false" aria-controls="sidebarSecurity">
-                            <i class="las la-shield-alt"></i> <span data-key="t-security">Security</span>
+                            <i class="las la-shield-alt"></i> <span data-key="t-security-menu">Security Management</span>
                         </a>
                         <div class="collapse menu-dropdown" id="sidebarSecurity">
                             <ul class="nav nav-sm flex-column">
@@ -657,68 +717,7 @@
                         </div>
                     </li>
 
-                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Pages</span></li>
-
-                    <!-- Login page link -->
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" [routerLink]="['/login']" routerLinkActive="active">
-                            <i class="las la-sign-in-alt"></i> <span>Login</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" href="#sidebarInvoiceManagement" data-bs-toggle="collapse"
-                            role="button" aria-expanded="false" aria-controls="sidebarInvoiceManagement">
-                            <i class="las la-file-invoice"></i> <span data-key="t-invoices">Invoices Management</span>
-                        </a>
-                        <div class="collapse menu-dropdown" id="sidebarInvoiceManagement">
-                            <ul class="nav nav-sm flex-column">
-                                <li class="nav-item">
-                                    <a [routerLink]="['/invoices']" class="nav-link" data-key="t-invoice"> Invoice List
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a [routerLink]="['/invoices/create']" class="nav-link" data-key="t-add-invoice">
-                                        Add Invoice
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="nav-item" *ngIf="authStore.hasAnyPermission(['Payments.View', 'Payments.Manage', 'Invoices.View', 'Invoices.Manage'])">
-                        <a class="nav-link menu-link" href="#sidebarAccounting" data-bs-toggle="collapse" role="button"
-                            aria-expanded="false" aria-controls="sidebarAccounting">
-                            <i class="las la-balance-scale"></i> <span data-key="t-accounting">Accounting</span>
-                        </a>
-                        <div class="collapse menu-dropdown" id="sidebarAccounting">
-                            <ul class="nav nav-sm flex-column">
-                                <li class="nav-item">
-                                    <a [routerLink]="['/accounting/dashboard']" class="nav-link" data-key="t-dashboard">
-                                        <i class="las la-chart-line"></i> Dashboard
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a [routerLink]="['/accounting/accounts']" class="nav-link" data-key="t-accounts">
-                                        <i class="las la-wallet"></i> Manage Accounts
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a [routerLink]="['/accounting/categories']" class="nav-link" data-key="t-categories">
-                                        <i class="las la-tags"></i> Manage Categories
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a [routerLink]="['/accounting/transactions']" class="nav-link" data-key="t-transactions">
-                                        <i class="las la-exchange-alt"></i> Manage Transactions
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button"
                             aria-expanded="false" aria-controls="sidebarProducts" data-key="t-products">Products
                         </a>
@@ -807,9 +806,9 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> -->
 
-                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Components</span>
+                    <!-- <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Components</span>
                     </li>
 
                     <li class="nav-item">
@@ -1210,15 +1209,15 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> -->
 
-                    <div class="help-box text-center">
+                    <!-- <div class="help-box text-center">
                         <img src="template/images/create-invoice.png" class="img-fluid" alt="">
                         <p class="mb-3 mt-2 text-muted">Upgrade To Pro For More Features</p>
                         <div class="mt-3">
                             <a href="invoice-add.html" class="btn btn-primary"> Create Invoice</a>
                         </div>
-                    </div>
+                    </div> -->
 
                 </ul>
             </div>

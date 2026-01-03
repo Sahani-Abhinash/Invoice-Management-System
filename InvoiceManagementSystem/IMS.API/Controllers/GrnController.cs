@@ -52,5 +52,31 @@ namespace IMS.API.Controllers
             if (!ok) return BadRequest();
             return NoContent();
         }
+
+        [HttpPost("{id}/payment")]
+        public async Task<IActionResult> RecordPayment(Guid id, [FromBody] RecordGrnPaymentDto dto)
+        {
+            try
+            {
+                var payment = await _manager.RecordPaymentAsync(id, dto);
+                return Ok(payment);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"GRN with ID {id} not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/payment-details")]
+        public async Task<IActionResult> GetPaymentDetails(Guid id)
+        {
+            var details = await _manager.GetPaymentDetailsAsync(id);
+            if (details == null) return NotFound();
+            return Ok(details);
+        }
     }
 }

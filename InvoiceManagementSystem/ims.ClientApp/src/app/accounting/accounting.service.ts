@@ -13,11 +13,6 @@ export enum TransactionType {
   Closing = 9
 }
 
-export enum IncomeExpenseType {
-  Income = 1,
-  Expense = 2
-}
-
 export interface Account {
   id: string;
   name: string;
@@ -27,55 +22,6 @@ export interface Account {
 export interface CreateAccount {
   name: string;
   description: string;
-}
-
-export interface IncomeExpenseCategory {
-  id: string;
-  name: string;
-  code: string;
-  type: IncomeExpenseType;
-  glAccountId: string;
-  glAccountName: string;
-  isActive: boolean;
-}
-
-export interface CreateIncomeExpenseCategory {
-  name: string;
-  code: string;
-  type: IncomeExpenseType;
-  glAccountId: string;
-  isActive: boolean;
-}
-
-export interface IncomeExpenseTransaction {
-  id: string;
-  type: IncomeExpenseType;
-  categoryId: string;
-  categoryName: string;
-  accountId?: string;
-  accountName?: string;
-  amount: number;
-  currency: string;
-  transactionDate: string;
-  reference: string;
-  description: string;
-  sourceModule: string;
-  sourceId?: string;
-  status: string;
-}
-
-export interface CreateIncomeExpenseTransaction {
-  type: IncomeExpenseType;
-  categoryId: string;
-  accountId?: string;
-  amount: number;
-  currency: string;
-  transactionDate: string;
-  reference: string;
-  description: string;
-  sourceModule: string;
-  sourceId?: string;
-  postNow: boolean;
 }
 
 export interface AccountBalance {
@@ -156,63 +102,6 @@ export class AccountingService {
 
   deleteAccount(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/accounts/${id}`);
-  }
-
-  // ===== INCOME/EXPENSE CATEGORIES =====
-
-  getCategories(type?: IncomeExpenseType): Observable<IncomeExpenseCategory[]> {
-    let params = new HttpParams();
-    if (type !== undefined) {
-      params = params.set('type', type.toString());
-    }
-    console.log('API URL:', `${this.apiUrl}/categories`);
-    return this.http.get<IncomeExpenseCategory[]>(`${this.apiUrl}/categories`, { params });
-  }
-
-  getCategoryById(id: string): Observable<IncomeExpenseCategory> {
-    return this.http.get<IncomeExpenseCategory>(`${this.apiUrl}/categories/${id}`);
-  }
-
-  createCategory(category: CreateIncomeExpenseCategory): Observable<IncomeExpenseCategory> {
-    console.log('Creating category:', category);
-    console.log('API URL:', `${this.apiUrl}/categories`);
-    return this.http.post<IncomeExpenseCategory>(`${this.apiUrl}/categories`, category);
-  }
-
-  updateCategory(id: string, category: CreateIncomeExpenseCategory): Observable<IncomeExpenseCategory> {
-    return this.http.put<IncomeExpenseCategory>(`${this.apiUrl}/categories/${id}`, category);
-  }
-
-  deleteCategory(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/categories/${id}`);
-  }
-
-  // ===== INCOME/EXPENSE TRANSACTIONS =====
-
-  getTransactions(
-    type?: IncomeExpenseType,
-    startDate?: string,
-    endDate?: string,
-    categoryId?: string
-  ): Observable<IncomeExpenseTransaction[]> {
-    let params = new HttpParams();
-    if (type !== undefined) params = params.set('type', type.toString());
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    if (categoryId) params = params.set('categoryId', categoryId);
-    return this.http.get<IncomeExpenseTransaction[]>(`${this.apiUrl}/transactions`, { params });
-  }
-
-  getTransactionById(id: string): Observable<IncomeExpenseTransaction> {
-    return this.http.get<IncomeExpenseTransaction>(`${this.apiUrl}/transactions/${id}`);
-  }
-
-  createTransaction(transaction: CreateIncomeExpenseTransaction): Observable<IncomeExpenseTransaction> {
-    return this.http.post<IncomeExpenseTransaction>(`${this.apiUrl}/transactions`, transaction);
-  }
-
-  postTransaction(id: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/transactions/${id}/post`, {});
   }
 
   // ===== FINANCIAL REPORTS =====

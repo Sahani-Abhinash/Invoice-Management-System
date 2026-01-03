@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -16,6 +16,7 @@ export class ItemFormComponent implements OnInit {
     id: string | null = null;
     uoms: UnitOfMeasure[] = [];
     isEditMode = false;
+    private cdr = inject(ChangeDetectorRef);
 
     constructor(
         private fb: FormBuilder,
@@ -55,6 +56,7 @@ export class ItemFormComponent implements OnInit {
     loadUoMs() {
         this.itemService.getUnitOfMeasures().subscribe(data => {
             this.uoms = data;
+            this.cdr.detectChanges();
         });
     }
 

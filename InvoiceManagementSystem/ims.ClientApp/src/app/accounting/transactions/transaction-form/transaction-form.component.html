@@ -1,0 +1,142 @@
+<div class="transaction-form-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <a routerLink="/transactions" class="back-link">
+      <i class="bi bi-arrow-left"></i>
+      Back to Transactions
+    </a>
+    <h2>Add Manual Transaction</h2>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <!-- Type Selection Tabs -->
+    <div class="type-tabs">
+      <button 
+        type="button"
+        class="type-tab credit"
+        [class.active]="selectedType === TransactionType.Credit"
+        (click)="setType(TransactionType.Credit)">
+        <i class="bi bi-arrow-up-circle"></i>
+        Credit (Income)
+      </button>
+      <button 
+        type="button"
+        class="type-tab debit"
+        [class.active]="selectedType === TransactionType.Debit"
+        (click)="setType(TransactionType.Debit)">
+        <i class="bi bi-arrow-down-circle"></i>
+        Debit (Expense)
+      </button>
+    </div>
+
+    <!-- Form Content -->
+    <div class="form-content">
+      <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()">
+        <!-- Date Field -->
+        <div class="form-group">
+          <label for="transactionDate" class="form-label">
+            Transaction Date<span class="required">*</span>
+          </label>
+          <input
+            type="date"
+            id="transactionDate"
+            class="form-control"
+            formControlName="transactionDate"
+            [class.is-invalid]="transactionForm.get('transactionDate')?.invalid && transactionForm.get('transactionDate')?.touched"
+          />
+          <div class="invalid-feedback">Transaction date is required</div>
+        </div>
+
+        <!-- Amount Field -->
+        <div class="form-group">
+          <label for="amount" class="form-label">
+            Amount<span class="required">*</span>
+          </label>
+          <input
+            type="number"
+            id="amount"
+            class="form-control"
+            formControlName="amount"
+            step="0.01"
+            min="0"
+            placeholder="Enter amount"
+            [class.is-invalid]="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched"
+          />
+          <div class="invalid-feedback">Amount must be greater than 0</div>
+        </div>
+
+        <!-- Category Field -->
+        <div class="form-group">
+          <label for="categoryId" class="form-label">
+            Category<span class="required">*</span>
+          </label>
+          <select
+            id="categoryId"
+            class="form-select"
+            formControlName="categoryId"
+            [class.is-invalid]="transactionForm.get('categoryId')?.invalid && transactionForm.get('categoryId')?.touched"
+          >
+            <option value="">Select Category</option>
+            <option *ngFor="let category of filteredCategories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+          <div class="invalid-feedback">Category is required</div>
+          <small class="form-text text-muted">
+            <a routerLink="/categories">Manage Categories</a>
+          </small>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description" class="form-label">
+            Description
+          </label>
+          <textarea
+            id="description"
+            class="form-control"
+            formControlName="description"
+            rows="3"
+            placeholder="Enter transaction description (optional)"
+            [class.is-invalid]="transactionForm.get('description')?.invalid && transactionForm.get('description')?.touched"
+          ></textarea>
+          <div class="invalid-feedback">Description must be at least 1 character</div>
+        </div>
+
+        <!-- Reference Field -->
+        <div class="form-group">
+          <label for="reference" class="form-label">Reference</label>
+          <input
+            type="text"
+            id="reference"
+            class="form-control"
+            formControlName="reference"
+            placeholder="Invoice #, Receipt #, etc. (optional)"
+          />
+        </div>
+
+        <!-- Hidden Type Field -->
+        <input type="hidden" formControlName="type" />
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loading || transactionForm.invalid">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+            <i *ngIf="!loading" class="bi bi-check-circle"></i>
+            {{ loading ? 'Creating...' : 'Create Transaction' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+            <i class="bi bi-x-circle"></i>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

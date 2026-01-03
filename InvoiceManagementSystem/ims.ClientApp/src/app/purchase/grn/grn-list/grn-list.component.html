@@ -31,10 +31,9 @@
                                     <tr>
                                         <th>Reference</th>
                                         <th>Received Date</th>
-                                        <th>Vendor</th>
-                                        <th>Warehouse</th>
                                         <th>Items</th>
-                                        <th>Status</th>
+                                        <th>Receive Status</th>
+                                        <th>Payment Status</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
@@ -44,13 +43,6 @@
                                             <strong>{{ grn.reference }}</strong>
                                         </td>
                                         <td>{{ grn.receivedDate | date:'mediumDate' }}</td>
-                                        <td>
-                                            <span class="fw-medium">{{ getVendorName(grn.vendorId) }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="text-muted small">{{ getWarehouseName(grn.warehouseId)
-                                                }}</span>
-                                        </td>
                                         <td>
                                             <span class="badge bg-info">{{ grn.lines.length }} items</span>
                                         </td>
@@ -62,6 +54,15 @@
                                                 <i class="las la-clock"></i> Pending
                                             </span>
                                         </td>
+                                        <td>
+                                            <span class="badge" [ngClass]="getPaymentStatusBadgeClass(grn.paymentStatus)">
+                                                <i class="las" 
+                                                   [ngClass]="{'la-dollar-sign': grn.paymentStatus === 'FullyPaid',
+                                                              'la-coins': grn.paymentStatus === 'PartiallyPaid',
+                                                              'la-exclamation-circle': grn.paymentStatus === 'Unpaid'}"></i>
+                                                {{ getPaymentStatusText(grn.paymentStatus) }}
+                                            </span>
+                                        </td>
                                         <td class="text-end">
                                             <button class="btn btn-sm btn-soft-primary me-1"
                                                 (click)="viewGrn(grn.id); $event.stopPropagation()" title="View">
@@ -71,14 +72,19 @@
                                                 (click)="editGrn(grn.id, $event)" title="Edit">
                                                 <i class="las la-edit"></i>
                                             </button>
-                                            <button *ngIf="!grn.isReceived" class="btn btn-sm btn-soft-success"
+                                            <button *ngIf="!grn.isReceived" class="btn btn-sm btn-soft-success me-1"
                                                 (click)="receiveGrn(grn.id, $event)" title="Mark as Received">
-                                                <i class="las la-check"></i> Receive
+                                                <i class="las la-check"></i>
+                                            </button>
+                                            <button *ngIf="grn.isReceived && grn.paymentStatus !== 'FullyPaid'" 
+                                                class="btn btn-sm btn-soft-warning"
+                                                (click)="recordPayment(grn.id, $event)" title="Record Payment">
+                                                <i class="las la-money-bill-wave"></i>
                                             </button>
                                         </td>
                                     </tr>
                                     <tr *ngIf="grns.length === 0">
-                                        <td colspan="7" class="text-center text-muted py-5">
+                                        <td colspan="6" class="text-center text-muted py-5">
                                             <i class="las la-inbox la-3x d-block mb-3"></i>
                                             No GRNs found. Click "Create GRN" to add a new one.
                                         </td>

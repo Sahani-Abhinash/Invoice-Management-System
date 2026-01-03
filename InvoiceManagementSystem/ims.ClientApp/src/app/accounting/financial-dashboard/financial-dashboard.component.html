@@ -2,14 +2,8 @@
   <div class="page-header">
     <h1>Financial Dashboard</h1>
     <div class="header-actions">
-      <a routerLink="/accounting/accounts" class="btn btn-outline-primary me-2">
-        <i class="las la-wallet"></i> Manage Accounts
-      </a>
-      <a routerLink="/accounting/categories" class="btn btn-outline-primary me-2">
-        <i class="las la-tags"></i> Manage Categories
-      </a>
       <a routerLink="/accounting/transactions" class="btn btn-outline-primary me-2">
-        <i class="las la-exchange-alt"></i> Manage Transactions
+        <i class="fa fa-list"></i> View Transactions
       </a>
       <button class="btn btn-primary" (click)="refresh()">
         <i class="fa fa-refresh"></i> Refresh
@@ -24,6 +18,12 @@
 
   <div *ngIf="error" class="alert alert-danger">
     {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="refresh()">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error && !summary" class="alert alert-info">
+    <i class="fa fa-info-circle"></i> No financial data available. Please check the backend API.
+    <button class="btn btn-sm btn-outline-info ms-2" (click)="refresh()">Retry</button>
   </div>
 
   <div *ngIf="summary && !loading" class="dashboard-content">
@@ -156,11 +156,8 @@
         <a routerLink="/accounting/accounts" class="link-button">
           <i class="fa fa-wallet"></i> Manage Accounts
         </a>
-        <a routerLink="/accounting/categories" class="link-button">
-          <i class="fa fa-tags"></i> Manage Categories
-        </a>
-        <a routerLink="/accounting/transactions" class="link-button">
-          <i class="fa fa-exchange-alt"></i> Manage Transactions
+        <a routerLink="/accounting/currencies" class="link-button">
+          <i class="fa fa-money-bill"></i> Manage Currencies
         </a>
         <a routerLink="/accounting/balance-sheet" class="link-button">
           <i class="fa fa-balance-scale"></i> Balance Sheet

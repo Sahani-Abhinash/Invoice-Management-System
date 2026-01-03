@@ -1,0 +1,152 @@
+<div class="invoice-container">
+    <div *ngIf="isLoading" class="text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <div *ngIf="!isLoading && grnDetails">
+        <!-- Toolbar -->
+        <div class="d-flex justify-content-end mb-4 no-print gap-2">
+            <button class="btn btn-secondary btn-sm" (click)="goBack()">
+                <i class="las la-arrow-left"></i> Back
+            </button>
+            <button class="btn btn-primary btn-sm" (click)="print()">
+                <i class="las la-print"></i> Print Receipt
+            </button>
+        </div>
+
+        <!-- Title -->
+        <div class="header-title">
+            PAYMENT RECEIPT
+        </div>
+
+        <!-- Company Info -->
+        <div class="text-center mb-4">
+            <div class="company-logo mb-2">
+                <i class="las la-warehouse text-primary"></i> IMS<span class="text-danger">.</span>
+            </div>
+            <h5 class="fw-bold">My Company Name LLC</h5>
+            <p class="small mb-0">
+                123 Business Rd., Tech City, TC 90210<br>
+                Phone: +1 555-0123 | Email: info@mycompany.com
+            </p>
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td class="text-muted" style="width: 150px;">GRN Reference:</td>
+                        <td><strong>{{ grnDetails.reference }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Receipt Date:</td>
+                        <td>{{ currentDate | date:'mediumDate' }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td class="text-muted" style="width: 150px;">Total Amount:</td>
+                        <td><strong>{{ grnDetails.total | currency }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Payment Status:</td>
+                        <td>
+                            <span class="badge" 
+                                  [ngClass]="{'bg-success': grnDetails.paymentStatus === 'FullyPaid',
+                                             'bg-warning': grnDetails.paymentStatus === 'PartiallyPaid',
+                                             'bg-danger': grnDetails.paymentStatus === 'Unpaid'}">
+                                {{ grnDetails.paymentStatus }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment Summary -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="m-0"><i class="las la-receipt"></i> Payment Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="text-muted small">Total Amount</div>
+                            <h4 class="fw-bold mb-0">{{ grnDetails.total | currency }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                            <div class="text-muted small">Paid Amount</div>
+                            <h4 class="fw-bold mb-0 text-success">{{ grnDetails.paidAmount | currency }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-danger bg-opacity-10 rounded">
+                            <div class="text-muted small">Balance Due</div>
+                            <h4 class="fw-bold mb-0 text-danger">{{ grnDetails.balanceDue | currency }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h6 class="m-0"><i class="las la-list"></i> Payment Details</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Payment Date</th>
+                                <th>Amount</th>
+                                <th>Payment Method</th>
+                                <th>Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let payment of grnDetails.payments; let i = index">
+                                <td>{{ i + 1 }}</td>
+                                <td>{{ payment.date | date: 'mediumDate' }}</td>
+                                <td><strong>{{ payment.amount | currency }}</strong></td>
+                                <td>{{ getPaymentMethodName(payment.method) }}</td>
+                                <td>{{ payment.dueDate ? (payment.dueDate | date: 'mediumDate') : 'N/A' }}</td>
+                            </tr>
+                            <tr *ngIf="!grnDetails.payments || grnDetails.payments.length === 0">
+                                <td colspan="5" class="text-center text-muted">No payments recorded yet</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="2" class="text-end">Total Paid:</td>
+                                <td colspan="3">{{ grnDetails.paidAmount | currency }}</td>
+                            </tr>
+                            <tr *ngIf="grnDetails.balanceDue > 0">
+                                <td colspan="2" class="text-end text-danger">Remaining Balance:</td>
+                                <td colspan="3" class="text-danger">{{ grnDetails.balanceDue | currency }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-5 pt-4 border-top">
+            <p class="text-muted small mb-1">This is a computer-generated receipt and does not require a signature.</p>
+            <p class="text-muted small">Thank you for your business!</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "ims.ClientApp"
+		},
+		{
+			"path": "IMS.API"
+		},
+		{
+			"path": "IMS.Application"
+		},
+		{
+			"path": "IMS.Domain"
+		},
+		{
+			"path": "IMS.Infrastructure"
+		}
+	],
+	"settings": {}
+}
