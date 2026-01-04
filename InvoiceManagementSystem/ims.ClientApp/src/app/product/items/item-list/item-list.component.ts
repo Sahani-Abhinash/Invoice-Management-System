@@ -1,19 +1,25 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ItemService, Item } from '../item.service';
+import { TableDataManagerService } from '../../../shared/services/table-data-manager.service';
+import { TableControlsComponent } from '../../../shared/components/table-controls/table-controls.component';
+import { TablePaginationComponent } from '../../../shared/components/table-pagination/table-pagination.component';
 
 @Component({
     selector: 'app-item-list',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule, TableControlsComponent, TablePaginationComponent],
+    providers: [TableDataManagerService],
     templateUrl: './item-list.component.html',
     styleUrls: []
 })
 export class ItemListComponent implements OnInit {
-    items: Item[] = [];
+    Math = Math;
 
     constructor(
+        public tableManager: TableDataManagerService<Item>,
         private itemService: ItemService,
         private router: Router,
         private cdr: ChangeDetectorRef
@@ -26,14 +32,36 @@ export class ItemListComponent implements OnInit {
     loadItems() {
         this.itemService.getAll().subscribe(
             data => {
-                this.items = data;
-                console.log(this.items);
+                this.tableManager.setData(data);
+                console.log(data);
                 this.cdr.detectChanges();
             },
             error => {
                 console.error('Error loading items:', error);
             }
         );
+    }
+
+    onSearch(searchText: string) {
+        this.tableManager.applySearch(searchText, (item, search) => {
+            const name = item.name?.toLowerCase() || '';
+            const sku = item.sku?.toLowerCase() || '';
+            const uom = item.unitOfMeasure?.name?.toLowerCase() || '';
+            return name.includes(search) || sku.includes(search) || uom.includes(search);
+        });
+    }
+
+    onSort(column: string) {
+        this.tableManager.sortBy(column, (a, b, col) => {
+            let aValue = '';
+            let bValue = '';
+            switch (col) {
+                case 'name': aValue = a.name || ''; bValue = b.name || ''; break;
+                case 'sku': aValue = a.sku || ''; bValue = b.sku || ''; break;
+                case 'uom': aValue = a.unitOfMeasure?.name || ''; bValue = b.unitOfMeasure?.name || ''; break;
+            }
+            return aValue.toLowerCase() < bValue.toLowerCase() ? -1 : 1;
+        });
     }
 
     deleteItem(id: string) {

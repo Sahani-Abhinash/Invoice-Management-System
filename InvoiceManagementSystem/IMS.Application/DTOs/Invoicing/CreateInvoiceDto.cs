@@ -7,7 +7,7 @@ namespace IMS.Application.DTOs.Invoicing
     {
         public Guid ItemId { get; set; }
         public decimal Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
+        public decimal? UnitPrice { get; set; } // Optional - if not provided, will be fetched from PriceList
     }
 
     public class CreateInvoiceDto
@@ -18,6 +18,7 @@ namespace IMS.Application.DTOs.Invoicing
         public DateTime? DueDate { get; set; }
         public Guid? CustomerId { get; set; }
         public Guid? BranchId { get; set; }
+        public Guid? PriceListId { get; set; }
         public decimal TaxRate { get; set; }
         public List<CreateInvoiceItemDto> Lines { get; set; } = new List<CreateInvoiceItemDto>();
     }

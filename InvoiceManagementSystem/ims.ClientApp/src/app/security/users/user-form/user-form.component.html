@@ -1,70 +1,159 @@
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card-header d-flex justify-content-between align-items-center bg-light">
     <h5 class="mb-0">{{ isEdit ? 'Edit User' : 'Create User' }}</h5>
     <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/users']">Back</a>
   </div>
   <div class="card-body">
-    <div *ngIf="loading" class="text-muted">Loading…</div>
-    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <div *ngIf="loading" class="text-muted text-center py-4">Loading…</div>
+    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = undefined"></button>
+    </div>
     <form [formGroup]="form" (ngSubmit)="submit()" *ngIf="!loading">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" formControlName="email" placeholder="name@example.com" />
+      <!-- Basic Information Section -->
+      <div class="mb-4">
+        <h6 class="text-uppercase text-muted small fw-bold mb-3">
+          <i class="las la-user me-2"></i>Basic Information
+        </h6>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" formControlName="email" placeholder="name@example.com" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">First Name <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="firstName" placeholder="First name" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="lastName" placeholder="Last name" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ isEdit ? 'New Password' : 'Password' }} <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" formControlName="password" 
+              [placeholder]="isEdit ? 'Leave blank to keep current password' : 'Enter password'" />
+            <small class="text-muted" *ngIf="isEdit">Leave blank to keep your current password</small>
+          </div>
         </div>
-        <!-- Removed Display Name: backend requires FirstName/LastName -->
-        <div class="col-md-6">
-          <label class="form-label">First Name</label>
-          <input class="form-control" formControlName="firstName" placeholder="First name" />
+      </div>
+
+      <!-- Contact Information Section -->
+      <div class="mb-4">
+        <h6 class="text-uppercase text-muted small fw-bold mb-3">
+          <i class="las la-phone me-2"></i>Contact Information
+        </h6>
+        <div class="row g-3">
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Mobile</label>
+            <input type="tel" class="form-control" formControlName="mobile" placeholder="+1 234 567 890" />
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Gender</label>
+            <select class="form-select" formControlName="gender" aria-label="Gender">
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Non-binary">Non-binary</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label" for="status">Status <span class="text-danger">*</span></label>
+            <select id="status" class="form-select" formControlName="status" aria-label="User status">
+              <option [value]="0">Active</option>
+              <option [value]="1">Inactive</option>
+            </select>
+          </div>
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Last Name</label>
-          <input class="form-control" formControlName="lastName" placeholder="Last name" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" formControlName="password" placeholder="Password" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="status">Status</label>
-          <select id="status" class="form-select" formControlName="status" aria-label="User status">
-            <option [value]="0">Active</option>
-            <option [value]="1">Inactive</option>
-          </select>
+      </div>
+
+      <!-- Profile Picture Section -->
+      <div class="mb-4">
+        <h6 class="text-uppercase text-muted small fw-bold mb-3">
+          <i class="las la-image me-2"></i>Profile Picture
+        </h6>
+        <div class="row g-3">
+          <div class="col-lg-8">
+            <div class="border rounded p-3 bg-light">
+              <input type="file" class="form-control mb-2" accept="image/*" (change)="onFileSelected($event)" />
+              <button type="button" class="btn btn-info btn-sm" 
+                (click)="uploadProfilePicture()" 
+                [disabled]="!selectedProfilePictureFile || isUploading">
+                <i class="las la-upload me-1"></i>{{ isUploading ? 'Uploading...' : 'Upload Picture' }}
+              </button>
+              <small class="text-muted d-block mt-2">JPG, PNG, or GIF. Max 5MB.</small>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="border rounded p-3 text-center" style="background: #f8f9fa; min-height: 160px; display: flex; align-items: center; justify-content: center;">
+              <div *ngIf="profilePreview">
+                <img [src]="profilePreview" alt="Profile preview" class="img-fluid rounded mb-2" style="max-width: 120px; max-height: 120px;" />
+                <div>
+                  <button type="button" class="btn btn-sm btn-danger" (click)="clearProfilePicture()">
+                    <i class="las la-trash me-1"></i>Remove
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="!profilePreview" class="text-muted">
+                <i class="las la-image" style="font-size: 2rem;"></i>
+                <div class="small mt-2">No image</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Role Assignment Section -->
-      <div class="row g-3 mt-3" *ngIf="availableRoles.length > 0">
-        <div class="col-12">
-          <label class="form-label fw-bold">Assign Roles</label>
-          <div class="border rounded p-3 role-list-container">
-            <div class="form-check" *ngFor="let role of availableRoles">
-              <input 
-                class="form-check-input" 
-                type="checkbox" 
-                [id]="'role-' + role.id"
-                [title]="role.name"
-                placeholder="Select role"
-                [checked]="isRoleSelected(role.id)"
-                (change)="toggleRole(role.id)">
-              <label class="form-check-label" [for]="'role-' + role.id">
-                <strong>{{ role.name }}</strong>
-                <small class="text-muted d-block" *ngIf="role.description">{{ role.description }}</small>
-              </label>
+      <div class="mb-4" *ngIf="availableRoles.length > 0">
+        <h6 class="text-uppercase text-muted small fw-bold mb-3">
+          <i class="las la-user-shield me-2"></i>Assign Roles
+        </h6>
+        <div class="border rounded p-3">
+          <div class="row">
+            <div class="col-md-6" *ngFor="let role of availableRoles">
+              <div class="form-check mb-3">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  [id]="'role-' + role.id"
+                  [checked]="isRoleSelected(role.id)"
+                  (change)="toggleRole(role.id)">
+                <label class="form-check-label" [for]="'role-' + role.id">
+                  <strong>{{ role.name }}</strong>
+                  <small class="text-muted d-block" *ngIf="role.description">{{ role.description }}</small>
+                </label>
+              </div>
             </div>
-            <div *ngIf="availableRoles.length === 0" class="text-muted text-center py-2">
+            <div *ngIf="availableRoles.length === 0" class="col-12 text-muted text-center py-3">
               No roles available
             </div>
           </div>
-          <small class="text-muted">Select one or more roles to assign to this user</small>
         </div>
       </div>
 
-      <div class="mt-4">
+      <!-- Address Management Section -->
+      <div class="mb-4">
+        <h6 class="text-uppercase text-muted small fw-bold mb-3">
+          <i class="las la-map-marker me-2"></i>Addresses
+        </h6>
+        <div class="border rounded p-3" style="background: #f8f9fa;">
+          <app-address-manager
+            [entityId]="id ?? null"
+            [entityType]="'User'"
+            (addressesUpdated)="onAddressesUpdated($event)">
+          </app-address-manager>
+          <small class="text-muted d-block mt-2">Add one or more addresses and mark a primary address.</small>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 mt-4 pt-3 border-top">
         <button class="btn btn-primary" type="submit" [disabled]="form.invalid || loading">
-          {{ isEdit ? 'Save Changes' : 'Create User' }}
+          <i class="las la-save me-1"></i>{{ isEdit ? 'Save Changes' : 'Create User' }}
         </button>
+        <a [routerLink]="['/users']" class="btn btn-secondary">
+          <i class="las la-times me-1"></i>Cancel
+        </a>
       </div>
     </form>
   </div>

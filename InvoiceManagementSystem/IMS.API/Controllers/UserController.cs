@@ -88,5 +88,88 @@ namespace IMS.API.Controllers
             if (!result) return NotFound();
             return NoContent();
         }
+
+        /// <summary>
+        /// Uploads a user profile picture (replaces existing picture if present).
+        /// </summary>
+        /// <param name="id">User identifier.</param>
+        /// <returns>200 OK with profile picture URL or error response.</returns>
+        [HttpPost("{id}/upload-profile-picture")]
+        public async Task<IActionResult> UploadProfilePicture(Guid id, IFormFile file)
+        {
+            // Validate file
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            // Check file size (max 5MB)
+            if (file.Length > 5 * 1024 * 1024)
+                return BadRequest("File size exceeds 5MB limit");
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+                return BadRequest("Invalid file type. Allowed: JPG, PNG, GIF");
+
+            try
+            {
+                // Get user
+                var user = await _userManager.GetByIdAsync(id);
+                if (user == null)
+                    return NotFound("User not found");
+
+                // Create uploads directory if it doesn't exist
+                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile-pictures");
+                Directory.CreateDirectory(uploadsDir);
+
+                // Delete old profile picture if it exists
+                if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+                {
+                    // Extract filename from URL and delete file
+                    var oldFileName = Path.GetFileName(user.ProfilePictureUrl);
+                    var oldFilePath = Path.Combine(uploadsDir, oldFileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                // Save new file with simple naming: {userId}.{extension}
+                var fileName = $"{id}{fileExtension}";
+                var filePath = Path.Combine(uploadsDir, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Build URL
+                var pictureUrl = $"/uploads/profile-pictures/{fileName}";
+
+                // Update user with profile picture URL
+                var updateDto = new CreateUserDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Password = string.Empty, // Don't change password on picture upload
+                    Mobile = user.Mobile ?? string.Empty,
+                    Gender = user.Gender ?? string.Empty,
+                    ProfilePictureUrl = pictureUrl,
+                    Status = user.Status
+                };
+
+                var updated = await _userManager.UpdateAsync(id, updateDto);
+                if (updated == null)
+                    return BadRequest("Failed to update user profile picture");
+
+                return Ok(new { profilePictureUrl = pictureUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

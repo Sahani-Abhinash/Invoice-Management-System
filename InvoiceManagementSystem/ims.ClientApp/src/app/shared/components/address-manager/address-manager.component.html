@@ -1,0 +1,251 @@
+<div class="card">
+  <div class="card-header bg-light">
+    <h6 class="mb-0">
+      <i class="las la-map-marker me-2"></i> Address Management
+    </h6>
+  </div>
+  <div class="card-body">
+    <!-- Managed Addresses List -->
+    <div class="mb-3" *ngIf="managedAddresses.length > 0">
+      <h6 class="mb-2">Added Addresses:</h6>
+      <div class="list-group">
+        <div *ngFor="let managed of managedAddresses" class="list-group-item">
+          <div class="row align-items-start g-2">
+            <!-- Primary Badge -->
+            <div class="col-auto">
+              <span *ngIf="managed.isPrimary" class="badge bg-success">Primary</span>
+            </div>
+
+            <!-- Address Info -->
+            <div class="col">
+              <div class="mb-1">
+                <strong>{{ formatAddressShort(managed.address) }}</strong>
+              </div>
+              <small class="text-muted d-block">{{ formatAddressFull(managed.address) }}</small>
+            </div>
+
+            <!-- Type Selector -->
+            <div class="col-md-2">
+              <select 
+                class="form-select form-select-sm" 
+                [value]="managed.type"
+                (change)="changeAddressType(managed.id, $event)"
+                title="Select address type">
+                <option value="0">{{ addressTypeNames[0] }}</option>
+                <option value="1">{{ addressTypeNames[1] }}</option>
+                <option value="2">{{ addressTypeNames[2] }}</option>
+                <option value="3">{{ addressTypeNames[3] }}</option>
+                <option value="4">{{ addressTypeNames[4] }}</option>
+                <option value="5">{{ addressTypeNames[5] }}</option>
+                <option value="6">{{ addressTypeNames[6] }}</option>
+              </select>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-auto">
+              <div class="btn-group btn-group-sm" role="group">
+                <button 
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="setPrimary(managed.id)"
+                  [disabled]="managed.isPrimary"
+                  title="Set as primary address">
+                  <i class="las la-star"></i>
+                </button>
+                <button 
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="removeAddress(managed.id)"
+                  title="Remove address">
+                  <i class="las la-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="alert alert-info mb-3" *ngIf="managedAddresses.length === 0">
+      <i class="las la-info-circle me-2"></i>
+      No addresses added yet. Add an address below.
+    </div>
+
+    <!-- Add Address Options -->
+    <div class="mb-3">
+      <div class="d-flex gap-2">
+        <button 
+          type="button"
+          class="btn btn-outline-primary"
+          (click)="toggleAddressForm()"
+          [disabled]="showAddressForm">
+          <i class="las la-plus me-1"></i> Create New Address
+        </button>
+        <button 
+          type="button"
+          class="btn btn-outline-secondary"
+          data-bs-toggle="collapse"
+          data-bs-target="#selectExistingAddress"
+          [disabled]="availableAddresses.length === 0 || showAddressForm">
+          <i class="las la-link me-1"></i> Use Existing Address
+        </button>
+      </div>
+    </div>
+
+    <!-- Select Existing Address -->
+    <div class="collapse mb-3" id="selectExistingAddress" *ngIf="availableAddresses.length > 0">
+      <div class="card card-body">
+        <label class="form-label">Select Address:</label>
+        <select 
+          class="form-select" 
+          (change)="addExistingAddress($event)"
+          title="Select an existing address to add">
+          <option value="">Choose an address...</option>
+          <option *ngFor="let addr of availableAddresses" [value]="addr.id">
+            {{ formatAddressShort(addr) }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Inline Address Creation Form -->
+    <div *ngIf="showAddressForm" class="card border-primary">
+      <div class="card-header bg-primary bg-opacity-10">
+        <h6 class="mb-0 text-primary">
+          <i class="las la-map-marker me-1"></i> Create New Address
+        </h6>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="addressForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Street Address Line 1 <span class="text-danger">*</span></label>
+              <input 
+                type="text" 
+                class="form-control" 
+                formControlName="line1" 
+                placeholder="123 Main Street">
+              <div 
+                *ngIf="addressForm.get('line1')?.touched && addressForm.get('line1')?.invalid" 
+                class="text-danger small mt-1">
+                Street address is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Street Address Line 2</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                formControlName="line2" 
+                placeholder="Apt, Suite, Unit, etc. (optional)">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="countrySelect">Country</label>
+              <select 
+                id="countrySelect"
+                class="form-select" 
+                formControlName="countryId" 
+                (change)="onCountryChange()"
+                title="Select country">
+                <option value="">Select Country (Optional)</option>
+                <option *ngFor="let country of countries" [value]="country.id">
+                  {{ country.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="stateSelect">State/Province</label>
+              <select 
+                id="stateSelect"
+                class="form-select" 
+                formControlName="stateId" 
+                (change)="onStateChange()"
+                title="Select state or province">
+                <option value="">Select State (Optional)</option>
+                <option *ngFor="let state of getFilteredStates()" [value]="state.id">
+                  {{ state.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="citySelect">City</label>
+              <select 
+                id="citySelect"
+                class="form-select" 
+                formControlName="cityId" 
+                (change)="onCityChange()"
+                title="Select city">
+                <option value="">Select City (Optional)</option>
+                <option *ngFor="let city of getFilteredCities()" [value]="city.id">
+                  {{ city.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="postalCodeSelect">Postal Code</label>
+              <select 
+                id="postalCodeSelect"
+                class="form-select" 
+                formControlName="postalCodeId"
+                title="Select postal code">
+                <option value="">Select Postal Code (Optional)</option>
+                <option *ngFor="let pc of getFilteredPostalCodes()" [value]="pc.id">
+                  {{ pc.code }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="typeSelect">Address Type</label>
+              <select 
+                id="typeSelect"
+                class="form-select" 
+                formControlName="type"
+                title="Select address type">
+                <option value="0">{{ addressTypeNames[0] }}</option>
+                <option value="1">{{ addressTypeNames[1] }}</option>
+                <option value="2">{{ addressTypeNames[2] }}</option>
+                <option value="3">{{ addressTypeNames[3] }}</option>
+                <option value="4">{{ addressTypeNames[4] }}</option>
+                <option value="5">{{ addressTypeNames[5] }}</option>
+                <option value="6">{{ addressTypeNames[6] }}</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <div class="d-flex gap-2">
+                <button 
+                  type="button" 
+                  class="btn btn-success btn-sm" 
+                  (click)="createNewAddress()" 
+                  [disabled]="addressForm.invalid || isCreatingAddress"
+                  title="Create address">
+                  <span *ngIf="!isCreatingAddress">
+                    <i class="las la-check me-1"></i> Create Address
+                  </span>
+                  <span *ngIf="isCreatingAddress">
+                    <span class="spinner-border spinner-border-sm me-1"></span> Creating...
+                  </span>
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-light btn-sm" 
+                  (click)="cancelAddressForm()" 
+                  [disabled]="isCreatingAddress"
+                  title="Cancel address creation">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

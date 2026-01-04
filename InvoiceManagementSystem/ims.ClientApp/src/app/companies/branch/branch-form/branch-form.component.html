@@ -12,15 +12,15 @@
       </div>
 
       <div class="mb-3">
-        <label for="address" class="form-label">Address</label>
-        <select class="form-select" id="address" formControlName="addressId">
-          <option value="">Select address (optional)</option>
-          <option *ngFor="let addr of addresses" [value]="addr.id">{{ formatAddress(addr) }}</option>
-        </select>
+        <app-address-manager 
+          [entityId]="id" 
+          [entityType]="'Branch'"
+          (addressesUpdated)="onAddressesUpdated($event)">
+        </app-address-manager>
       </div>
 
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create' }}</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || managedAddresses.length === 0">{{ id ? 'Update' : 'Create' }}</button>
         <a class="btn btn-light" [routerLink]="['/branches']">Cancel</a>
       </div>
     </form>

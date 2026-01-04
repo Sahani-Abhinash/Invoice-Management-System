@@ -21,6 +21,7 @@ namespace IMS.Application.DTOs.Invoicing
         public DateTime? DueDate { get; set; }
         public Guid? CustomerId { get; set; }
         public Guid? BranchId { get; set; }
+        public Guid? PriceListId { get; set; }
         public decimal SubTotal { get; set; }
         public decimal Tax { get; set; }
         public decimal Total { get; set; }

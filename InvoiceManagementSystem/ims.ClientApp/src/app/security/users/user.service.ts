@@ -13,6 +13,10 @@ export interface UserProfile {
   lastName?: string;
   given_name?: string;
   family_name?: string;
+  mobile?: string;
+  gender?: string;
+  profilePictureUrl?: string;
+  status?: UserStatus | number;
 }
 
 // Frontend DTO aligned loosely with backend CreateUserDto
@@ -27,6 +31,9 @@ export interface CreateUserDto {
   email: string;
   password: string;
   status: UserStatus | number;
+  mobile?: string;
+  gender?: string;
+  profilePictureUrl?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,6 +56,10 @@ export class UserService {
       lastName: lastName ?? undefined,
       given_name: raw?.given_name ?? undefined,
       family_name: raw?.family_name ?? undefined,
+      mobile: raw?.mobile ?? raw?.Mobile ?? raw?.phoneNumber ?? raw?.PhoneNumber ?? raw?.phone ?? raw?.Phone ?? undefined,
+      gender: raw?.gender ?? raw?.Gender ?? undefined,
+      profilePictureUrl: raw?.profilePictureUrl ?? raw?.ProfilePictureUrl ?? raw?.profilePicture ?? raw?.ProfilePicture ?? undefined,
+      status: raw?.status ?? raw?.Status ?? UserStatus.Active,
     };
   }
 
@@ -93,5 +104,9 @@ export class UserService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  uploadProfilePicture(id: string, formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/upload-profile-picture`, formData);
   }
 }

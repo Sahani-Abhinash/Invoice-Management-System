@@ -15,6 +15,10 @@ namespace IMS.Domain.Entities.Security
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
 
+        public string Mobile { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public string ProfilePictureUrl { get; set; } = string.Empty;
+
         public UserStatus Status { get; set; }
 
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

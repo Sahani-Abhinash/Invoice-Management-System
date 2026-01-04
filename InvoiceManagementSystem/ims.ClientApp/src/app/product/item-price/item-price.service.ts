@@ -78,6 +78,10 @@ export class ItemPriceService {
         return this.http.get<Item[]>(this.itemUrl);
     }
 
+    getItemsWithPricesForPriceList(priceListId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/pricelist/${priceListId}/items`);
+    }
+
     getPriceLists(): Observable<PriceList[]> {
         return this.http.get<PriceList[]>(this.priceListUrl);
     }

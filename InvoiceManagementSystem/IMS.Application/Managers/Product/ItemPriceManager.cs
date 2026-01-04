@@ -23,6 +23,8 @@ namespace IMS.Application.Managers.Product
 
         public async Task<IEnumerable<ItemPriceDto>> GetByPriceListIdAsync(Guid priceListId) => await _service.GetByPriceListIdAsync(priceListId);
 
+        public async Task<IEnumerable<ItemWithPricesDto>> GetItemsWithPricesForPriceListAsync(Guid priceListId) => await _service.GetItemsWithPricesForPriceListAsync(priceListId);
+
         public async Task<ItemPriceDto> CreateAsync(CreateItemPriceDto dto) => await _service.CreateAsync(dto);
 
         public async Task<ItemPriceDto?> UpdateAsync(Guid id, CreateItemPriceDto dto) => await _service.UpdateAsync(id, dto);

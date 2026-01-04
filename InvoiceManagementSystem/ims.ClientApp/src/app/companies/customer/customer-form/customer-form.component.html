@@ -69,36 +69,38 @@
                 Assign customer to a specific branch if needed
               </div>
             </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Primary Address</label>
-              <select class="form-select" formControlName="addressId" title="Select primary address for this customer">
-                <option value="">Select Address (Optional)</option>
-                <option *ngFor="let addr of addresses" [value]="addr.id">
-                  {{ formatAddressDisplay(addr) }}
-                </option>
-              </select>
-              <div class="form-text">
-                Select the primary address for this customer
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving">
-              <span *ngIf="!isSaving">
-                <i class="las la-save me-1"></i> {{ isEdit ? 'Update' : 'Create' }} Customer
-              </span>
-              <span *ngIf="isSaving">
-                <span class="spinner-border spinner-border-sm me-1"></span> Saving...
-              </span>
-            </button>
-            <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
-              Cancel
-            </button>
           </div>
         </form>
       </div>
+    </div>
+
+    <!-- Address Manager Section -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Manage Addresses</h5>
+      </div>
+      <div class="card-body">
+        <app-address-manager 
+          [entityId]="id || ''"
+          entityType="Customer"
+          (addressesUpdated)="onAddressesUpdated($event)">
+        </app-address-manager>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="mt-4 d-flex gap-2">
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+        <span *ngIf="!isSaving">
+          <i class="las la-save me-1"></i> {{ isEdit ? 'Update' : 'Create' }} Customer
+        </span>
+        <span *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm me-1"></span> Saving...
+        </span>
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+        Cancel
+      </button>
     </div>
   </div>
 

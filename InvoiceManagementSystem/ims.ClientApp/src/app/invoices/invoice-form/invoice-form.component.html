@@ -50,6 +50,18 @@
                                             <option *ngFor="let branch of branches" [value]="(branch.id || '').toLowerCase()">{{ branch.name }}</option>
                                         </select>
                                     </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label text-muted fw-semibold">Price List <span class="text-danger">*</span></label>
+                                        <select class="form-select border-dashed" formControlName="priceListId" aria-label="Price List" title="Price List">
+                                            <option value="">Select Price List</option>
+                                            <option *ngFor="let list of priceLists" [value]="list.id">
+                                                {{ list.name }} {{ list.isDefault ? '(Default)' : '' }}
+                                            </option>
+                                        </select>
+                                        <div *ngIf="invoiceForm.get('priceListId')?.touched && invoiceForm.get('priceListId')?.invalid" class="text-danger small mt-1">
+                                            Price List is required
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -60,6 +72,12 @@
                                     <div class="col-md-6">
                                         <label class="form-label text-muted fw-semibold">Invoice #</label>
                                         <input type="text" class="form-control border-dashed bg-white" formControlName="reference" placeholder="INV-001" aria-label="Invoice number">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted fw-semibold">Price List</label>
+                                        <div class="form-control border-dashed bg-white" style="padding: 0.375rem 0.75rem; cursor: default; display: flex; align-items: center;">
+                                            <span class="fw-semibold">{{ selectedPriceListName || 'Not Selected' }}</span>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label text-muted fw-semibold">Tax %</label>
@@ -100,8 +118,21 @@
                                 <tr *ngFor="let line of lines.controls; let i = index" [formGroupName]="i"
                                     class="border-bottom-dashed">
                                     <td class="text-center align-middle col-qty">
-                                        <input type="number" class="form-control text-center"
-                                            formControlName="quantity" aria-label="Quantity" placeholder="Qty">
+                                        <div style="display: flex; align-items: center; gap: 0; width: 100%;">
+                                            <button type="button" class="btn btn-outline-secondary" 
+                                                (click)="incrementQuantity(i)" title="Increase quantity"
+                                                style="min-width: 28px; width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; border-radius: 4px 0 0 4px;">
+                                                <i class="las la-plus"></i>
+                                            </button>
+                                            <input type="number" class="form-control text-center"
+                                                formControlName="quantity" aria-label="Quantity" placeholder="Qty"
+                                                style="height: 38px; flex: 1; min-width: 60px; border-left: none; border-right: none; border-radius: 0;">
+                                            <button type="button" class="btn btn-outline-secondary" 
+                                                (click)="decrementQuantity(i)" title="Decrease quantity"
+                                                style="min-width: 28px; width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; border-radius: 0 4px 4px 0;">
+                                                <i class="las la-minus"></i>
+                                            </button>
+                                        </div>
                                         <div *ngIf="line.get('quantity')?.errors?.['insufficientStock']"
                                             class="text-danger small mt-1">
                                             Exceeds Stock
@@ -115,8 +146,12 @@
                                     <td class="col-desc">
                                         <select class="form-select" formControlName="itemId" (change)="onItemChange(i)" aria-label="Item" title="Item">
                                             <option value="">Choose Item...</option>
-                                            <option *ngFor="let item of items" [value]="(item.id || '').toLowerCase()">
+                                            <option *ngFor="let item of itemsWithPrices.length > 0 ? itemsWithPrices : items" 
+                                                [value]="(item.id || '').toLowerCase()">
                                                 {{ item.name }} ({{ item.sku }})
+                                                <span *ngIf="itemsWithPrices.length > 0 && item.prices && selectedPriceListName">
+                                                    - ${{ item.prices[selectedPriceListName] }}
+                                                </span>
                                             </option>
                                         </select>
                                         <div class="d-flex justify-content-between mt-1 small text-muted">

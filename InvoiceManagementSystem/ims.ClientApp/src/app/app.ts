@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AuthStore } from './auth/auth.store';
+import { UserService } from './security/users/user.service';
 
 @Component({
   selector: 'app-root',
@@ -16,13 +17,22 @@ export class App implements OnInit {
   protected readonly title = signal('ims.ClientApp');
   isSidebarOpen = signal(true);
   onAuthRoute = signal(false);
+  userProfilePicture = signal<string | null>(null);
+  private baseUrl = 'https://localhost:7276';
 
-  constructor(private router: Router, public authStore: AuthStore) {}
+  constructor(
+    private router: Router,
+    public authStore: AuthStore,
+    private userService: UserService
+  ) {}
 
   ngOnInit() {
     // Track route changes to toggle layout for auth pages
     // Set initial state based on current URL (first render)
     this.setAuthRouteState(this.router.url);
+
+    // Load logged-in user's profile picture
+    this.loadUserProfilePicture();
 
     // Track route changes to toggle layout for auth pages
     this.router.events.subscribe((evt) => {
@@ -92,6 +102,25 @@ export class App implements OnInit {
         document.documentElement.getAttribute('data-sidebar-size') === 'sm' ? 'lg' : 'sm'
       );
     }
+  }
+
+  private loadUserProfilePicture() {
+    const userId = this.authStore.userId();
+    if (!userId) return;
+
+    this.userService.getById(userId).subscribe({
+      next: (user) => {
+        if (user.profilePictureUrl) {
+          const fullUrl = user.profilePictureUrl.startsWith('http') 
+            ? user.profilePictureUrl 
+            : `${this.baseUrl}${user.profilePictureUrl}`;
+          this.userProfilePicture.set(fullUrl);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading user profile picture:', err);
+      }
+    });
   }
 
   private initializeSimplebar() {

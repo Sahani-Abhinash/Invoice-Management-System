@@ -1,25 +1,35 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CustomerService, CreateCustomerDto } from '../customer.service';
 import { BranchService, Branch } from '../../branch/branch.service';
-import { AddressService, Address, OwnerType } from '../../../Master/geography/address/address.service';
-import { of, forkJoin, catchError, map, concatMap } from 'rxjs';
+import { AddressService } from '../../../Master/geography/address/address.service';
+import { AddressManagerComponent } from '../../../shared/components/address-manager/address-manager.component';
+import { forkJoin, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
+
+interface AddressWithType {
+  id: string;
+  address: any;
+  type: number;
+  isPrimary: boolean;
+}
 
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, AddressManagerComponent],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css']
 })
 export class CustomerFormComponent implements OnInit {
+  @ViewChild(AddressManagerComponent) addressManager!: AddressManagerComponent;
+  
   form!: FormGroup;
   id: string | null = null;
   branches: Branch[] = [];
-  addresses: Address[] = [];
-  currentAddressId: string | null = null;
+  managedAddresses: AddressWithType[] = [];
   isLoading = true;
   isSaving = false;
   isEdit = false;
@@ -39,15 +49,14 @@ export class CustomerFormComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
       taxNumber: [''],
-      branchId: [''],
-      addressId: ['']
+      branchId: ['']
     });
   }
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');
     this.isEdit = !!this.id;
-    this.isLoading = false; // Show form immediately
+    this.isLoading = false;
     this.loadBranches();
   }
 
@@ -56,28 +65,14 @@ export class CustomerFormComponent implements OnInit {
       next: data => {
         this.cdr.detectChanges();
         this.branches = data;
-        this.loadAddresses();
-      },
-      error: err => {
-        console.error('Error loading branches:', err);
-        this.branches = [];
-        this.loadAddresses();
-      }
-    });
-  }
-
-  loadAddresses() {
-    this.addressService.getAll().subscribe({
-      next: data => {
         this.cdr.detectChanges();
-        this.addresses = data; // keep original IDs for API calls
         if (this.id) {
           this.loadCustomer();
         }
       },
       error: err => {
-        console.error('Error loading addresses:', err);
-        this.addresses = [];
+        console.error('Error loading branches:', err);
+        this.branches = [];
         if (this.id) {
           this.loadCustomer();
         }
@@ -98,8 +93,7 @@ export class CustomerFormComponent implements OnInit {
           taxNumber: customer.taxNumber,
           branchId: customer.branchId || ''
         });
-        // Load linked addresses to get the primary address
-        this.loadCustomerAddress();
+        this.cdr.detectChanges();
       },
       error: err => {
         console.error('Error loading customer:', err);
@@ -109,22 +103,10 @@ export class CustomerFormComponent implements OnInit {
     });
   }
 
-  loadCustomerAddress() {
-    if (!this.id) return;
-    
-    this.addressService.getForOwner('Customer', this.id).subscribe({
-      next: addresses => {
-        // Set the first (primary) address if exists
-        if (addresses && addresses.length > 0) {
-          const primary = addresses.find((a: any) => a.isPrimary) || addresses[0];
-          this.currentAddressId = primary.id;
-          this.form.patchValue({ addressId: primary.id });
-        }
-      },
-      error: err => {
-        console.error('Error loading customer addresses:', err);
-      }
-    });
+  onAddressesUpdated(addresses: AddressWithType[]) {
+    console.log('Customer form - addresses updated:', addresses.map(a => ({ id: a.id, isPrimary: a.isPrimary })));
+    this.managedAddresses = addresses;
+    this.cdr.detectChanges();
   }
 
   save() {
@@ -132,8 +114,15 @@ export class CustomerFormComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
+    
+    if (this.managedAddresses.length === 0) {
+      alert('Please add at least one address');
+      return;
+    }
 
     this.isSaving = true;
+    console.log('Saving customer with addresses:', this.managedAddresses);
+
     const dto: CreateCustomerDto = {
       name: this.form.value.name,
       contactName: this.form.value.contactName,
@@ -144,74 +133,109 @@ export class CustomerFormComponent implements OnInit {
     };
 
     const request = this.isEdit && this.id
-      ? this.customerService.update(this.id, dto)
+      ? this.customerService.update(this.id!, dto)
       : this.customerService.create(dto);
 
-    request.subscribe({
-      next: (customer) => {
-        if (!customer.id) {
-          this.isSaving = false;
-          this.router.navigate(['/customers']);
-          return;
-        }
-
-        const selectedAddressId = (this.form.value.addressId || '').toString();
-        const hasSelection = !!selectedAddressId;
-
-        // Server-side LinkToOwnerAsync now handles cleanup of old links for customers automatically
-        // Just call link if we have a selection, or unlink all if none
-        let workflow$: any;
+    request.pipe(
+      switchMap((customer: any) => {
+        console.log('Customer saved:', customer.id);
         
-        if (hasSelection) {
-          // Link the selected address as primary; server will clean up any existing links
-          workflow$ = this.addressService.link(selectedAddressId, 'Customer', customer.id, true);
-        } else {
-          // No address selected: unlink all existing addresses
-          workflow$ = this.addressService.getForOwner('Customer', customer.id).pipe(
-            concatMap(existing => {
-              if (!existing.length) return of(null);
-              return forkJoin(
-                existing.map(a =>
-                  this.addressService.unlink(a.id, 'Customer', customer.id).pipe(catchError(() => of(null)))
-                )
-              ).pipe(map(() => null));
-            })
+        if (this.id) {
+          // Update existing customer - unlink old addresses and relink
+          return this.unlinkAllAddresses(this.id).pipe(
+            switchMap(() => this.linkAddressesToCustomer(this.id!))
           );
+        } else {
+          // Create new customer - just link addresses
+          return this.linkAddressesToCustomer(customer.id);
         }
-
-        workflow$
-          .pipe(
-            catchError((err: any) => {
-              console.error('Error managing customer address:', err);
-              return of(null);
-            })
-          )
-          .subscribe(() => {
-            this.currentAddressId = hasSelection ? selectedAddressId : null;
-            this.isSaving = false;
-            this.router.navigate(['/customers']);
-          });
-      },
-      error: err => {
-        console.error('Error saving customer:', err);
-        alert('Failed to save customer');
+      })
+    ).subscribe({
+      next: () => {
+        console.log('Customer and addresses saved successfully');
         this.isSaving = false;
+        this.cdr.detectChanges();
+        this.router.navigate(['/customers']);
+      },
+      error: (err: any) => {
+        console.error('Error saving customer:', err);
+        alert('Failed to save customer and addresses');
+        this.isSaving = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  cancel() {
-    this.router.navigate(['/customers']);
+  private unlinkAllAddresses(customerId: string) {
+    console.log('Unlinking all addresses from customer:', customerId);
+    
+    return this.addressService.getForOwner('Customer', customerId).pipe(
+      switchMap(addresses => {
+        console.log('Found addresses to unlink:', addresses.length);
+        
+        if (addresses.length === 0) {
+          return of(null);
+        }
+
+        const unlinkObservables = addresses.map(addr => {
+          console.log('Unlinking address:', addr.id);
+          return this.addressService.unlink(addr.id, 'Customer', customerId).pipe(
+            tap(() => console.log('✓ Address unlinked:', addr.id)),
+            catchError(err => {
+              console.error('✗ Error unlinking address:', addr.id, err);
+              return of(null); // Continue even if one fails
+            })
+          );
+        });
+
+        return forkJoin(unlinkObservables);
+      }),
+      tap(() => console.log('All addresses unlinked'))
+    );
   }
 
-  formatAddressDisplay(addr: Address): string {
-    const parts = [] as string[];
-    if (addr.line1) parts.push(addr.line1);
-    if (addr.line2) parts.push(addr.line2);
-    if (addr.city?.name) parts.push(addr.city.name);
-    if (addr.state?.name) parts.push(addr.state.name);
-    if (addr.country?.name) parts.push(addr.country.name);
-    if (addr.postalCode?.code) parts.push(addr.postalCode.code);
-    return parts.length ? parts.join(', ') : 'Address';
+  private linkAddressesToCustomer(customerId: string) {
+    console.log('=== START LINKING ADDRESSES ===');
+    console.log('Customer ID:', customerId);
+    console.log('Managed Addresses Count:', this.managedAddresses.length);
+    console.log('Managed Addresses:', JSON.stringify(this.managedAddresses, null, 2));
+    
+    if (this.managedAddresses.length === 0) {
+      console.log('No addresses to link, returning...');
+      return of(null);
+    }
+
+    const linkObservables = this.managedAddresses.map((managed, index) => {
+      console.log(`\n--- Linking Address ${index + 1} ---`);
+      console.log('Address ID:', managed.address.id);
+      console.log('Address Details:', managed.address);
+      console.log('Is Primary:', managed.isPrimary);
+      console.log('Customer ID:', customerId);
+      
+      return this.addressService.link(
+        managed.address.id,
+        'Customer',
+        customerId,
+        managed.isPrimary,
+        true // allowMultiple = true for customers
+      ).pipe(
+        tap(() => console.log(`✓ Address ${managed.address.id} linked successfully`)),
+        catchError(err => {
+          console.error(`✗ Error linking address ${managed.address.id}:`, err);
+          console.error('Error details:', err.error);
+          throw err;
+        })
+      );
+    });
+
+    return forkJoin(linkObservables).pipe(
+      tap(() => console.log('=== ALL ADDRESSES LINKED SUCCESSFULLY ===')),
+      catchError(err => {
+        console.error('=== ERROR IN LINK PROCESS ===', err);
+        throw err;
+      })
+    );
   }
-}
+  cancel() {
+    this.router.navigate(['/customers']);
+  }}

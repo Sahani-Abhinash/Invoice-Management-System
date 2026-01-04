@@ -36,6 +36,7 @@ export interface Invoice {
     dueDate?: string;
     customerId?: string;
     branchId?: string;
+    priceListId?: string;
     subTotal: number;
     tax: number;
     total: number;
@@ -55,12 +56,13 @@ export interface CreateInvoiceDto {
     dueDate?: string;
     customerId?: string;
     branchId?: string;
+    priceListId?: string;
     taxRate: number;
     accountId?: string;
     lines: {
         itemId: string;
         quantity: number;
-        unitPrice: number;
+        unitPrice?: number;
     }[];
 }
 
@@ -153,6 +155,7 @@ export class InvoiceService {
             dueDate: data.dueDate || data.DueDate,
             customerId: (data.customerId || data.CustomerId || '').toString().toLowerCase(),
             branchId: (data.branchId || data.BranchId || '').toString().toLowerCase(),
+            priceListId: (data.priceListId || data.PriceListId || '').toString().toLowerCase(),
             subTotal: data.subTotal || data.SubTotal || 0,
             tax: data.tax || data.Tax || 0,
             total: data.total || data.Total || 0,

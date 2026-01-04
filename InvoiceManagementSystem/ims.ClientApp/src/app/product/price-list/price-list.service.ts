@@ -32,7 +32,13 @@ export class PriceListService {
     }
 
     getById(id: string): Observable<PriceList> {
-        return this.http.get<PriceList>(`${this.apiUrl}/${id}`);
+        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+            map(item => ({
+                id: item.id || item.Id,
+                name: item.name || item.Name,
+                isDefault: item.isDefault || item.IsDefault
+            }))
+        );
     }
 
     create(dto: CreatePriceListDto): Observable<PriceList> {

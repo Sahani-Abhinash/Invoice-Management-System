@@ -14,6 +14,7 @@ namespace IMS.Domain.Entities.Invoicing
         public Guid? CustomerId { get; set; }
         // Optional link to branch/company depending on your model
         public Guid? BranchId { get; set; }
+        public Guid? PriceListId { get; set; }
 
         public decimal SubTotal { get; set; }
         public decimal Tax { get; set; }

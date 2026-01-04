@@ -3,6 +3,8 @@ using IMS.Application.Interfaces.Common;
 using IMS.Application.Interfaces.Invoicing;
 using IMS.Application.Interfaces.Transaction;
 using IMS.Domain.Entities.Invoicing;
+using IMS.Domain.Entities.Pricing;
+using IMS.Domain.Entities.Product;
 using IMS.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,8 @@ namespace IMS.Infrastructure.Services.Invoicing
     {
         private readonly IRepository<Invoice> _invoiceRepo;
         private readonly IRepository<InvoiceItem> _itemRepo;
+        private readonly IRepository<ItemPrice> _itemPriceRepo;
+        private readonly IRepository<PriceList> _priceListRepo;
         private readonly IRepository<IMS.Domain.Entities.Warehouse.Stock> _stockRepo;
         private readonly IRepository<IMS.Domain.Entities.Warehouse.StockTransaction> _stockTxRepo;
         private readonly IRepository<IMS.Domain.Entities.Warehouse.Warehouse> _warehouseRepo;
@@ -23,6 +27,8 @@ namespace IMS.Infrastructure.Services.Invoicing
 
         public InvoiceService(IRepository<Invoice> invoiceRepo,
             IRepository<InvoiceItem> itemRepo,
+            IRepository<ItemPrice> itemPriceRepo,
+            IRepository<PriceList> priceListRepo,
             IRepository<IMS.Domain.Entities.Warehouse.Stock> stockRepo,
             IRepository<IMS.Domain.Entities.Warehouse.StockTransaction> stockTxRepo,
             IRepository<IMS.Domain.Entities.Warehouse.Warehouse> warehouseRepo,
@@ -31,6 +37,8 @@ namespace IMS.Infrastructure.Services.Invoicing
         {
             _invoiceRepo = invoiceRepo;
             _itemRepo = itemRepo;
+            _itemPriceRepo = itemPriceRepo;
+            _priceListRepo = priceListRepo;
             _stockRepo = stockRepo;
             _stockTxRepo = stockTxRepo;
             _warehouseRepo = warehouseRepo;
@@ -55,7 +63,59 @@ namespace IMS.Infrastructure.Services.Invoicing
 
         public async Task<InvoiceDto> CreateAsync(CreateInvoiceDto dto)
         {
-            var subtotal = dto.Lines.Sum(l => l.Quantity * l.UnitPrice);
+            // Determine which PriceList to use
+            PriceList? selectedPriceList = null;
+
+            if (dto.PriceListId.HasValue)
+            {
+                // User explicitly selected a price list
+                selectedPriceList = await _priceListRepo.GetByIdAsync(dto.PriceListId.Value);
+            }
+            else
+            {
+                // Fall back to default price list
+                var allPriceLists = await _priceListRepo.GetAllAsync();
+                selectedPriceList = allPriceLists.FirstOrDefault(p => p.IsDefault);
+            }
+
+            if (selectedPriceList == null)
+                throw new InvalidOperationException("No valid price list found. Please select a price list or set a default.");
+
+            // Fetch all item prices for the selected price list
+            var allItemPrices = await _itemPriceRepo.GetAllAsync();
+            var priceListItemPrices = allItemPrices
+                .Where(ip => ip.PriceListId == selectedPriceList.Id &&
+                           ip.EffectiveFrom <= DateTime.UtcNow &&
+                           (ip.EffectiveTo == null || ip.EffectiveTo >= DateTime.UtcNow))
+                .ToList();
+
+            // Process line items and fetch prices if not provided
+            var processedLines = new List<CreateInvoiceItemDto>();
+            foreach (var line in dto.Lines)
+            {
+                var unitPrice = line.UnitPrice;
+
+                // If UnitPrice not provided, fetch from PriceList
+                if (!unitPrice.HasValue || unitPrice == 0)
+                {
+                    var itemPrice = priceListItemPrices.FirstOrDefault(ip => ip.ItemId == line.ItemId);
+                    if (itemPrice == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"No active price found for item {line.ItemId} in {selectedPriceList.Name} price list");
+                    }
+                    unitPrice = itemPrice.Price;
+                }
+
+                processedLines.Add(new CreateInvoiceItemDto
+                {
+                    ItemId = line.ItemId,
+                    Quantity = line.Quantity,
+                    UnitPrice = unitPrice.Value
+                });
+            }
+
+            var subtotal = processedLines.Sum(l => l.Quantity * (l.UnitPrice ?? 0));
             var tax = subtotal * (dto.TaxRate / 100);
             var total = subtotal + tax;
 
@@ -68,6 +128,7 @@ namespace IMS.Infrastructure.Services.Invoicing
                 DueDate = dto.DueDate,
                 CustomerId = dto.CustomerId,
                 BranchId = dto.BranchId,
+                PriceListId = selectedPriceList.Id,
                 SubTotal = subtotal,
                 Tax = tax,
                 Total = total,
@@ -77,7 +138,7 @@ namespace IMS.Infrastructure.Services.Invoicing
             await _invoiceRepo.AddAsync(invoice);
 
             var lines = new List<InvoiceItem>();
-            foreach (var l in dto.Lines)
+            foreach (var l in processedLines)
             {
                 var item = new InvoiceItem
                 {
@@ -85,8 +146,8 @@ namespace IMS.Infrastructure.Services.Invoicing
                     InvoiceId = invoice.Id,
                     ItemId = l.ItemId,
                     Quantity = l.Quantity,
-                    UnitPrice = l.UnitPrice,
-                    LineTotal = l.Quantity * l.UnitPrice
+                    UnitPrice = l.UnitPrice ?? 0,
+                    LineTotal = l.Quantity * (l.UnitPrice ?? 0)
                 };
                 await _itemRepo.AddAsync(item);
                 lines.Add(item);
@@ -159,7 +220,57 @@ namespace IMS.Infrastructure.Services.Invoicing
             var invoice = await _invoiceRepo.GetByIdAsync(id);
             if (invoice == null || invoice.IsPaid) return null;
 
-            var subtotal = dto.Lines.Sum(l => l.Quantity * l.UnitPrice);
+            // Determine which PriceList to use (same logic as CreateAsync)
+            PriceList? selectedPriceList = null;
+
+            if (dto.PriceListId.HasValue)
+            {
+                selectedPriceList = await _priceListRepo.GetByIdAsync(dto.PriceListId.Value);
+            }
+            else
+            {
+                var allPriceLists = await _priceListRepo.GetAllAsync();
+                selectedPriceList = allPriceLists.FirstOrDefault(p => p.IsDefault);
+            }
+
+            if (selectedPriceList == null)
+                throw new InvalidOperationException("No valid price list found. Please select a price list or set a default.");
+
+            // Fetch all item prices for the selected price list
+            var allItemPrices = await _itemPriceRepo.GetAllAsync();
+            var priceListItemPrices = allItemPrices
+                .Where(ip => ip.PriceListId == selectedPriceList.Id &&
+                           ip.EffectiveFrom <= DateTime.UtcNow &&
+                           (ip.EffectiveTo == null || ip.EffectiveTo >= DateTime.UtcNow))
+                .ToList();
+
+            // Process line items and fetch prices if not provided
+            var processedLines = new List<CreateInvoiceItemDto>();
+            foreach (var line in dto.Lines)
+            {
+                var unitPrice = line.UnitPrice;
+
+                // If UnitPrice not provided, fetch from PriceList
+                if (!unitPrice.HasValue || unitPrice == 0)
+                {
+                    var itemPrice = priceListItemPrices.FirstOrDefault(ip => ip.ItemId == line.ItemId);
+                    if (itemPrice == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"No active price found for item {line.ItemId} in {selectedPriceList.Name} price list");
+                    }
+                    unitPrice = itemPrice.Price;
+                }
+
+                processedLines.Add(new CreateInvoiceItemDto
+                {
+                    ItemId = line.ItemId,
+                    Quantity = line.Quantity,
+                    UnitPrice = unitPrice.Value
+                });
+            }
+
+            var subtotal = processedLines.Sum(l => l.Quantity * l.UnitPrice.Value);
             var tax = subtotal * (dto.TaxRate / 100);
             var total = subtotal + tax;
 
@@ -169,6 +280,7 @@ namespace IMS.Infrastructure.Services.Invoicing
             invoice.DueDate = dto.DueDate;
             invoice.CustomerId = dto.CustomerId;
             invoice.BranchId = dto.BranchId;
+            invoice.PriceListId = selectedPriceList.Id;
             invoice.SubTotal = subtotal;
             invoice.Tax = tax;
             invoice.Total = total;
@@ -183,7 +295,7 @@ namespace IMS.Infrastructure.Services.Invoicing
             }
 
             var lines = new List<InvoiceItem>();
-            foreach (var l in dto.Lines)
+            foreach (var l in processedLines)
             {
                 var item = new InvoiceItem
                 {
@@ -191,8 +303,8 @@ namespace IMS.Infrastructure.Services.Invoicing
                     InvoiceId = invoice.Id,
                     ItemId = l.ItemId,
                     Quantity = l.Quantity,
-                    UnitPrice = l.UnitPrice,
-                    LineTotal = l.Quantity * l.UnitPrice
+                    UnitPrice = l.UnitPrice.Value,
+                    LineTotal = l.Quantity * l.UnitPrice.Value
                 };
                 await _itemRepo.AddAsync(item);
                 lines.Add(item);
@@ -261,6 +373,7 @@ namespace IMS.Infrastructure.Services.Invoicing
                 DueDate = i.DueDate,
                 CustomerId = i.CustomerId,
                 BranchId = i.BranchId,
+                PriceListId = i.PriceListId,
                 SubTotal = i.SubTotal,
                 Tax = i.Tax,
                 Total = i.Total,

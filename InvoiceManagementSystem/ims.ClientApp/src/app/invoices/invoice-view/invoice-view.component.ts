@@ -6,6 +6,7 @@ import { BranchService } from '../../companies/branch/branch.service';
 import { ItemService, Item } from '../../product/items/item.service';
 import { CustomerService, Customer } from '../../companies/customer/customer.service';
 import { AddressService, Address } from '../../Master/geography/address/address.service';
+import { PriceListService } from '../../product/price-list/price-list.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -19,6 +20,7 @@ export class InvoiceViewComponent implements OnInit {
     invoice: Invoice | null = null;
     isLoading = true;
     branchName = '';
+    priceListName = '';
     itemsMap: Map<string, Item> = new Map();
     customer: Customer | null = null;
     shippingAddress: Address | null = null;
@@ -29,6 +31,7 @@ export class InvoiceViewComponent implements OnInit {
         private itemService: ItemService,
         private customerService: CustomerService,
         private addressService: AddressService,
+        private priceListService: PriceListService,
         private route: ActivatedRoute,
         private router: Router,
         private cdr: ChangeDetectorRef
@@ -49,6 +52,7 @@ export class InvoiceViewComponent implements OnInit {
         }).subscribe({
             next: (data) => {
                 this.invoice = data.invoice;
+                console.log('Invoice data received:', data.invoice);
                 data.items.forEach(i => {
                     if (i.id) this.itemsMap.set(i.id.toLowerCase(), i);
                 });
@@ -62,12 +66,21 @@ export class InvoiceViewComponent implements OnInit {
                     requests.customer = this.customerService.getById(this.invoice.customerId);
                     requests.addresses = this.addressService.getForOwner('Customer', this.invoice.customerId);
                 }
+                if (this.invoice.priceListId) {
+                    console.log('Fetching price list with ID:', this.invoice.priceListId);
+                    requests.priceList = this.priceListService.getById(this.invoice.priceListId);
+                }
 
                 if (Object.keys(requests).length > 0) {
                     forkJoin(requests).subscribe({
                         next: (result: any) => {
+                            console.log('Additional data loaded:', result);
                             if (result.branch) {
                                 this.branchName = result.branch.name;
+                            }
+                            if (result.priceList) {
+                                console.log('Price list loaded:', result.priceList);
+                                this.priceListName = result.priceList.name;
                             }
                             if (result.customer) {
                                 this.customer = result.customer;

@@ -57,6 +57,16 @@ namespace IMS.API.Controllers
         }
 
         /// <summary>
+        /// Get items with their prices for a specific price list (for invoice creation UI).
+        /// </summary>
+        [HttpGet("pricelist/{priceListId}/items")]
+        public async Task<IActionResult> GetItemsWithPricesByPriceList(Guid priceListId)
+        {
+            var result = await _manager.GetItemsWithPricesForPriceListAsync(priceListId);
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Create an item price.
         /// </summary>
         [HttpPost]

@@ -1,29 +1,104 @@
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">{{ id ? 'Edit Warehouse' : 'Create Warehouse' }}</h5>
-    <a class="btn btn-sm btn-light" [routerLink]="['/warehouses']">Back</a>
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ isEdit ? 'Edit Warehouse' : 'Create Warehouse' }}</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a [routerLink]="['/warehouses']">Warehouses</a></li>
+          <li class="breadcrumb-item active">{{ isEdit ? 'Edit' : 'Create' }}</li>
+        </ol>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
-    <form [formGroup]="form" (ngSubmit)="save()">
-      <div class="mb-3">
-        <label for="name" class="form-label">Name</label>
-        <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter warehouse name">
-        <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Name is required</div>
-      </div>
+</div>
 
-      <div class="mb-3">
-        <label for="branch" class="form-label">Branch</label>
-        <select class="form-select" id="branch" formControlName="branchId">
-          <option value="" disabled>Select branch</option>
-          <option *ngFor="let branch of branches" [value]="branch.id.toString()">{{ branch.name }}</option>
-        </select>
-        <div class="text-danger small" *ngIf="form.get('branchId')?.touched && form.get('branchId')?.invalid">Branch is required</div>
+<div class="row" *ngIf="!isLoading">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Warehouse Information</h5>
       </div>
+      <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Warehouse Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" formControlName="name" placeholder="Enter warehouse name">
+              <div *ngIf="form.get('name')?.touched && form.get('name')?.invalid" class="text-danger small mt-1">
+                Warehouse name is required
+              </div>
+            </div>
 
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create' }}</button>
-        <a class="btn btn-light" [routerLink]="['/warehouses']">Cancel</a>
+            <div class="col-md-6">
+              <label class="form-label">Branch <span class="text-danger">*</span></label>
+              <select class="form-select" formControlName="branchId">
+                <option value="">Select Branch</option>
+                <option *ngFor="let branch of branches" [value]="branch.id.toString()">{{ branch.name }}</option>
+              </select>
+              <div *ngIf="form.get('branchId')?.touched && form.get('branchId')?.invalid" class="text-danger small mt-1">
+                Branch is required
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
+
+    <!-- Address Manager Section -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Manage Addresses</h5>
+      </div>
+      <div class="card-body">
+        <app-address-manager 
+          [entityId]="id || ''"
+          entityType="Warehouse"
+          (addressesUpdated)="onAddressesUpdated($event)">
+        </app-address-manager>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="mt-4 d-flex gap-2">
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+        <span *ngIf="!isSaving">
+          <i class="las la-save me-1"></i> {{ isEdit ? 'Update' : 'Create' }} Warehouse
+        </span>
+        <span *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm me-1"></span> Saving...
+        </span>
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card bg-light-subtle border-0">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase fw-semibold mb-3">
+          <i class="las la-info-circle me-1"></i> Information
+        </h6>
+        <p class="text-muted mb-2">
+          <strong>Warehouses</strong> are storage locations for your inventory and stock items.
+        </p>
+        <p class="text-muted mb-2">
+          Each warehouse must be assigned to a branch and can have multiple addresses.
+        </p>
+        <p class="text-muted mb-0">
+          All fields marked with <span class="text-danger">*</span> are required.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3" *ngIf="isLoading">
+  <div class="col-12 text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="mt-3 fs-15 text-muted fw-medium">Loading warehouse form...</div>
   </div>
 </div>

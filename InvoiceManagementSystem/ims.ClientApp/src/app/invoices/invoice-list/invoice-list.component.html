@@ -11,74 +11,116 @@
     </div>
 </div>
 
-<div class="row mt-3">
+<div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle table-nowrap mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Invoice #</th>
-                                <th>Date</th>
-                                <th>Due Date</th>
-                                <th>Branch</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngIf="isLoading">
-                                <td colspan="7" class="text-center py-4">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr *ngIf="!isLoading && invoices.length === 0">
-                                <td colspan="7" class="text-center py-4">No invoices found</td>
-                            </tr>
-                            <tr *ngFor="let invoice of invoices" (click)="viewInvoice(invoice.id)"
-                                class="clickable-row">
-                                <td>
-                                    <span class="fw-medium">#{{ invoice.reference }}</span>
-                                </td>
-                                <td>{{ invoice.invoiceDate | date:'mediumDate' }}</td>
-                                <td>{{ invoice.dueDate ? (invoice.dueDate | date:'mediumDate') : '-' }}</td>
-                                <td>{{ getBranchName(invoice.branchId || '') }}</td>
-                                <td>{{ invoice.total | currency }}</td>
-                                <td>
-                                    <span class="badge"
-                                        [ngClass]="invoice.isPaid ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
-                                        {{ invoice.isPaid ? 'Paid' : 'Unpaid' }}
-                                    </span>
-                                </td>
-                                <td class="text-end">
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-success"
-                                            (click)="payInvoice(invoice.id, $event)" title="Mark as Paid">
-                                            <i class="las la-check-double fs-15"></i>
-                                        </button>
-                                        <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-info"
-                                            (click)="editInvoice(invoice.id, $event)" title="Edit">
-                                            <i class="las la-edit fs-15"></i>
-                                        </button>
-                                        <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-danger"
-                                            (click)="deleteInvoice(invoice.id, $event)" title="Delete">
-                                            <i class="las la-trash fs-15"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-soft-primary" (click)="viewInvoice(invoice.id)"
-                                            title="View">
-                                            <i class="las la-eye fs-15"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <app-table-controls
+            [searchText]="tableManager.getSearchText()"
+            searchPlaceholder="Search by invoice #, branch, or status..."
+            [pageSize]="tableManager.getPageSize()"
+            [totalRecords]="tableManager.getTotalRecords()"
+            (searchChange)="onSearch($event)"
+            (pageSizeChange)="tableManager.setPageSize($event)">
+        </app-table-controls>
+
+    <div *ngIf="tableManager.getDisplayData().length === 0 && tableManager.getTotalRecords() === 0" class="alert alert-info">
+        No invoices found. Click "Add Invoice" to create one.
+    </div>
+
+    <div class="card" *ngIf="tableManager.getDisplayData().length > 0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle table-nowrap mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th (click)="onSort('reference')" style="cursor: pointer;">
+                                Invoice #
+                                <i *ngIf="tableManager.getSortColumn() === 'reference'" 
+                                    [class]="'las ' + (tableManager.getSortDirection() === 'asc' ? 'la-arrow-up' : 'la-arrow-down') + ' ms-1'"></i>
+                            </th>
+                            <th (click)="onSort('date')" style="cursor: pointer;">
+                                Date
+                                <i *ngIf="tableManager.getSortColumn() === 'date'" 
+                                    [class]="'las ' + (tableManager.getSortDirection() === 'asc' ? 'la-arrow-up' : 'la-arrow-down') + ' ms-1'"></i>
+                            </th>
+                            <th (click)="onSort('dueDate')" style="cursor: pointer;">
+                                Due Date
+                                <i *ngIf="tableManager.getSortColumn() === 'dueDate'" 
+                                    [class]="'las ' + (tableManager.getSortDirection() === 'asc' ? 'la-arrow-up' : 'la-arrow-down') + ' ms-1'"></i>
+                            </th>
+                            <th (click)="onSort('branch')" style="cursor: pointer;">
+                                Branch
+                                <i *ngIf="tableManager.getSortColumn() === 'branch'" 
+                                    [class]="'las ' + (tableManager.getSortDirection() === 'asc' ? 'la-arrow-up' : 'la-arrow-down') + ' ms-1'"></i>
+                            </th>
+                            <th (click)="onSort('amount')" style="cursor: pointer;">
+                                Amount
+                                <i *ngIf="tableManager.getSortColumn() === 'amount'" 
+                                    [class]="'las ' + (tableManager.getSortDirection() === 'asc' ? 'la-arrow-up' : 'la-arrow-down') + ' ms-1'"></i>
+                            </th>
+                            <th (click)="onSort('status')" style="cursor: pointer;">
+                                Status
+                                <i *ngIf="tableManager.getSortColumn() === 'status'" 
+                                    [class]="'las ' + (tableManager.getSortDirection() === 'asc' ? 'la-arrow-up' : 'la-arrow-down') + ' ms-1'"></i>
+                            </th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="isLoading">
+                            <td colspan="7" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="!isLoading && tableManager.getDisplayData().length === 0 && tableManager.getTotalRecords() > 0">
+                            <td colspan="7" class="text-center py-4">
+                                <div class="mb-3">
+                                    <i class="las la-search fs-48 text-muted"></i>
+                                </div>
+                                <h6 class="text-muted">No results found</h6>
+                                <p class="text-muted small">Try adjusting your search.</p>
+                            </td>
+                        </tr>
+                        <tr *ngFor="let invoice of tableManager.getDisplayData()" (click)="viewInvoice(invoice.id)"
+                            class="clickable-row">
+                            <td>
+                                <span class="fw-medium">#{{ invoice.reference }}</span>
+                            </td>
+                            <td>{{ invoice.invoiceDate | date:'mediumDate' }}</td>
+                            <td>{{ invoice.dueDate ? (invoice.dueDate | date:'mediumDate') : '-' }}</td>
+                            <td>{{ getBranchName(invoice.branchId || '') }}</td>
+                            <td>{{ invoice.total | currency }}</td>
+                            <td>
+                                <span class="badge"
+                                    [ngClass]="invoice.isPaid ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                                    {{ invoice.isPaid ? 'Paid' : 'Unpaid' }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-success"
+                                        (click)="payInvoice(invoice.id, $event)" title="Mark as Paid">
+                                        <i class="las la-check-double fs-15"></i>
+                                    </button>
+                                    <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-info"
+                                        (click)="editInvoice(invoice.id, $event)" title="Edit">
+                                        <i class="las la-edit fs-15"></i>
+                                    </button>
+                                    <button *ngIf="!invoice.isPaid" class="btn btn-sm btn-soft-danger"
+                                        (click)="deleteInvoice(invoice.id, $event)" title="Delete">
+                                        <i class="las la-trash fs-15"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-soft-primary" (click)="viewInvoice(invoice.id)"
+                                        title="View">
+                                        <i class="las la-eye fs-15"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
-</div>
+
+    <app-table-pagination [tableManager]="tableManager"></app-table-pagination>

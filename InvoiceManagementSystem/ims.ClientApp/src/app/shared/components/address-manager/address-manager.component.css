@@ -1,0 +1,13 @@
+/* Address Manager Component Styles */
+.list-group-item {
+  border-left: 4px solid #0d6efd;
+}
+
+.list-group-item.primary {
+  background-color: #f0f9ff;
+}
+
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}

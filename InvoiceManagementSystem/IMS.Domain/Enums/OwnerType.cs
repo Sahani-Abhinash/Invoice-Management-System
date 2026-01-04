@@ -6,7 +6,8 @@ namespace IMS.Domain.Enums
         Branch = 1,
         Customer = 2,
         Company = 3,
-        Vendor = 4
+        Vendor = 4,
+        Warehouse = 5
         // add more types as needed
     }
 }

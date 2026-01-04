@@ -12,7 +12,7 @@ export enum AddressType {
   Office = 6
 }
 
-export type OwnerType = 'User' | 'Branch' | 'Customer' | 'Company' | 'Vendor';
+export type OwnerType = 'User' | 'Branch' | 'Customer' | 'Company' | 'Vendor' | 'Warehouse';
 
 export interface Address {
   id: string;

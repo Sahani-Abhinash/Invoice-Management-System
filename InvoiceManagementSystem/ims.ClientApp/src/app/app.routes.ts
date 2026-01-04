@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './auth/login/login.component';
+import { AuthGuard } from './auth/auth.guard';
 import { CategoryListComponent } from './accounting/categories/category-list/category-list.component';
 import { CategoryFormComponent } from './accounting/categories/category-form/category-form.component';
 import { TransactionListComponent } from './accounting/transactions/transaction-list/transaction-list.component';
@@ -9,24 +10,25 @@ import { TransactionFormComponent } from './accounting/transactions/transaction-
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
-  { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'Login', pathMatch: 'full', redirectTo: 'login' },
-  { path: 'companies', loadChildren: () => import('./companies/company/company.module').then(m => m.CompanyModule) },
-  { path: 'branches', loadChildren: () => import('./companies/branch/branch.module').then(m => m.BranchModule) },
-  { path: 'vendors', loadChildren: () => import('./companies/vendor/vendor.module').then(m => m.VendorModule) },
-  { path: 'customers', loadChildren: () => import('./companies/customer/customer.routes').then(m => m.customerRoutes) },
-  { path: 'users', loadChildren: () => import('./security/users/user.module').then(m => m.UserModule) },
-  { path: 'roles', loadChildren: () => import('./security/roles/role.module').then(m => m.RoleModule) },
-  { path: 'permissions', loadChildren: () => import('./security/permissions/permission.module').then(m => m.PermissionModule) },
-  { path: 'warehouses', loadChildren: () => import('./warehouse/warehouse.module').then(m => m.WarehouseModule) },
-  { path: 'geography', loadChildren: () => import('./Master/geography/geography.module').then(m => m.GeographyModule) },
-  { path: 'products', loadChildren: () => import('./product/product.routes').then(m => m.PRODUCT_ROUTES) },
-  { path: 'purchase-orders', loadChildren: () => import('./purchase/purchase-order/purchase-order.routes').then(m => m.PURCHASE_ORDER_ROUTES) },
-  { path: 'grns', loadChildren: () => import('./purchase/grn/grn.routes').then(m => m.GRN_ROUTES) },
-  { path: 'invoices', loadChildren: () => import('./invoices/invoice.routes').then(m => m.INVOICE_ROUTES) },
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'companies', canActivate: [AuthGuard], loadChildren: () => import('./companies/company/company.module').then(m => m.CompanyModule) },
+  { path: 'branches', canActivate: [AuthGuard], loadChildren: () => import('./companies/branch/branch.module').then(m => m.BranchModule) },
+  { path: 'vendors', canActivate: [AuthGuard], loadChildren: () => import('./companies/vendor/vendor.module').then(m => m.VendorModule) },
+  { path: 'customers', canActivate: [AuthGuard], loadChildren: () => import('./companies/customer/customer.routes').then(m => m.customerRoutes) },
+  { path: 'users', canActivate: [AuthGuard], loadChildren: () => import('./security/users/user.module').then(m => m.UserModule) },
+  { path: 'roles', canActivate: [AuthGuard], loadChildren: () => import('./security/roles/role.module').then(m => m.RoleModule) },
+  { path: 'permissions', canActivate: [AuthGuard], loadChildren: () => import('./security/permissions/permission.module').then(m => m.PermissionModule) },
+  { path: 'warehouses', canActivate: [AuthGuard], loadChildren: () => import('./warehouse/warehouse.module').then(m => m.WarehouseModule) },
+  { path: 'geography', canActivate: [AuthGuard], loadChildren: () => import('./Master/geography/geography.module').then(m => m.GeographyModule) },
+  { path: 'products', canActivate: [AuthGuard], loadChildren: () => import('./product/product.routes').then(m => m.PRODUCT_ROUTES) },
+  { path: 'purchase-orders', canActivate: [AuthGuard], loadChildren: () => import('./purchase/purchase-order/purchase-order.routes').then(m => m.PURCHASE_ORDER_ROUTES) },
+  { path: 'grns', canActivate: [AuthGuard], loadChildren: () => import('./purchase/grn/grn.routes').then(m => m.GRN_ROUTES) },
+  { path: 'invoices', canActivate: [AuthGuard], loadChildren: () => import('./invoices/invoice.routes').then(m => m.INVOICE_ROUTES) },
   {
     path: 'categories',
+    canActivate: [AuthGuard],
     children: [
       { path: '', component: CategoryListComponent },
       { path: 'new', component: CategoryFormComponent },
@@ -35,12 +37,13 @@ export const routes: Routes = [
   },
   {
     path: 'transactions',
+    canActivate: [AuthGuard],
     children: [
       { path: '', component: TransactionListComponent },
       { path: 'new', component: TransactionFormComponent }
     ]
   },
-  { path: 'accounting', loadChildren: () => import('./accounting/accounting.routes.js').then(m => m.ACCOUNTING_ROUTES) },
+  { path: 'accounting', canActivate: [AuthGuard], loadChildren: () => import('./accounting/accounting.routes.js').then(m => m.ACCOUNTING_ROUTES) },
   { path: '**', redirectTo: 'home' },
   // TODO: Add routes for the following components:
   // { path: 'about', component: AboutComponent },

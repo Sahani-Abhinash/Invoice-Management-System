@@ -409,7 +409,7 @@
                         <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
                             <span class="d-flex align-items-center">
-                                <img class="rounded-circle header-profile-user" src="template/images/users/avatar-4.jpg"
+                                <img class="rounded-circle header-profile-user" [src]="userProfilePicture() || 'template/images/users/avatar-4.jpg'"
                                     alt="Header Avatar">
                                 <span class="text-start ms-xl-2">
                                     <span class="d-none d-xl-inline-block fw-medium user-name-text fs-16">{{
@@ -2269,11 +2269,11 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        <script>document.write(new Date().getFullYear())</script> © Invoika.
+                        <script>document.write(new Date().getFullYear())</script> © Invoice.
                     </div>
                     <div class="col-sm-6">
                         <div class="text-sm-end d-none d-sm-block">
-                            Design & Develop by Themesbrand
+                            
                         </div>
                     </div>
                 </div>
@@ -2302,12 +2302,7 @@
     </div>
 </div>
 
-<div class="customizer-setting d-none d-md-block">
-    <div class="btn-info btn-rounded shadow-lg btn btn-icon btn-lg p-2" data-bs-toggle="offcanvas"
-        data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas">
-        <i class='mdi mdi-spin mdi-cog-outline fs-22'></i>
-    </div>
-</div>
+<!-- Settings button removed -->
 
 <!-- Theme Settings -->
 <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-settings-offcanvas">

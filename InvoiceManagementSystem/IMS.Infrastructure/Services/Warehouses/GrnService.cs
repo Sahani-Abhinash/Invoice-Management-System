@@ -279,12 +279,10 @@ namespace IMS.Infrastructure.Services.Warehouses
             await _grnPaymentRepo.AddAsync(payment);
             await _grnPaymentRepo.SaveChangesAsync();
 
-            // Create Debit and Credit transactions for double-entry bookkeeping
+            // Create Debit transaction for payment (expense/outflow)
             if (_transactionService != null)
             {
                 var paymentMethod = dto.Method.ToString();
-                
-                // Debit: Accounts Payable (or Expense)
                 await _transactionService.CreateFromSourceAsync(
                     payment.Id,
                     "GRN_Payment",
@@ -293,10 +291,6 @@ namespace IMS.Infrastructure.Services.Warehouses
                     "Payment",
                     $"Payment for GRN {grn.Reference} via {paymentMethod}"
                 );
-
-                // Note: system records individual transaction lines (debit only for GRN payment)
-                // Credit entry removed — calling CreateFromSourceAsync twice previously created both sides.
-                // If in future you need the matching credit line, re-add a call here.
             }
 
             return new GrnPaymentDto

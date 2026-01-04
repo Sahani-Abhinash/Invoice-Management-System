@@ -50,6 +50,37 @@ namespace IMS.Infrastructure.Services.Product
             return items.Select(ip => MapToDto(ip, ip.Item!, ip.PriceList!)).ToList();
         }
 
+        public async Task<IEnumerable<ItemWithPricesDto>> GetItemsWithPricesForPriceListAsync(Guid priceListId)
+        {
+            var itemPrices = await _repository.GetAllAsync(ip => ip.Item, ip => ip.PriceList);
+            itemPrices = itemPrices.Where(ip => ip.PriceListId == priceListId &&
+                                               ip.EffectiveFrom <= DateTime.UtcNow &&
+                                               (ip.EffectiveTo == null || ip.EffectiveTo >= DateTime.UtcNow))
+                                  .ToList();
+
+            // Group by item to combine all prices for that item
+            var itemsDict = new Dictionary<Guid, ItemWithPricesDto>();
+
+            foreach (var itemPrice in itemPrices)
+            {
+                if (!itemsDict.ContainsKey(itemPrice.ItemId))
+                {
+                    itemsDict[itemPrice.ItemId] = new ItemWithPricesDto
+                    {
+                        Id = itemPrice.Item!.Id,
+                        Name = itemPrice.Item!.Name,
+                        SKU = itemPrice.Item!.SKU,
+                        UnitOfMeasure = null, // Can be populated if needed
+                        Prices = new Dictionary<string, decimal>()
+                    };
+                }
+
+                itemsDict[itemPrice.ItemId].Prices[itemPrice.PriceList!.Name] = itemPrice.Price;
+            }
+
+            return itemsDict.Values.ToList();
+        }
+
         public async Task<ItemPriceDto> CreateAsync(CreateItemPriceDto dto)
         {
             var entity = new ItemPrice

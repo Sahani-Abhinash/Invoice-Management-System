@@ -26,6 +26,21 @@ namespace IMS.Application.DTOs.Security
         public string Email { get; set; } = string.Empty;
 
         /// <summary>
+        /// Mobile number.
+        /// </summary>
+        public string Mobile { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gender (text value).
+        /// </summary>
+        public string Gender { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Profile picture URL or data URI.
+        /// </summary>
+        public string ProfilePictureUrl { get; set; } = string.Empty;
+
+        /// <summary>
         /// Account status.
         /// </summary>
         public UserStatus Status { get; set; }

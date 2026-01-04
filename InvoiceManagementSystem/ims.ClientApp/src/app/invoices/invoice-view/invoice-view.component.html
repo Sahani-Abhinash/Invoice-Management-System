@@ -28,6 +28,7 @@
                         <h2 class="text-primary fw-bold mb-1">IMS INVOICE</h2>
                         <p class="text-muted small mb-1">Ref: <span class="fw-semibold">#{{ invoice.reference }}</span></p>
                         <p class="text-muted small mb-0">Branch: <span class="fw-semibold">{{ branchName }}</span></p>
+                        <p class="text-muted small mb-0">Price List: <span class="fw-semibold badge bg-info text-dark">{{ priceListName || 'Not Specified' }}</span></p>
                     </div>
                     <div class="col-lg-6 text-end">
                         <p class="text-muted small mb-1">Invoice Date: <span class="fw-semibold">{{ invoice.invoiceDate | date:'mediumDate' }}</span></p>

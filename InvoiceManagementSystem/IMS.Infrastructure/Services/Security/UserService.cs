@@ -32,6 +32,9 @@ namespace IMS.Infrastructure.Services.Security
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Email = u.Email,
+                Mobile = u.Mobile,
+                Gender = u.Gender,
+                ProfilePictureUrl = u.ProfilePictureUrl,
                 Status = u.Status
             }).ToList();
         }
@@ -46,6 +49,9 @@ namespace IMS.Infrastructure.Services.Security
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Email = u.Email,
+                Mobile = u.Mobile,
+                Gender = u.Gender,
+                ProfilePictureUrl = u.ProfilePictureUrl,
                 Status = u.Status
             };
         }
@@ -60,6 +66,9 @@ namespace IMS.Infrastructure.Services.Security
                 LastName = dto.LastName,
                 Email = dto.Email,
                 PasswordHash = _hasher.Hash(dto.Password),
+                Mobile = dto.Mobile,
+                Gender = dto.Gender,
+                ProfilePictureUrl = dto.ProfilePictureUrl ?? string.Empty,
                 Status = dto.Status
             };
 
@@ -72,6 +81,9 @@ namespace IMS.Infrastructure.Services.Security
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
+                Mobile = user.Mobile,
+                Gender = user.Gender,
+                ProfilePictureUrl = user.ProfilePictureUrl,
                 Status = user.Status
             };
         }
@@ -90,6 +102,15 @@ namespace IMS.Infrastructure.Services.Security
             {
                 user.PasswordHash = _hasher.Hash(dto.Password);
             }
+            user.Mobile = dto.Mobile;
+            user.Gender = dto.Gender;
+            
+            // Update profile picture URL if provided
+            if (!string.IsNullOrWhiteSpace(dto.ProfilePictureUrl))
+            {
+                user.ProfilePictureUrl = dto.ProfilePictureUrl;
+            }
+            
             user.Status = dto.Status;
 
             _repository.Update(user);
@@ -101,6 +122,9 @@ namespace IMS.Infrastructure.Services.Security
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
+                Mobile = user.Mobile,
+                Gender = user.Gender,
+                ProfilePictureUrl = user.ProfilePictureUrl,
                 Status = user.Status
             };
         }

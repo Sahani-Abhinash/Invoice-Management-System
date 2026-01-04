@@ -8,6 +8,8 @@ import { ItemService, Item } from '../../product/items/item.service';
 import { StockService, Stock } from '../../warehouse/stock.service';
 import { CustomerService, Customer } from '../../companies/customer/customer.service';
 import { AccountingService, Account } from '../../accounting/accounting.service';
+import { PriceListService, PriceList } from '../../product/price-list/price-list.service';
+import { ItemPriceService } from '../../product/item-price/item-price.service';
 import { forkJoin, catchError, of } from 'rxjs';
 
 @Component({
@@ -27,6 +29,10 @@ export class InvoiceFormComponent implements OnInit {
     items: Item[] = [];
     stocks: Stock[] = [];
     accounts: Account[] = [];
+    priceLists: PriceList[] = [];
+    itemsWithPrices: any[] = [];
+    selectedPriceListId: string | null = null;
+    selectedPriceListName: string | null = null;
     branchStockMap: { [key: string]: { [itemId: string]: number } } = {};
     today = new Date().toISOString().split('T')[0];
 
@@ -38,6 +44,8 @@ export class InvoiceFormComponent implements OnInit {
         private itemService: ItemService,
         private stockService: StockService,
         private accountingService: AccountingService,
+        private priceListService: PriceListService,
+        private itemPriceService: ItemPriceService,
         private route: ActivatedRoute,
         private router: Router,
         private cdr: ChangeDetectorRef
@@ -48,6 +56,7 @@ export class InvoiceFormComponent implements OnInit {
             dueDate: [''],
             customerId: ['', Validators.required],
             branchId: ['', Validators.required],
+            priceListId: ['', Validators.required],
             taxRate: [0, [Validators.required, Validators.min(0)]],
             lines: this.fb.array([], this.totalStockValidator())
         });
@@ -79,7 +88,8 @@ export class InvoiceFormComponent implements OnInit {
             customers: this.customerService.getAll().pipe(catchError(err => { console.error('Failed to load customers', err); return of([]); })),
             items: this.itemService.getAll().pipe(catchError(err => { console.error('Failed to load items', err); return of([]); })),
             stocks: this.stockService.getAll().pipe(catchError(err => { console.error('Failed to load stocks', err); return of([]); })),
-            accounts: this.accountingService.getAllAccounts().pipe(catchError(err => { console.error('Failed to load accounts', err); return of([]); }))
+            accounts: this.accountingService.getAllAccounts().pipe(catchError(err => { console.error('Failed to load accounts', err); return of([]); })),
+            priceLists: this.priceListService.getAll().pipe(catchError(err => { console.error('Failed to load price lists', err); return of([]); }))
         };
 
         if (this.isEdit && this.invoiceId) {
@@ -92,6 +102,7 @@ export class InvoiceFormComponent implements OnInit {
                     branches: data.branches?.length,
                     items: data.items?.length,
                     stocks: data.stocks?.length,
+                    priceLists: data.priceLists?.length,
                     hasInvoice: !!data.invoice
                 });
 
@@ -99,11 +110,28 @@ export class InvoiceFormComponent implements OnInit {
                 this.items = data.items || [];
                 this.stocks = data.stocks || [];
                 this.accounts = data.accounts || [];
+                this.priceLists = data.priceLists || [];
                 this.customers = (data.customers || []).map((c: Customer) => ({
                     ...c,
                     id: (c.id || '').toString().toLowerCase()
                 }));
                 this.processStocks(this.stocks);
+
+                // Set up price list dropdown listener after priceLists are loaded
+                this.invoiceForm.get('priceListId')?.valueChanges.subscribe((priceListId) => {
+                    if (priceListId) {
+                        this.onPriceListSelected(priceListId);
+                    }
+                });
+
+                // Auto-select default price list if available
+                const defaultPriceList = this.priceLists.find(p => p.isDefault);
+                if (defaultPriceList) {
+                    this.invoiceForm.patchValue({ priceListId: defaultPriceList.id });
+                    this.selectedPriceListId = defaultPriceList.id;
+                    this.selectedPriceListName = defaultPriceList.name;
+                    this.onPriceListSelected(defaultPriceList.id);
+                }
 
                 if (this.isEdit && data.invoice) {
                     this.patchForm(data.invoice);
@@ -118,6 +146,49 @@ export class InvoiceFormComponent implements OnInit {
                 console.error('Critical error in forkJoin:', err);
                 this.isLoading = false;
                 this.cdr.detectChanges();
+            }
+        });
+    }
+
+    onPriceListSelected(priceListId: string): void {
+        if (!priceListId) {
+            this.itemsWithPrices = [];
+            this.selectedPriceListId = null;
+            this.selectedPriceListName = null;
+            return;
+        }
+
+        this.selectedPriceListId = priceListId;
+        
+        // Get the name of the selected price list
+        const selectedPriceList = this.priceLists.find(p => p.id === priceListId);
+        this.selectedPriceListName = selectedPriceList?.name || null;
+        console.log('Loading items for price list:', priceListId, 'Name:', this.selectedPriceListName);
+
+        this.itemPriceService.getItemsWithPricesForPriceList(priceListId).subscribe({
+            next: (items: any[]) => {
+                console.log('Items loaded for price list:', items);
+                this.itemsWithPrices = items;
+                
+                // Reset quantities and prices for existing line items
+                this.lines.controls.forEach((control) => {
+                    const itemId = control.get('itemId')?.value;
+                    if (itemId && this.selectedPriceListName) {
+                        // Auto-populate price from new price list using the name
+                        const itemWithPrices = this.itemsWithPrices.find(i => i.id === itemId);
+                        if (itemWithPrices && itemWithPrices.prices && itemWithPrices.prices[this.selectedPriceListName]) {
+                            control.patchValue({ 
+                                unitPrice: itemWithPrices.prices[this.selectedPriceListName] 
+                            });
+                        }
+                    }
+                });
+                
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error('Failed to load items for price list', err);
+                this.itemsWithPrices = [];
             }
         });
     }
@@ -223,17 +294,37 @@ export class InvoiceFormComponent implements OnInit {
     }
 
     addLine(item?: any): void {
+        // Determine initial unit price from itemsWithPrices or item parameter
+        let initialPrice = item?.unitPrice || 0;
+        
+        if (!initialPrice && item?.itemId && this.selectedPriceListName) {
+            // Look up price from itemsWithPrices for selected price list using name
+            const itemWithPrices = this.itemsWithPrices.find(i => i.id === item.itemId);
+            if (itemWithPrices && itemWithPrices.prices && itemWithPrices.prices[this.selectedPriceListName]) {
+                initialPrice = itemWithPrices.prices[this.selectedPriceListName];
+            }
+        }
+
         const lineForm = this.fb.group({
             itemId: [(item?.itemId || '').toString().toLowerCase(), Validators.required],
             quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
-            unitPrice: [item?.unitPrice || 0, [Validators.required, Validators.min(0)]]
+            unitPrice: [{ value: initialPrice, disabled: true }, [Validators.required, Validators.min(0)]]
         });
 
-        lineForm.get('quantity')?.valueChanges.subscribe(() => {
+        // When item changes, auto-populate price from selected price list using name
+        lineForm.get('itemId')?.valueChanges.subscribe((itemId) => {
+            if (itemId && this.selectedPriceListName) {
+                const itemWithPrices = this.itemsWithPrices.find(i => i.id === itemId);
+                if (itemWithPrices && itemWithPrices.prices && itemWithPrices.prices[this.selectedPriceListName]) {
+                    lineForm.patchValue({ 
+                        unitPrice: itemWithPrices.prices[this.selectedPriceListName] 
+                    }, { emitEvent: false });
+                }
+            }
             this.validateAllLines();
         });
 
-        lineForm.get('itemId')?.valueChanges.subscribe(() => {
+        lineForm.get('quantity')?.valueChanges.subscribe(() => {
             this.validateAllLines();
         });
 
@@ -349,6 +440,7 @@ export class InvoiceFormComponent implements OnInit {
             dueDate: formValue.dueDate || undefined,
             customerId: formValue.customerId,
             branchId: formValue.branchId,
+            priceListId: formValue.priceListId,
             taxRate: formValue.taxRate,
             lines: formValue.lines.map((l: any) => ({
                 itemId: l.itemId,
@@ -369,4 +461,21 @@ export class InvoiceFormComponent implements OnInit {
             });
         }
     }
-}
+
+    incrementQuantity(index: number): void {
+        const line = this.lines.at(index);
+        if (line) {
+            const currentQty = line.get('quantity')?.value || 0;
+            line.patchValue({ quantity: currentQty + 1 });
+        }
+    }
+
+    decrementQuantity(index: number): void {
+        const line = this.lines.at(index);
+        if (line) {
+            const currentQty = line.get('quantity')?.value || 0;
+            if (currentQty > 1) {
+                line.patchValue({ quantity: currentQty - 1 });
+            }
+        }
+    }}

@@ -1,23 +1,29 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { InvoiceService, Invoice } from '../invoice.service';
 import { forkJoin } from 'rxjs';
 import { BranchService } from '../../companies/branch/branch.service';
+import { TableDataManagerService } from '../../shared/services/table-data-manager.service';
+import { TableControlsComponent } from '../../shared/components/table-controls/table-controls.component';
+import { TablePaginationComponent } from '../../shared/components/table-pagination/table-pagination.component';
 
 @Component({
     selector: 'app-invoice-list',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, FormsModule, TableControlsComponent, TablePaginationComponent],
+    providers: [TableDataManagerService],
     templateUrl: './invoice-list.component.html',
     styleUrls: ['./invoice-list.component.css']
 })
 export class InvoiceListComponent implements OnInit {
-    invoices: Invoice[] = [];
     isLoading = true;
     branchesMap: Map<string, string> = new Map();
+    Math = Math;
 
     constructor(
+        public tableManager: TableDataManagerService<Invoice>,
         private invoiceService: InvoiceService,
         private branchService: BranchService,
         private router: Router,
@@ -35,7 +41,7 @@ export class InvoiceListComponent implements OnInit {
             branches: this.branchService.getAll()
         }).subscribe({
             next: (data) => {
-                this.invoices = data.invoices;
+                this.tableManager.setData(data.invoices);
                 data.branches.forEach(b => {
                     if (b.id) this.branchesMap.set(b.id.toLowerCase(), b.name);
                 });
@@ -47,6 +53,34 @@ export class InvoiceListComponent implements OnInit {
                 this.isLoading = false;
                 this.cdr.detectChanges();
             }
+        });
+    }
+
+    onSearch(searchText: string) {
+        this.tableManager.applySearch(searchText, (invoice, search) => {
+            const reference = invoice.reference?.toLowerCase() || '';
+            const branchName = this.getBranchName(invoice.branchId || '').toLowerCase();
+            const status = (invoice.isPaid ? 'paid' : 'unpaid');
+            return reference.includes(search) || branchName.includes(search) || status.includes(search);
+        });
+    }
+
+    onSort(column: string) {
+        this.tableManager.sortBy(column, (a, b, col) => {
+            let aValue: any = '';
+            let bValue: any = '';
+            switch (col) {
+                case 'reference': aValue = a.reference || ''; bValue = b.reference || ''; break;
+                case 'date': aValue = new Date(a.invoiceDate); bValue = new Date(b.invoiceDate); break;
+                case 'dueDate': aValue = new Date(a.dueDate || 0); bValue = new Date(b.dueDate || 0); break;
+                case 'branch': aValue = this.getBranchName(a.branchId || ''); bValue = this.getBranchName(b.branchId || ''); break;
+                case 'amount': aValue = a.total || 0; bValue = b.total || 0; break;
+                case 'status': aValue = a.isPaid ? 1 : 0; bValue = b.isPaid ? 1 : 0; break;
+            }
+            if (typeof aValue === 'string') {
+                return aValue.toLowerCase() < bValue.toLowerCase() ? -1 : 1;
+            }
+            return aValue < bValue ? -1 : 1;
         });
     }
 

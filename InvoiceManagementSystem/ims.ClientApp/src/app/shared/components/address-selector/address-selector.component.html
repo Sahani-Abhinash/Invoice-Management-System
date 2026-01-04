@@ -1,0 +1,133 @@
+<div class="mb-3">
+  <label class="form-label">
+    {{ label }}
+    <span class="text-danger" *ngIf="required">*</span>
+  </label>
+  <div class="d-flex gap-2 mb-2">
+    <select 
+      class="form-select flex-grow-1" 
+      [value]="selectedAddressId || ''"
+      (change)="onAddressChange($event)">
+      <option value="">Select address (optional)</option>
+      <option *ngFor="let addr of addresses" [value]="addr.id" [title]="formatAddressFull(addr)">
+        {{ formatAddressShort(addr) }}
+      </option>
+    </select>
+    <button 
+      type="button" 
+      class="btn btn-outline-primary" 
+      (click)="toggleAddressForm()" 
+      [title]="showAddressForm ? 'Hide address form' : 'Create new address'">
+      <i class="las" [ngClass]="showAddressForm ? 'la-times' : 'la-plus'"></i>
+    </button>
+  </div>
+  <small class="text-muted d-block" *ngIf="getSelectedAddressDetails() && !showAddressForm">
+    <strong>Selected:</strong> {{ formatAddressFull(getSelectedAddressDetails()!) }}
+  </small>
+  <small class="text-muted d-block" *ngIf="!showAddressForm && !getSelectedAddressDetails()">
+    Select an existing address or click + to create a new one
+  </small>
+</div>
+
+<!-- Inline Address Creation Form -->
+<div class="mb-3" *ngIf="showAddressForm">
+  <div class="card border-primary">
+    <div class="card-header bg-primary bg-opacity-10">
+      <h6 class="mb-0 text-primary">
+        <i class="las la-map-marker me-1"></i> Create New Address
+      </h6>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="addressForm">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Street Address Line 1 <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              formControlName="line1" 
+              placeholder="123 Main Street">
+            <div 
+              *ngIf="addressForm.get('line1')?.touched && addressForm.get('line1')?.invalid" 
+              class="text-danger small mt-1">
+              Street address is required
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Street Address Line 2</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              formControlName="line2" 
+              placeholder="Apt, Suite, Unit, etc. (optional)">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Country</label>
+            <select class="form-select" formControlName="countryId" (change)="onCountryChange()">
+              <option value="">Select Country (Optional)</option>
+              <option *ngFor="let country of countries" [value]="country.id">
+                {{ country.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">State/Province</label>
+            <select class="form-select" formControlName="stateId" (change)="onStateChange()">
+              <option value="">Select State (Optional)</option>
+              <option *ngFor="let state of getFilteredStates()" [value]="state.id">
+                {{ state.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">City</label>
+            <select class="form-select" formControlName="cityId" (change)="onCityChange()">
+              <option value="">Select City (Optional)</option>
+              <option *ngFor="let city of getFilteredCities()" [value]="city.id">
+                {{ city.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Postal Code</label>
+            <select class="form-select" formControlName="postalCodeId">
+              <option value="">Select Postal Code (Optional)</option>
+              <option *ngFor="let pc of getFilteredPostalCodes()" [value]="pc.id">
+                {{ pc.code }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <div class="d-flex gap-2">
+              <button 
+                type="button" 
+                class="btn btn-success btn-sm" 
+                (click)="createNewAddress()" 
+                [disabled]="addressForm.invalid || isCreatingAddress">
+                <span *ngIf="!isCreatingAddress">
+                  <i class="las la-check me-1"></i> Create Address
+                </span>
+                <span *ngIf="isCreatingAddress">
+                  <span class="spinner-border spinner-border-sm me-1"></span> Creating...
+                </span>
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-light btn-sm" 
+                (click)="cancelAddressForm()" 
+                [disabled]="isCreatingAddress">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

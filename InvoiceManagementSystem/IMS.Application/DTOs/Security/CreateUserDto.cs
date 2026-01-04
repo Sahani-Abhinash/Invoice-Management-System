@@ -26,6 +26,21 @@ namespace IMS.Application.DTOs.Security
         public string Password { get; set; } = string.Empty;
 
         /// <summary>
+        /// User mobile number.
+        /// </summary>
+        public string Mobile { get; set; } = string.Empty;
+
+        /// <summary>
+        /// User gender (optional text value).
+        /// </summary>
+        public string Gender { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Profile picture URL (set by server after upload).
+        /// </summary>
+        public string? ProfilePictureUrl { get; set; }
+
+        /// <summary>
         /// Account status.
         /// </summary>
         public UserStatus Status { get; set; } = UserStatus.Active;
