@@ -45,7 +45,7 @@ export interface CreateAddress {
 
 @Injectable({ providedIn: 'root' })
 export class AddressService {
-  private apiUrl = 'https://localhost:7276/api/address';
+  private apiUrl = '/api/address';
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Address[]> { return this.http.get<Address[]>(this.apiUrl); }

@@ -7,6 +7,7 @@ import { ItemService, Item } from '../../product/items/item.service';
 import { CustomerService, Customer } from '../../companies/customer/customer.service';
 import { AddressService, Address } from '../../Master/geography/address/address.service';
 import { PriceListService } from '../../product/price-list/price-list.service';
+import { CompanyService, Company } from '../../companies/company/company.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -24,6 +25,9 @@ export class InvoiceViewComponent implements OnInit {
     itemsMap: Map<string, Item> = new Map();
     customer: Customer | null = null;
     shippingAddress: Address | null = null;
+    company: Company | null = null;
+    companyAddress: Address | null = null;
+    companyLogoUrl: string | null = null;
 
     constructor(
         private invoiceService: InvoiceService,
@@ -32,6 +36,7 @@ export class InvoiceViewComponent implements OnInit {
         private customerService: CustomerService,
         private addressService: AddressService,
         private priceListService: PriceListService,
+        private companyService: CompanyService,
         private route: ActivatedRoute,
         private router: Router,
         private cdr: ChangeDetectorRef
@@ -48,7 +53,8 @@ export class InvoiceViewComponent implements OnInit {
         this.isLoading = true;
         forkJoin({
             invoice: this.invoiceService.getById(id),
-            items: this.itemService.getAll()
+            items: this.itemService.getAll(),
+            companies: this.companyService.getAll()
         }).subscribe({
             next: (data) => {
                 this.invoice = data.invoice;
@@ -56,6 +62,8 @@ export class InvoiceViewComponent implements OnInit {
                 data.items.forEach(i => {
                     if (i.id) this.itemsMap.set(i.id.toLowerCase(), i);
                 });
+
+                this.setCompany(data.companies);
 
                 // Load branch, customer, and shipping address in parallel
                 const requests: any = {};
@@ -117,6 +125,39 @@ export class InvoiceViewComponent implements OnInit {
 
     getItemSku(id: string): string {
         return this.itemsMap.get(id.toLowerCase())?.sku || '-';
+    }
+
+    private setCompany(companies: Company[]): void {
+        if (!companies?.length) return;
+        this.company = companies[0];
+        this.companyLogoUrl = this.resolveLogoUrl(this.company.logoUrl);
+        this.addressService.getForOwner('Company', this.company.id).subscribe({
+            next: (addresses) => {
+                this.companyAddress = addresses?.[0] || null;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.companyAddress = null;
+            }
+        });
+    }
+
+    private resolveLogoUrl(url?: string | null): string | null {
+        if (!url) return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        return '/' + trimmed.replace(/^\/+/, '');
+    }
+
+    getItemImage(id: string): string | null {
+        const item = this.itemsMap.get(id.toLowerCase());
+        if (!item) return null;
+        const images = item.images || [];
+        const mainImage = images.find(i => i.isMain) || images[0];
+        const url = (mainImage?.imageUrl || item.mainImageUrl || '').trim();
+        return url || null;
     }
 
     getPaymentStatusClass(): string {

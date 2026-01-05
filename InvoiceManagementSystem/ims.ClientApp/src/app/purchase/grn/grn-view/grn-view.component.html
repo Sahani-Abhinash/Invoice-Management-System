@@ -49,14 +49,24 @@
             <!-- Company Info -->
             <div class="col-md-4">
                 <div class="company-logo text-start mb-2">
-                    <i class="las la-warehouse text-primary"></i> IMS<span class="text-danger">.</span>
+                    <ng-container *ngIf="companyLogoUrl; else grnLogoPlaceholder">
+                        <img [src]="companyLogoUrl" alt="Company logo" class="company-logo-img">
+                    </ng-container>
+                    <ng-template #grnLogoPlaceholder>
+                        <span class="fw-bold text-primary">{{ company?.name || 'Company' }}</span>
+                    </ng-template>
                 </div>
-                <h6 class="fw-bold">My Company Name LLC</h6>
+                <h6 class="fw-bold">{{ company?.name || '—' }}</h6>
                 <p class="small mb-0">
-                    123 Business Rd.<br>
-                    Tech City, TC 90210<br>
-                    Mobile: +1 555-0123<br>
-                    Email: info@mycompany.com
+                    {{ companyAddress?.line1 || '—' }}<br>
+                    <ng-container *ngIf="companyAddress; else grnAddrFallback">
+                        {{ companyAddress.city?.name || '' }}<span *ngIf="companyAddress.state?.name">, {{ companyAddress.state?.name }}</span>
+                        <span *ngIf="companyAddress.postalCode?.code"> {{ companyAddress.postalCode?.code }}</span><br>
+                        <span *ngIf="companyAddress.country?.name">{{ companyAddress.country?.name }}</span><br>
+                    </ng-container>
+                    <ng-template #grnAddrFallback>—</ng-template>
+                    Mobile: {{ company?.phone || '—' }}<br>
+                    Email: {{ company?.email || '—' }}
                 </p>
             </div>
 
@@ -135,6 +145,7 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">Sl.</th>
+                    <th style="width: 80px;">Image</th>
                     <th>Description</th>
                     <th style="width: 80px; text-align: center;">Qty</th>
                     <th style="width: 120px; text-align: right;">Rate</th>
@@ -144,6 +155,18 @@
             <tbody>
                 <tr *ngFor="let line of grn.lines; let i = index">
                     <td>{{ i + 1 }}</td>
+                    <td>
+                        <div class="item-thumb-wrapper">
+                            <ng-container *ngIf="getItemImage(line.itemId) as imageUrl; else grnThumbPlaceholder">
+                                <img [src]="imageUrl" alt="Item image" class="item-thumb">
+                            </ng-container>
+                            <ng-template #grnThumbPlaceholder>
+                                <div class="item-thumb placeholder">
+                                    <i class="las la-image"></i>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </td>
                     <td>
                         <div *ngIf="isLoadingDetails">Loading Item...</div>
                         <div *ngIf="!isLoadingDetails">

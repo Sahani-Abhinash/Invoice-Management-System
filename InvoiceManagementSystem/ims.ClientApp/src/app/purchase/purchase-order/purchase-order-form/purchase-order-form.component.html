@@ -14,10 +14,13 @@
 
         <div class="company-section align-items-start">
             <div class="company-info">
-                <div class="company-logo text-start mb-2">
-                    <i class="las la-shipping-fast text-primary"></i> IMS<span class="text-danger">.</span>
+                <div class="company-logo text-start mb-2" *ngIf="companyLogoUrl; else companyNameFallback">
+                    <img [src]="companyLogoUrl" alt="{{ companyInfo.name }}" class="company-logo-img">
                 </div>
-                <h4 class="fw-bold">{{ companyInfo.name }}</h4>
+                <ng-template #companyNameFallback>
+                    <div class="company-logo text-start mb-2">{{ companyInfo.name || 'Company' }}</div>
+                </ng-template>
+                <h4 class="fw-bold" *ngIf="companyInfo.name">{{ companyInfo.name }}</h4>
                 <p class="mb-1">{{ companyInfo.address }}</p>
                 <p class="mb-1">{{ companyInfo.cityStateZip }}</p>
                 <div class="text-muted small" *ngIf="companyInfo.email || companyInfo.phone || companyInfo.taxNumber">

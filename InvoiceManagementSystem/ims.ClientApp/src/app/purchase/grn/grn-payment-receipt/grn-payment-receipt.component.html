@@ -26,12 +26,23 @@
         <!-- Company Info -->
         <div class="text-center mb-4">
             <div class="company-logo mb-2">
-                <i class="las la-warehouse text-primary"></i> IMS<span class="text-danger">.</span>
+                <ng-container *ngIf="companyLogoUrl; else grnReceiptLogoPlaceholder">
+                    <img [src]="companyLogoUrl" alt="Company logo" class="company-logo-img">
+                </ng-container>
+                <ng-template #grnReceiptLogoPlaceholder>
+                    <span class="fw-bold text-primary">{{ company?.name || 'Company' }}</span>
+                </ng-template>
             </div>
-            <h5 class="fw-bold">My Company Name LLC</h5>
+            <h5 class="fw-bold">{{ company?.name || '—' }}</h5>
             <p class="small mb-0">
-                123 Business Rd., Tech City, TC 90210<br>
-                Phone: +1 555-0123 | Email: info@mycompany.com
+                {{ companyAddress?.line1 || '—' }}<br>
+                <ng-container *ngIf="companyAddress; else grnReceiptAddrFallback">
+                    {{ companyAddress.city?.name || '' }}<span *ngIf="companyAddress.state?.name">, {{ companyAddress.state?.name }}</span>
+                    <span *ngIf="companyAddress.postalCode?.code"> {{ companyAddress.postalCode?.code }}</span><br>
+                    <span *ngIf="companyAddress.country?.name">{{ companyAddress.country?.name }}</span><br>
+                </ng-container>
+                <ng-template #grnReceiptAddrFallback>—</ng-template>
+                Mobile: {{ company?.phone || '—' }} | Email: {{ company?.email || '—' }}
             </p>
         </div>
 

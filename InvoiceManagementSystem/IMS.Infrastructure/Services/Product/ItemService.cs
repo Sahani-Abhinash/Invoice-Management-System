@@ -25,6 +25,7 @@ namespace IMS.Infrastructure.Services.Product
         {
             var items = await _repository.GetQueryable()
                 .Include(i => i.UnitOfMeasure)
+                .Include(i => i.Images)
                 .Include(i => i.Prices)
                     .ThenInclude(p => p.PriceList)
                 .ToListAsync();
@@ -44,8 +45,24 @@ namespace IMS.Infrastructure.Services.Product
                     Id = i.UnitOfMeasure.Id,
                     Name = i.UnitOfMeasure.Name,
                     Symbol = i.UnitOfMeasure.Symbol
-                } : null
+                } : null,
+                Images = i.Images?.Select(img => new ItemImageDto
+                {
+                    Id = img.Id,
+                    ItemId = img.ItemId,
+                    ImageUrl = img.ImageUrl,
+                    IsMain = img.IsMain
+                }).ToList() ?? new List<ItemImageDto>(),
+                MainImageUrl = ResolveMainImageUrl(i.Images)
             }).ToList();
+        }
+
+        private static string ResolveMainImageUrl(IEnumerable<ItemImage>? images)
+        {
+            if (images == null) return string.Empty;
+            var ordered = images.ToList();
+            var main = ordered.FirstOrDefault(img => img.IsMain);
+            return (main ?? ordered.FirstOrDefault())?.ImageUrl ?? string.Empty;
         }
 
         public async Task<ItemDetailsDto?> GetByIdAsync(Guid id)

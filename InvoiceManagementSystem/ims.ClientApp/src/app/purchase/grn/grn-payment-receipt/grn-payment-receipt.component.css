@@ -20,6 +20,11 @@
     font-weight: 700;
 }
 
+.company-logo-img {
+    max-height: 48px;
+    width: auto;
+}
+
 @media print {
     .no-print {
         display: none !important;

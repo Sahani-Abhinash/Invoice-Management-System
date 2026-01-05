@@ -43,10 +43,10 @@ export interface CreatePurchaseOrderDto {
     providedIn: 'root'
 })
 export class PurchaseOrderService {
-    private apiUrl = 'https://localhost:7276/api/purchaseorder';
-    private vendorUrl = 'https://localhost:7276/api/vendor';
-    private warehouseUrl = 'https://localhost:7276/api/warehouse';
-    private itemUrl = 'https://localhost:7276/api/item';
+    private apiUrl = '/api/purchaseorder';
+    private vendorUrl = '/api/vendor';
+    private warehouseUrl = '/api/warehouse';
+    private itemUrl = '/api/item';
 
     constructor(private http: HttpClient) { }
 
@@ -105,14 +105,22 @@ export class PurchaseOrderService {
 
     getItems(): Observable<Item[]> {
         return this.http.get<any[]>(this.itemUrl).pipe(
-            map((data: any[]) => data.map((i: any) => ({
-                id: i.id || i.Id,
-                name: i.name || i.Name,
-                sku: i.sku || i.SKU || i.Sku,
-                description: i.description || i.Description,
-                price: i.price || i.Price,
-                unitOfMeasureId: i.unitOfMeasureId || i.UnitOfMeasureId
-            })))
+            map((data: any[]) => data.map((i: any) => {
+                const images = this.normalizeImages(i.images || i.Images) ?? [];
+                const mainImage = images.length ? (images.find(img => img.isMain) || images[0]) : null;
+                const serverMain = i.mainImageUrl || i.MainImageUrl || '';
+                return {
+                    id: (i.id || i.Id || '').toString().toLowerCase(),
+                    name: i.name || i.Name,
+                    sku: i.sku || i.SKU || i.Sku,
+                    description: i.description || i.Description,
+                    price: i.price || i.Price,
+                    unitOfMeasureId: (i.unitOfMeasureId || i.UnitOfMeasureId || '').toString().toLowerCase(),
+                    unitOfMeasure: i.unitOfMeasure || i.UnitOfMeasure,
+                    images,
+                    mainImageUrl: this.resolveImageUrl(serverMain || mainImage?.imageUrl)
+                } as Item;
+            }))
         );
     }
 
@@ -137,5 +145,23 @@ export class PurchaseOrderService {
                 receivedQuantity: l.receivedQuantity || l.ReceivedQuantity || 0
             }))
         };
+    }
+
+    private normalizeImages(raw: any): Item['images'] {
+        const collection = Array.isArray(raw) ? raw : (raw?.$values || []);
+        return collection.map((img: any) => ({
+            id: (img.id || img.Id || '').toString().toLowerCase(),
+            itemId: (img.itemId || img.ItemId || '').toString().toLowerCase(),
+            imageUrl: this.resolveImageUrl(img.imageUrl || img.ImageUrl || ''),
+            isMain: Boolean(img.isMain ?? img.IsMain)
+        }));
+    }
+
+    private resolveImageUrl(url?: string | null): string {
+        const trimmed = (url || '').trim();
+        if (!trimmed) return '';
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        return '/' + trimmed.replace(/^\/+/, '');
     }
 }

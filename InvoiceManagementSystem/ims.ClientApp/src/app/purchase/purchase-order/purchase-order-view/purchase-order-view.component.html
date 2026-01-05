@@ -25,13 +25,25 @@
         <div class="company-section align-items-start">
             <div class="company-info">
                 <div class="company-logo text-start mb-2">
-                    <i class="las la-shipping-fast text-primary"></i> IMS<span class="text-danger">.</span>
+                    <ng-container *ngIf="companyLogoUrl; else poLogoPlaceholder">
+                        <img [src]="companyLogoUrl" alt="Company logo" class="company-logo-img">
+                    </ng-container>
+                    <ng-template #poLogoPlaceholder>
+                        <span class="fw-bold text-primary">{{ company?.name || 'Company' }}</span>
+                    </ng-template>
                 </div>
-                <h4>My Company Name LLC</h4>
-                <p class="mb-1">123 Business Rd.</p>
-                <p class="mb-1">Tech City, TC 90210</p>
-                <p class="mb-1">Mobile: +1 555-0123</p>
-                <p class="mb-0">Email: info@mycompany.com</p>
+                <h4>{{ company?.name || '—' }}</h4>
+                <p class="mb-1">{{ companyAddress?.line1 || '—' }}</p>
+                <p class="mb-1">
+                    <ng-container *ngIf="companyAddress; else cityFallback">
+                        {{ companyAddress.city?.name || '' }}<span *ngIf="companyAddress.state?.name">, {{ companyAddress.state?.name }}</span>
+                        <span *ngIf="companyAddress.postalCode?.code"> {{ companyAddress.postalCode?.code }}</span>
+                        <span *ngIf="companyAddress.country?.name"> | {{ companyAddress.country?.name }}</span>
+                    </ng-container>
+                    <ng-template #cityFallback>—</ng-template>
+                </p>
+                <p class="mb-1">Mobile: {{ company?.phone || '—' }}</p>
+                <p class="mb-0">Email: {{ company?.email || '—' }}</p>
             </div>
             <div class="supplier-wrapper">
                 <div class="card shadow-sm supplier-card">
@@ -89,6 +101,7 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">Sl.</th>
+                    <th style="width: 80px;">Image</th>
                     <th>Description</th>
                     <th style="width: 80px; text-align: center;">Qty</th>
                     <th style="width: 120px;">Rate</th>
@@ -98,6 +111,18 @@
             <tbody>
                 <tr *ngFor="let line of po.lines; let i = index">
                     <td>{{ i + 1 }}</td>
+                    <td>
+                        <div class="item-thumb-wrapper">
+                            <ng-container *ngIf="getItemImage(line.itemId) as imageUrl; else poThumbPlaceholder">
+                                <img [src]="imageUrl" alt="Item image" class="item-thumb">
+                            </ng-container>
+                            <ng-template #poThumbPlaceholder>
+                                <div class="item-thumb placeholder">
+                                    <i class="las la-image"></i>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </td>
                     <td>
                         <div *ngIf="isLoadingDetails">Loading Item...</div>
                         <div *ngIf="!isLoadingDetails">

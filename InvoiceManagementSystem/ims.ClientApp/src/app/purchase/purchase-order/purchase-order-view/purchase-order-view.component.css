@@ -37,6 +37,11 @@
     color: #444;
 }
 
+.company-logo-img {
+    max-height: 56px;
+    width: auto;
+}
+
 .supplier-wrapper {
     min-width: 360px;
     max-width: 420px;
@@ -95,6 +100,33 @@
     padding: 10px;
     border-bottom: 1px solid #eee;
     font-size: 14px;
+}
+
+.item-thumb-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.item-thumb.placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    border: 1px dashed #ced4da;
+    color: #adb5bd;
+    background: #f8f9fa;
 }
 
 /* Totals */

@@ -39,6 +39,7 @@ export class PurchaseOrderFormComponent implements OnInit {
         phone: '',
         taxNumber: ''
     };
+    companyLogoUrl: string | null = null;
 
     constructor() {
         this.form = this.fb.group({
@@ -103,6 +104,7 @@ export class PurchaseOrderFormComponent implements OnInit {
                         phone: company.phone || '',
                         taxNumber: company.taxNumber || ''
                     };
+                    this.companyLogoUrl = this.resolveLogoUrl(company.logoUrl);
                 }
                 this.cdr.detectChanges();
             },
@@ -110,6 +112,15 @@ export class PurchaseOrderFormComponent implements OnInit {
                 // Fallback to defaults already set
             }
         });
+    }
+
+    private resolveLogoUrl(url?: string | null): string | null {
+        if (!url) return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        return '/' + trimmed.replace(/^\/+/, '');
     }
 
     loadPO(id: string) {

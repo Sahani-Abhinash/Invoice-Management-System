@@ -1,6 +1,7 @@
 using IMS.Application.DTOs.Product;
 using IMS.Application.Managers.Product;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace IMS.API.Controllers
 {
@@ -9,10 +10,12 @@ namespace IMS.API.Controllers
     public class ItemImageController : ControllerBase
     {
         private readonly IItemImageManager _manager;
+        private readonly IItemManager _itemManager;
 
-        public ItemImageController(IItemImageManager manager)
+        public ItemImageController(IItemImageManager manager, IItemManager itemManager)
         {
             _manager = manager;
+            _itemManager = itemManager;
         }
 
         /// <summary>
@@ -47,7 +50,69 @@ namespace IMS.API.Controllers
         }
 
         /// <summary>
-        /// Create an item image.
+        /// Upload an image for an item (follows Company Logo pattern).
+        /// </summary>
+        [HttpPost("{itemId}/upload")]
+        public async Task<IActionResult> UploadImage(Guid itemId, IFormFile file)
+        {
+            // Validate file
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            // Check file size (max 5MB)
+            if (file.Length > 5 * 1024 * 1024)
+                return BadRequest("File size exceeds 5MB limit");
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+                return BadRequest("Invalid file type. Allowed: jpg, jpeg, png, gif, webp");
+
+            try
+            {
+                // Verify item exists
+                var item = await _itemManager.GetByIdAsync(itemId);
+                if (item == null)
+                    return NotFound("Item not found");
+
+                // Create uploads directory if it doesn't exist
+                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "items", itemId.ToString());
+                Directory.CreateDirectory(uploadsDir);
+
+                // Save new file with unique name (GUID to avoid conflicts)
+                var fileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadsDir, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Build URL
+                var imageUrl = $"/uploads/items/{itemId}/{fileName}";
+
+                // Create image record in database
+                var dto = new CreateItemImageDto
+                {
+                    ItemId = itemId,
+                    ImageUrl = imageUrl,
+                    IsMain = false
+                };
+
+                var result = await _manager.CreateAsync(dto);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error uploading image: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Create an item image (metadata only - no file upload).
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateItemImageDto dto)
@@ -68,7 +133,7 @@ namespace IMS.API.Controllers
         }
 
         /// <summary>
-        /// Delete an item image (soft-delete).
+        /// Delete an item image.
         /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)

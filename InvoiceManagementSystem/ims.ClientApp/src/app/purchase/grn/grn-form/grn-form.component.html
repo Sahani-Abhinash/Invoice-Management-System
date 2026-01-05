@@ -53,6 +53,15 @@
                             </div>
                         </div>
                         <div class="col-md-3">
+                            <label class="form-label fw-bold small">Price List</label>
+                            <select class="form-select" formControlName="priceListId"
+                                (change)="onPriceListChange(grnForm.get('priceListId')?.value)">
+                                <option value="">-- Select Price List --</option>
+                                <option *ngFor="let pl of priceLists" [value]="pl.id">{{ pl.name }}</option>
+                            </select>
+                            <div class="text-muted small" *ngIf="isLoadingPrices">Loading prices...</div>
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label fw-bold small">Received Date</label>
                             <input type="text" class="form-control" [value]="today | date:'mediumDate'" readonly
                                 disabled>
@@ -139,7 +148,8 @@
                                 <tr *ngFor="let line of lines.controls; let i = index" [formGroupName]="i">
                                     <td>{{ i + 1 }}</td>
                                     <td>
-                                        <select class="form-select form-select-sm" formControlName="itemId">
+                                        <select class="form-select form-select-sm" formControlName="itemId"
+                                            (change)="onItemChange(i)">
                                             <option value="">Select Item</option>
                                             <option *ngFor="let item of getFilteredItems()"
                                                 [value]="(item.id || '').toLowerCase()">

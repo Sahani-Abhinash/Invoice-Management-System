@@ -9,21 +9,28 @@
                 <div class="d-flex">
                     <!-- LOGO -->
                     <div class="navbar-brand-box horizontal-logo">
+                        <ng-template #logoFallback>
+                            <span class="logo-text">{{ companyName() || 'Company' }}</span>
+                        </ng-template>
                         <a [routerLink]="'/home'" class="logo logo-dark">
                             <span class="logo-sm">
-                                <img src="template/images/logo-sm.png" alt="" height="22">
+                                <img *ngIf="companyLogoUrl(); else logoFallback" [src]="companyLogoUrl()"
+                                    [alt]="companyName() || 'Company'" height="22">
                             </span>
                             <span class="logo-lg">
-                                <img src="template/images/logo-dark.png" alt="" height="21">
+                                <img *ngIf="companyLogoUrl(); else logoFallback" [src]="companyLogoUrl()"
+                                    [alt]="companyName() || 'Company'" height="21">
                             </span>
                         </a>
 
                         <a [routerLink]="'/home'" class="logo logo-light">
                             <span class="logo-sm">
-                                <img src="template/images/logo-sm.png" alt="" height="22">
+                                <img *ngIf="companyLogoUrl(); else logoFallback" [src]="companyLogoUrl()"
+                                    [alt]="companyName() || 'Company'" height="22">
                             </span>
                             <span class="logo-lg">
-                                <img src="template/images/logo-light.png" alt="" height="21">
+                                <img *ngIf="companyLogoUrl(); else logoFallback" [src]="companyLogoUrl()"
+                                    [alt]="companyName() || 'Company'" height="21">
                             </span>
                         </a>
                     </div>
@@ -418,30 +425,31 @@
                             </span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
-                            <!-- item-->
-                            <a class="dropdown-item" href="#"><i class="bx bx-user fs-15 align-middle me-1"></i> <span
-                                    key="t-profile">Profile</span></a>
-                            <a class="dropdown-item" href="#"><i class="bx bx-wallet fs-15 align-middle me-1"></i> <span
-                                    key="t-my-wallet">My Wallet</span></a>
-                            <a class="dropdown-item d-block" href="#"><span
-                                    class="badge bg-success float-end">11</span><i
-                                    class="bx bx-wrench fs-15 align-middle me-1"></i> <span
-                                    key="t-settings">Settings</span></a>
-                            <a class="dropdown-item" href="auth-lockscreen.html"><i
-                                    class="bx bx-lock-open fs-15 align-middle me-1"></i> <span key="t-lock-screen">Lock
-                                    screen</span></a>
+                                <!-- Quick links -->
+                                <a class="dropdown-item" routerLink="/dashboard">
+                                    <i class="bx bx-grid-alt fs-15 align-middle me-1"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a class="dropdown-item" routerLink="/products/items">
+                                    <i class="bx bx-package fs-15 align-middle me-1"></i>
+                                    <span>Items</span>
+                                </a>
+                                <a class="dropdown-item" routerLink="/purchase-orders">
+                                    <i class="bx bx-cart fs-15 align-middle me-1"></i>
+                                    <span>Purchase Orders</span>
+                                </a>
+                                <a class="dropdown-item" routerLink="/invoices">
+                                    <i class="bx bx-receipt fs-15 align-middle me-1"></i>
+                                    <span>Invoices</span>
+                                </a>
+                                <a class="dropdown-item" routerLink="/help" *ngIf="false">
+                                    <i class="bx bx-help-circle fs-15 align-middle me-1"></i>
+                                    <span>Help Center</span>
+                                </a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="#" (click)="logout()"><i
                                     class="bx bx-power-off fs-15 align-middle me-1 text-danger"></i> <span
                                     key="t-logout">Logout</span></a>
-                            <div class="dropdown-divider"></div>
-                            <div class="dropdown-item-text small">
-                                <strong>Permissions ({{ authStore.permissions().length }}):</strong><br>
-                                <div *ngIf="authStore.permissions().length === 0" class="text-danger">No permissions
-                                    loaded!</div>
-                                <div *ngFor="let p of authStore.permissions()" class="text-muted"
-                                    style="font-size: 11px;">• {{ p }}</div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -480,22 +488,29 @@
     <div class="app-menu navbar-menu">
         <!-- LOGO -->
         <div class="navbar-brand-box">
+            <ng-template #sideLogoFallback>
+                <span class="logo-text">{{ companyName() || 'Company' }}</span>
+            </ng-template>
             <!-- Dark Logo-->
             <a [routerLink]="'/home'" class="logo logo-dark">
                 <span class="logo-sm">
-                    <img src="template/images/logo-sm.png" alt="" height="22">
+                    <img *ngIf="companyLogoUrl(); else sideLogoFallback" [src]="companyLogoUrl()"
+                        [alt]="companyName() || 'Company'" height="22">
                 </span>
                 <span class="logo-lg">
-                    <img src="template/images/logo-dark.png" alt="" height="21">
+                    <img *ngIf="companyLogoUrl(); else sideLogoFallback" [src]="companyLogoUrl()"
+                        [alt]="companyName() || 'Company'" height="21">
                 </span>
             </a>
             <!-- Light Logo-->
             <a [routerLink]="'/home'" class="logo logo-light">
                 <span class="logo-sm">
-                    <img src="template/images/logo-sm.png" alt="" height="22">
+                    <img *ngIf="companyLogoUrl(); else sideLogoFallback" [src]="companyLogoUrl()"
+                        [alt]="companyName() || 'Company'" height="22">
                 </span>
                 <span class="logo-lg">
-                    <img src="template/images/logo-light.png" alt="" height="21">
+                    <img *ngIf="companyLogoUrl(); else sideLogoFallback" [src]="companyLogoUrl()"
+                        [alt]="companyName() || 'Company'" height="21">
                 </span>
             </a>
             <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"

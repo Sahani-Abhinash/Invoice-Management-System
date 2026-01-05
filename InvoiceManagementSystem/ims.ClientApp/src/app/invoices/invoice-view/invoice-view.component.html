@@ -23,9 +23,27 @@
         <div class="card" id="demo">
             <div class="card-body p-4">
                 <!-- Header -->
-                <div class="row border-bottom pb-3 mb-3">
+                <div class="row border-bottom pb-3 mb-3 align-items-center">
                     <div class="col-lg-6">
-                        <h2 class="text-primary fw-bold mb-1">IMS INVOICE</h2>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="company-logo text-primary fw-bold" *ngIf="companyLogoUrl; else invoiceLogoPlaceholder">
+                                <img [src]="companyLogoUrl" alt="Company logo" class="company-logo-img">
+                            </span>
+                            <ng-template #invoiceLogoPlaceholder>
+                                <span class="company-logo text-primary fw-bold">{{ company?.name || 'Company' }}</span>
+                            </ng-template>
+                            <h4 class="mb-0 fw-bold">{{ company?.name || '—' }}</h4>
+                        </div>
+                        <p class="text-muted small mb-0">{{ companyAddress?.line1 || '—' }}</p>
+                        <p class="text-muted small mb-0">
+                            <ng-container *ngIf="companyAddress; else invoiceAddrFallback">
+                                {{ companyAddress.city?.name || '' }}<span *ngIf="companyAddress.state?.name">, {{ companyAddress.state?.name }}</span>
+                                <span *ngIf="companyAddress.postalCode?.code"> {{ companyAddress.postalCode?.code }}</span>
+                                <span *ngIf="companyAddress.country?.name"> · {{ companyAddress.country?.name }}</span>
+                            </ng-container>
+                            <ng-template #invoiceAddrFallback>—</ng-template>
+                        </p>
+                        <p class="text-muted small mb-0">Mobile: {{ company?.phone || '—' }} · Email: {{ company?.email || '—' }}</p>
                         <p class="text-muted small mb-1">Ref: <span class="fw-semibold">#{{ invoice.reference }}</span></p>
                         <p class="text-muted small mb-0">Branch: <span class="fw-semibold">{{ branchName }}</span></p>
                         <p class="text-muted small mb-0">Price List: <span class="fw-semibold badge bg-info text-dark">{{ priceListName || 'Not Specified' }}</span></p>
@@ -73,6 +91,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 50px;">#</th>
+                                <th style="width: 80px;">Image</th>
                                 <th class="text-start">Item Description</th>
                                 <th style="width: 100px;">Unit Price</th>
                                 <th style="width: 80px;">Qty</th>
@@ -82,6 +101,18 @@
                         <tbody>
                             <tr *ngFor="let line of invoice.lines; let i = index">
                                 <td>{{ i + 1 }}</td>
+                                <td>
+                                    <div class="item-thumb-wrapper">
+                                        <ng-container *ngIf="getItemImage(line.itemId) as imageUrl; else invoiceThumbPlaceholder">
+                                            <img [src]="imageUrl" alt="Item image" class="item-thumb">
+                                        </ng-container>
+                                        <ng-template #invoiceThumbPlaceholder>
+                                            <div class="item-thumb placeholder">
+                                                <i class="las la-image"></i>
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                </td>
                                 <td class="text-start">
                                     <span class="fw-medium">{{ getItemName(line.itemId) }}</span>
                                     <br>

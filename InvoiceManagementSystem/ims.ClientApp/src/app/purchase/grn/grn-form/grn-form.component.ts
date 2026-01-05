@@ -7,6 +7,8 @@ import { PurchaseOrderService } from '../../purchase-order/purchase-order.servic
 import { Vendor } from '../../../companies/vendor/vendor.service';
 import { Warehouse } from '../../../warehouse/warehouse.service';
 import { Item } from '../../../product/items/item.service';
+import { PriceListService, PriceList } from '../../../product/price-list/price-list.service';
+import { ItemPriceService } from '../../../product/item-price/item-price.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -28,11 +30,16 @@ export class GrnFormComponent implements OnInit {
     grnId: string | null = null;
     today = new Date();
     currentPo: any = null;
+    priceLists: PriceList[] = [];
+    priceListPrices: Map<string, number> = new Map();
+    isLoadingPrices = false;
 
     constructor(
         private fb: FormBuilder,
         private grnService: GrnService,
         private poService: PurchaseOrderService,
+        private priceListService: PriceListService,
+        private itemPriceService: ItemPriceService,
         private router: Router,
         private route: ActivatedRoute,
         private cdr: ChangeDetectorRef
@@ -42,6 +49,7 @@ export class GrnFormComponent implements OnInit {
             warehouseId: [''], // Auto-filled from PO
             purchaseOrderId: ['', Validators.required], // PO is REQUIRED
             reference: ['', Validators.required],
+            priceListId: [''],
             lines: this.fb.array([], Validators.required)
         });
     }
@@ -57,7 +65,8 @@ export class GrnFormComponent implements OnInit {
             vendors: this.grnService.getVendors(),
             warehouses: this.grnService.getWarehouses(),
             items: this.grnService.getItems(),
-            pos: this.poService.getAll()
+            pos: this.poService.getAll(),
+            priceLists: this.priceListService.getAll()
         };
 
         if (this.isEdit && this.grnId) {
@@ -69,6 +78,7 @@ export class GrnFormComponent implements OnInit {
                 this.vendors = data.vendors;
                 this.warehouses = data.warehouses;
                 this.items = data.items;
+                this.priceLists = data.priceLists || [];
                 // Filter to show only approved purchase orders
                 this.purchaseOrders = (data.pos || []).filter((po: any) => po.isApproved === true);
 
@@ -102,17 +112,20 @@ export class GrnFormComponent implements OnInit {
                             next: (po) => {
                                 this.currentPo = po;
                                 this.patchGrnForm(data.grn, po);
+                                this.applyDefaultPriceList();
                                 this.isLoading = false;
                                 this.cdr.detectChanges();
                             },
                             error: () => {
                                 this.patchGrnForm(data.grn);
+                                this.applyDefaultPriceList();
                                 this.isLoading = false;
                                 this.cdr.detectChanges();
                             }
                         });
                     } else {
                         this.patchGrnForm(data.grn);
+                        this.applyDefaultPriceList();
                         this.isLoading = false;
                         this.cdr.detectChanges();
                     }
@@ -122,6 +135,7 @@ export class GrnFormComponent implements OnInit {
                     if (poId) {
                         this.onPoChange(poId);
                     }
+                    this.applyDefaultPriceList();
                     this.isLoading = false;
                     this.cdr.detectChanges();
                 }
@@ -131,6 +145,10 @@ export class GrnFormComponent implements OnInit {
                 this.isLoading = false;
                 this.cdr.detectChanges();
             }
+        });
+
+        this.grnForm.get('priceListId')?.valueChanges.subscribe((id) => {
+            this.onPriceListChange(id);
         });
     }
 
@@ -172,6 +190,8 @@ export class GrnFormComponent implements OnInit {
             });
             this.lines.push(lineForm);
         });
+
+        this.applyPriceListToLines();
     }
 
     get lines(): FormArray {
@@ -191,6 +211,8 @@ export class GrnFormComponent implements OnInit {
             unitPrice: [item?.unitPrice || 0, [Validators.required, Validators.min(0)]]
         });
         this.lines.push(lineForm);
+
+        this.applyPriceForLine(this.lines.length - 1);
     }
 
     getFilteredItems(): Item[] {
@@ -235,6 +257,7 @@ export class GrnFormComponent implements OnInit {
                             this.addLine(line);
                         });
                     }
+                    this.applyPriceListToLines();
                 }
                 this.isLoading = false;
                 this.cdr.detectChanges();
@@ -297,6 +320,87 @@ export class GrnFormComponent implements OnInit {
             const line = control.value;
             return acc + ((line.quantity || 0) * (line.unitPrice || 0));
         }, 0);
+    }
+
+    onItemChange(index: number): void {
+        this.applyPriceForLine(index);
+    }
+
+    onPriceListChange(priceListId: string): void {
+        if (!priceListId) {
+            this.priceListPrices.clear();
+            this.applyPriceListToLines();
+            return;
+        }
+
+        this.isLoadingPrices = true;
+        this.itemPriceService.getItemsWithPricesForPriceList(priceListId).subscribe({
+            next: (entries) => {
+                this.priceListPrices = this.buildPriceMap(entries);
+                this.applyPriceListToLines();
+                this.isLoadingPrices = false;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.priceListPrices.clear();
+                this.isLoadingPrices = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    private applyDefaultPriceList(): void {
+        const control = this.grnForm.get('priceListId');
+        if (!control) return;
+        const current = control.value;
+        if (current) {
+            this.onPriceListChange(current);
+            return;
+        }
+        const defaultList = this.priceLists.find(pl => pl.isDefault);
+        if (defaultList) {
+            control.setValue(defaultList.id, { emitEvent: true });
+        }
+    }
+
+    private applyPriceListToLines(): void {
+        this.lines.controls.forEach((_, idx) => this.applyPriceForLine(idx));
+    }
+
+    private applyPriceForLine(index: number): void {
+        const lineGroup = this.lines.at(index) as FormGroup;
+        const itemId = (lineGroup.get('itemId')?.value || '').toString().toLowerCase();
+        if (!itemId) return;
+
+        // Priority: selected price list -> PO line price -> item master price
+        const priceFromList = this.priceListPrices.get(itemId);
+        if (priceFromList !== undefined) {
+            lineGroup.get('unitPrice')?.setValue(priceFromList);
+            return;
+        }
+
+        const poLine = this.currentPo?.lines?.find((l: any) => (l.itemId || '').toString().toLowerCase() === itemId);
+        if (poLine && poLine.unitPrice !== undefined && poLine.unitPrice !== null) {
+            lineGroup.get('unitPrice')?.setValue(poLine.unitPrice);
+            return;
+        }
+
+        const masterItem = this.items.find(i => (i.id || '').toLowerCase() === itemId);
+        if (masterItem && masterItem.price !== undefined && masterItem.price !== null) {
+            lineGroup.get('unitPrice')?.setValue(masterItem.price);
+        }
+    }
+
+    private buildPriceMap(entries: any[]): Map<string, number> {
+        const map = new Map<string, number>();
+        (entries || []).forEach((p: any) => {
+            const itemId = (p.itemId || p.ItemId || p.item?.id || p.Item?.Id || '').toString().toLowerCase();
+            if (!itemId) return;
+            const rawPrice = p.price ?? p.Price ?? p.unitPrice ?? p.UnitPrice;
+            if (rawPrice === undefined || rawPrice === null) return;
+            map.set(itemId, Number(rawPrice));
+        });
+        return map;
     }
 
     // Helper to get vendor details by ID

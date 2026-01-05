@@ -33,9 +33,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IMS.Application.Interfaces.Common.ICurrentUserService, IMS.API.Services.Common.CurrentUserService>();
 
 // Register DbContext with ability to inject current user service via DI
+// Consolidated registration: include migrations assembly and allow service-provider based configuration
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("IMS.Infrastructure")
+    );
 });
 
 // Register Generic Repository
@@ -130,12 +134,7 @@ builder.Services.AddScoped<IMS.Application.Interfaces.Transaction.ICategoryServi
 builder.Services.AddScoped<IMS.Application.Interfaces.Transaction.ITransactionService, IMS.Infrastructure.Services.Transaction.TransactionService>();
 // Accounting service removed from DI registrations (module trimmed). Use CurrencyService and generic repositories instead.
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("IMS.Infrastructure")
-    )
-);
+// Note: DbContext already registered above with migrations assembly.
 
 
 builder.Services.AddAuthorization(options =>
@@ -201,6 +200,26 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("DbSeeder failed: " + ex);
     }
 }
+
+// Global exception logging middleware to capture unhandled exceptions and 500 responses
+// This helps diagnose errors that occur while generating Swagger/OpenAPI documents.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+
+        if (context.Response.StatusCode >= 500)
+        {
+            Console.WriteLine($"Request {context.Request.Method} {context.Request.Path} returned status {context.Response.StatusCode}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unhandled exception processing {context.Request.Method} {context.Request.Path}: {ex}");
+        throw;
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

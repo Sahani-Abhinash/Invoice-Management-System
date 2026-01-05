@@ -17,13 +17,13 @@ export interface Company {
 })
 
 export class CompanyService {
-  private baseUrl = 'https://localhost:7276';
-  private apiUrl = `${this.baseUrl}/api/company`;
+  private baseUrl = '';
+  private apiUrl = `/api/company`;
 
   constructor(private http: HttpClient) { }
 
   getBaseUrl(): string {
-    return this.baseUrl;
+    return this.baseUrl || '';
   }
 
   getAll(): Observable<Company[]> {

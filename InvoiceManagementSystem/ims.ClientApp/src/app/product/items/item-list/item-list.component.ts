@@ -70,6 +70,14 @@ export class ItemListComponent implements OnInit {
         }
     }
 
+    getMainImageUrl(item: Item): string | null {
+        if (!item) return null;
+        const images = item.images || [];
+        const mainImage = images.find(i => i.isMain) || images[0];
+        const url = (mainImage?.imageUrl || item.mainImageUrl || '').trim();
+        return url || null;
+    }
+
     editItem(id: string) {
         this.router.navigate(['/products/items/edit', id]);
     }

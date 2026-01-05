@@ -1,0 +1,121 @@
+<div class="image-gallery">
+    <!-- Main Gallery Grid -->
+    <div class="row g-3" *ngIf="images.length > 0; else emptyState">
+        <div *ngFor="let image of images" [ngClass]="colClass">
+            <div class="card h-100 position-relative gallery-card">
+                <!-- Main Image Badge -->
+                <div *ngIf="showMainBadge && image.isMain" class="position-absolute top-0 start-0 m-2 z-3">
+                    <span class="badge bg-primary">
+                        <i class="bi bi-star-fill"></i> Main
+                    </span>
+                </div>
+
+                <!-- Image Container with Hover Effect -->
+                <div class="image-container position-relative">
+                    <img 
+                        [src]="image.imageUrl" 
+                        class="card-img-top gallery-image" 
+                        [alt]="image.altText || 'Gallery image'"
+                        [title]="image.altText || 'Gallery image'"
+                        (click)="openImageModal(image)">
+                    
+                    <!-- Hover Overlay -->
+                    <div class="overlay d-none d-md-flex">
+                        <button 
+                            type="button" 
+                            class="btn btn-sm btn-light"
+                            (click)="openImageModal(image)"
+                            title="View image">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card Body with Actions -->
+                <div class="card-body p-2">
+                    <div class="btn-group btn-group-sm w-100" role="group" *ngIf="!readonly">
+                        <button 
+                            *ngIf="allowSetMain && !image.isMain"
+                            type="button" 
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="setMainImage(image)"
+                            title="Set as main image">
+                            <i class="bi bi-star"></i>
+                            <span class="d-none d-sm-inline ms-1">Main</span>
+                        </button>
+                        <button 
+                            *ngIf="allowDelete"
+                            type="button" 
+                            class="btn btn-outline-danger btn-sm"
+                            (click)="deleteImage(image)"
+                            title="Delete image">
+                            <i class="bi bi-trash"></i>
+                            <span class="d-none d-sm-inline ms-1">Delete</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <ng-template #emptyState>
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-images display-6 d-block mb-3"></i>
+            <p class="mb-0">No images available</p>
+        </div>
+    </ng-template>
+
+    <!-- Image Modal/Lightbox -->
+    <div class="modal" [class.d-block]="selectedImage" tabindex="-1" [style.display]="selectedImage ? 'block' : 'none'">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Image Preview</h5>
+                    <button 
+                        type="button" 
+                        class="btn-close" 
+                        (click)="closeImageModal()"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img 
+                        *ngIf="selectedImage"
+                        [src]="selectedImage.imageUrl" 
+                        class="img-fluid"
+                        [alt]="selectedImage.altText || 'Gallery image'"
+                        [title]="selectedImage.altText || 'Gallery image'">
+                </div>
+                <div class="modal-footer" *ngIf="selectedImage && !readonly">
+                    <button 
+                        *ngIf="allowSetMain && !selectedImage.isMain"
+                        type="button" 
+                        class="btn btn-primary"
+                        (click)="setMainImage(selectedImage); closeImageModal()">
+                        Set as Main
+                    </button>
+                    <button 
+                        *ngIf="allowDelete"
+                        type="button" 
+                        class="btn btn-danger"
+                        (click)="deleteImage(selectedImage); closeImageModal()">
+                        Delete Image
+                    </button>
+                    <button 
+                        type="button" 
+                        class="btn btn-secondary"
+                        (click)="closeImageModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div 
+        class="modal-backdrop fade" 
+        [class.show]="selectedImage"
+        [style.display]="selectedImage ? 'block' : 'none'"
+        (click)="closeImageModal()"></div>
+</div>

@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GrnService, GrnPaymentDetails } from '../grn.service';
+import { CompanyService, Company } from '../../../companies/company/company.service';
+import { AddressService, Address } from '../../../Master/geography/address/address.service';
 
 @Component({
     selector: 'app-grn-payment-receipt',
@@ -16,12 +18,17 @@ export class GrnPaymentReceiptComponent implements OnInit {
     isLoading = true;
     error: string | null = null;
     currentDate = new Date();
+    company: Company | null = null;
+    companyAddress: Address | null = null;
+    companyLogoUrl: string | null = null;
 
     constructor(
         private grnService: GrnService,
         private route: ActivatedRoute,
         private router: Router,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private companyService: CompanyService,
+        private addressService: AddressService
     ) { }
 
     ngOnInit(): void {
@@ -36,6 +43,7 @@ export class GrnPaymentReceiptComponent implements OnInit {
             }
 
             this.loadGrnDetails();
+            this.loadCompany();
         });
     }
 
@@ -60,6 +68,35 @@ export class GrnPaymentReceiptComponent implements OnInit {
 
     getPaymentMethodName(method: number): string {
         return this.grnService.getPaymentMethodName(method);
+    }
+
+    private loadCompany(): void {
+        this.companyService.getAll().subscribe({
+            next: (companies) => {
+                if (!companies?.length) return;
+                this.company = companies[0];
+                this.companyLogoUrl = this.resolveLogoUrl(this.company.logoUrl);
+                this.addressService.getForOwner('Company', this.company.id).subscribe({
+                    next: (addresses) => {
+                        this.companyAddress = addresses?.[0] || null;
+                        this.cdr.detectChanges();
+                    },
+                    error: () => {
+                        this.companyAddress = null;
+                    }
+                });
+            },
+            error: () => { }
+        });
+    }
+
+    private resolveLogoUrl(url?: string | null): string | null {
+        if (!url) return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        return '/' + trimmed.replace(/^\/+/, '');
     }
 
     print(): void {

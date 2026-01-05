@@ -15,6 +15,21 @@ export interface Item {
     unitOfMeasureId: string;
     unitOfMeasure?: UnitOfMeasure;
     price?: number;
+    images?: ItemImage[];
+    mainImageUrl?: string;
+}
+
+export interface ItemImage {
+    id: string;
+    itemId: string;
+    imageUrl: string;
+    isMain: boolean;
+}
+
+export interface CreateItemImageDto {
+    itemId: string;
+    imageUrl: string;
+    isMain: boolean;
 }
 
 export interface CreateItemDto {
@@ -42,14 +57,38 @@ export class ItemService {
     }
 
     private mapToCamelCase(data: any): Item {
+        const images = this.normalizeImages(data.images || data.Images);
+        const mainImage = images.find(i => i.isMain) || images[0];
+        const serverMainImage = data.mainImageUrl || data.MainImageUrl || '';
+
         return {
             id: (data.id || data.Id || '').toString().toLowerCase(),
             name: data.name || data.Name || '',
             sku: data.sku || data.SKU || '',
             unitOfMeasure: data.unitOfMeasure || data.UnitOfMeasure || null,
             unitOfMeasureId: (data.unitOfMeasureId || data.UnitOfMeasureId || '').toString().toLowerCase(),
-            price: data.price || data.Price || 0
+            price: data.price || data.Price || 0,
+            images,
+            mainImageUrl: this.resolveImageUrl(serverMainImage || mainImage?.imageUrl)
         };
+    }
+
+    private normalizeImages(raw: any): ItemImage[] {
+        const collection = Array.isArray(raw) ? raw : (raw?.$values || []);
+        return collection.map((img: any) => ({
+            id: (img.id || img.Id || '').toString().toLowerCase(),
+            itemId: (img.itemId || img.ItemId || '').toString().toLowerCase(),
+            imageUrl: this.resolveImageUrl(img.imageUrl || img.ImageUrl || ''),
+            isMain: Boolean(img.isMain ?? img.IsMain)
+        }));
+    }
+
+    private resolveImageUrl(url: string | null | undefined): string {
+        const trimmed = (url || '').trim();
+        if (!trimmed) return '';
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        return '/' + trimmed.replace(/^\/+/, '');
     }
 
     getById(id: string): Observable<Item> {
@@ -70,5 +109,33 @@ export class ItemService {
 
     getUnitOfMeasures(): Observable<UnitOfMeasure[]> {
         return this.http.get<UnitOfMeasure[]>(this.uomUrl);
+    }
+
+    // Image methods
+    getItemImages(itemId: string): Observable<ItemImage[]> {
+        return this.http.get<ItemImage[]>(`/api/itemimage/item/${itemId}`);
+    }
+
+    uploadImage(itemId: string, file: File, isMain: boolean = false): Observable<ItemImage> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post<ItemImage>(`/api/itemimage/${itemId}/upload`, formData);
+    }
+
+    getImage(itemId: string, imageId: string): Observable<ItemImage> {
+        return this.http.get<ItemImage>(`/api/itemimage/${imageId}`);
+    }
+
+    setMainImage(itemId: string, image: ItemImage): Observable<ItemImage> {
+        const dto: CreateItemImageDto = {
+            itemId: itemId,
+            imageUrl: image.imageUrl,
+            isMain: true
+        };
+        return this.http.put<ItemImage>(`/api/itemimage/${image.id}`, dto);
+    }
+
+    deleteImage(itemId: string, imageId: string): Observable<void> {
+        return this.http.delete<void>(`/api/itemimage/${imageId}`);
     }
 }

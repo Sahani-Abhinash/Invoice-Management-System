@@ -5,6 +5,8 @@ import { PurchaseOrderService, PurchaseOrder } from '../purchase-order.service';
 import { Vendor } from '../../../companies/vendor/vendor.service';
 import { Warehouse } from '../../../warehouse/warehouse.service';
 import { Item } from '../../../product/items/item.service';
+import { CompanyService, Company } from '../../../companies/company/company.service';
+import { Address, AddressService } from '../../../Master/geography/address/address.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -22,12 +24,17 @@ export class PurchaseOrderViewComponent implements OnInit {
     warehouse: Warehouse | null = null;
     itemsMap: Map<string, Item> = new Map();
     totalAmount: number = 0;
+    company: Company | null = null;
+    companyAddress: Address | null = null;
+    companyLogoUrl: string | null = null;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private poService: PurchaseOrderService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private companyService: CompanyService,
+        private addressService: AddressService
     ) { }
 
     ngOnInit(): void {
@@ -65,7 +72,8 @@ export class PurchaseOrderViewComponent implements OnInit {
                 forkJoin({
                     vendors: this.poService.getVendors(),
                     warehouses: this.poService.getWarehouses(),
-                    items: this.poService.getItems()
+                    items: this.poService.getItems(),
+                    companies: this.companyService.getAll()
                 }).subscribe({
                     next: (data) => {
                         console.log('[PO View] Dependencies loaded:', {
@@ -84,6 +92,8 @@ export class PurchaseOrderViewComponent implements OnInit {
                         data.items.forEach(i => {
                             if (i.id) this.itemsMap.set(i.id.toLowerCase(), i);
                         });
+
+                        this.setCompany(data.companies);
 
                         console.log('[PO View] Items map size:', this.itemsMap.size);
                         this.calculateTotal();
@@ -112,6 +122,39 @@ export class PurchaseOrderViewComponent implements OnInit {
     getItem(itemId: string): Item | undefined {
         if (!itemId) return undefined;
         return this.itemsMap.get(itemId.toLowerCase());
+    }
+
+    private setCompany(companies: Company[]) {
+        if (!companies || companies.length === 0) return;
+        this.company = companies[0];
+        this.companyLogoUrl = this.resolveLogoUrl(this.company.logoUrl);
+        this.addressService.getForOwner('Company', this.company.id).subscribe({
+            next: (addresses) => {
+                this.companyAddress = addresses?.[0] || null;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.companyAddress = null;
+            }
+        });
+    }
+
+    private resolveLogoUrl(url?: string | null): string | null {
+        if (!url) return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        return '/' + trimmed.replace(/^\/+/, '');
+    }
+
+    getItemImage(itemId: string): string | null {
+        const item = this.getItem(itemId);
+        if (!item) return null;
+        const images = item.images || [];
+        const mainImage = images.find(i => i.isMain) || images[0];
+        const url = (mainImage?.imageUrl || item.mainImageUrl || '').trim();
+        return url || null;
     }
 
     calculateTotal() {

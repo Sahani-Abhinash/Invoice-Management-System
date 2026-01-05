@@ -1,41 +1,104 @@
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{{ id ? 'Edit Item' : 'Create Item' }}</h5>
-        <a class="btn btn-sm btn-light" [routerLink]="['/products/items']">Back</a>
+<div class="container-fluid py-3">
+    <div class="row align-items-center mb-3">
+        <div class="col">
+            <small class="text-uppercase text-muted">Product · Item</small>
+            <h4 class="mb-0">{{ id ? 'Edit Item' : 'Create Item' }}</h4>
+        </div>
+        <div class="col-auto d-flex gap-2">
+            <a class="btn btn-outline-secondary" [routerLink]="['/products/items']">Back</a>
+            <button type="submit" form="itemForm" class="btn btn-primary" [disabled]="form.invalid">
+                {{ id ? 'Save Changes' : 'Create Item' }}
+            </button>
+        </div>
     </div>
-    <div class="card-body">
-        <form [formGroup]="form" (ngSubmit)="save()">
 
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter item name">
-                <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Item Name
-                    is required</div>
-            </div>
+    <div class="row g-3">
+        <!-- Left: Item fields -->
+        <div class="col-12 col-lg-5 col-xl-5">
+            <div class="card">
+                <div class="card-body">
+                    <form id="itemForm" [formGroup]="form" (ngSubmit)="save()">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" formControlName="name" placeholder="E.g. Wireless Keyboard" required>
+                            <div class="text-danger small" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Item Name is required</div>
+                        </div>
 
-            <div class="mb-3">
-                <label for="sku" class="form-label">SKU</label>
-                <input type="text" class="form-control" id="sku" formControlName="sku" placeholder="Enter SKU">
-                <div class="text-danger small" *ngIf="form.get('sku')?.touched && form.get('sku')?.invalid">SKU is
-                    required</div>
-            </div>
+                        <div class="mb-3">
+                            <label for="sku" class="form-label">SKU</label>
+                            <input type="text" class="form-control" id="sku" formControlName="sku" placeholder="E.g. KB-001" required>
+                            <div class="text-danger small" *ngIf="form.get('sku')?.touched && form.get('sku')?.invalid">SKU is required</div>
+                        </div>
 
-            <div class="mb-3">
-                <label for="unitOfMeasureId" class="form-label">Unit of Measure</label>
-                <select class="form-select" id="unitOfMeasureId" formControlName="unitOfMeasureId">
-                    <option value="" disabled>Select Unit of Measure</option>
-                    <option *ngFor="let uom of uoms" [value]="uom.id">{{ uom.name }} ({{ uom.symbol }})</option>
-                </select>
-                <div class="text-danger small"
-                    *ngIf="form.get('unitOfMeasureId')?.touched && form.get('unitOfMeasureId')?.invalid">Unit of Measure
-                    is required</div>
+                        <div class="mb-3">
+                            <label for="unitOfMeasureId" class="form-label">Unit of Measure</label>
+                            <select class="form-select" id="unitOfMeasureId" formControlName="unitOfMeasureId" required>
+                                <option value="" disabled>Select Unit of Measure</option>
+                                <option *ngFor="let uom of uoms" [value]="uom.id">{{ uom.name }} ({{ uom.symbol }})</option>
+                            </select>
+                            <div class="text-danger small" *ngIf="form.get('unitOfMeasureId')?.touched && form.get('unitOfMeasureId')?.invalid">Unit of Measure is required</div>
+                        </div>
+                    </form>
+                </div>
             </div>
+        </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ id ? 'Update' : 'Create'
-                    }}</button>
-                <a class="btn btn-light" [routerLink]="['/products/items']">Cancel</a>
+        <!-- Right: Images -->
+        <div class="col-12 col-lg-7 col-xl-7">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                    <div>
+                        <h6 class="mb-0">Item Images</h6>
+                        <small class="text-muted">JPEG, PNG, GIF, WebP · Max 5MB</small>
+                    </div>
+                    <span class="badge bg-secondary">{{ images.length }} images</span>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="!isEditMode" class="alert alert-info mb-0">Save the item first to enable image uploads.</div>
+                    <ng-container *ngIf="isEditMode">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-8">
+                                <label for="imageInput" class="form-label">Upload Image</label>
+                                <input
+                                    type="file"
+                                    class="form-control"
+                                    id="imageInput"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    (change)="onFileSelected($event)">
+                                <div class="form-text" *ngIf="selectedFile">Selected: {{ selectedFile.name }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <button
+                                    type="button"
+                                    class="btn btn-success w-100"
+                                    [disabled]="!selectedFile || isUploadingImage"
+                                    (click)="uploadImage()">
+                                    <span *ngIf="!isUploadingImage">Upload & Add</span>
+                                    <span *ngIf="isUploadingImage">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Uploading...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div *ngIf="uploadMessage" class="alert alert-success mt-3 mb-0">{{ uploadMessage }}</div>
+                        <div *ngIf="uploadError" class="alert alert-danger mt-3 mb-0">{{ uploadError }}</div>
+
+                        <div class="mt-4 pt-3 border-top">
+                            <app-image-gallery
+                                [images]="images"
+                                [columns]="4"
+                                [readonly]="false"
+                                [allowSetMain]="true"
+                                [allowDelete]="true"
+                                (mainImageSelected)="setMainImage($event)"
+                                (imageDeleted)="deleteImage($event)">
+                            </app-image-gallery>
+                        </div>
+                    </ng-container>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
