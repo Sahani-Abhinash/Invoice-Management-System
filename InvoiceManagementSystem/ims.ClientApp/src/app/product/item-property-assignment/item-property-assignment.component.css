@@ -1,0 +1,12 @@
+.property-assignment {
+    margin-top: 20px;
+}
+
+.assignment-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}

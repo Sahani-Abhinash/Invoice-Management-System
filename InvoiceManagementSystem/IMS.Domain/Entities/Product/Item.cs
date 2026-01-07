@@ -17,5 +17,6 @@ namespace IMS.Domain.Entities.Product
 
         public ICollection<ItemImage> Images { get; set; } = new List<ItemImage>();
         public ICollection<ItemPrice> Prices { get; set; } = new List<ItemPrice>();
+        public ICollection<ItemPropertyAttribute> PropertyAttributes { get; set; } = new List<ItemPropertyAttribute>();
     }
 }

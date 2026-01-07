@@ -4,6 +4,7 @@ using IMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IMS.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260106152017_AddedProductPropertyAndAttribute")]
+    partial class AddedProductPropertyAndAttribute
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1040,73 +1043,6 @@ namespace IMS.Infrastructure.Migrations
                     b.HasIndex("PriceListId");
 
                     b.ToTable("ItemPrices");
-                });
-
-            modelBuilder.Entity("IMS.Domain.Entities.Product.ItemPropertyAttribute", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid>("PropertyAttributeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasAlternateKey("ItemId", "PropertyAttributeId")
-                        .HasName("UK_ItemPropertyAttribute_ItemId_PropertyAttributeId");
-
-                    b.HasIndex("ItemId")
-                        .HasDatabaseName("IX_ItemPropertyAttribute_ItemId");
-
-                    b.HasIndex("PropertyAttributeId")
-                        .HasDatabaseName("IX_ItemPropertyAttribute_PropertyAttributeId");
-
-                    b.HasIndex("ItemId", "DisplayOrder")
-                        .HasDatabaseName("IX_ItemPropertyAttribute_ItemId_DisplayOrder");
-
-                    b.ToTable("ItemPropertyAttributes");
                 });
 
             modelBuilder.Entity("IMS.Domain.Entities.Product.ProductProperty", b =>
@@ -2174,25 +2110,6 @@ namespace IMS.Infrastructure.Migrations
                     b.Navigation("PriceList");
                 });
 
-            modelBuilder.Entity("IMS.Domain.Entities.Product.ItemPropertyAttribute", b =>
-                {
-                    b.HasOne("IMS.Domain.Entities.Product.Item", "Item")
-                        .WithMany("PropertyAttributes")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("IMS.Domain.Entities.Product.PropertyAttribute", "PropertyAttribute")
-                        .WithMany("ItemPropertyAttributes")
-                        .HasForeignKey("PropertyAttributeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("PropertyAttribute");
-                });
-
             modelBuilder.Entity("IMS.Domain.Entities.Product.PropertyAttribute", b =>
                 {
                     b.HasOne("IMS.Domain.Entities.Product.ProductProperty", "ProductProperty")
@@ -2342,18 +2259,11 @@ namespace IMS.Infrastructure.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Prices");
-
-                    b.Navigation("PropertyAttributes");
                 });
 
             modelBuilder.Entity("IMS.Domain.Entities.Product.ProductProperty", b =>
                 {
                     b.Navigation("Attributes");
-                });
-
-            modelBuilder.Entity("IMS.Domain.Entities.Product.PropertyAttribute", b =>
-                {
-                    b.Navigation("ItemPropertyAttributes");
                 });
 
             modelBuilder.Entity("IMS.Domain.Entities.Purchase.GoodsReceivedNote", b =>

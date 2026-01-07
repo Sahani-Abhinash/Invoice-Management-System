@@ -1,0 +1,81 @@
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ isEditMode ? 'Edit' : 'Create' }} Product Property</h3>
+        </div>
+        <div class="card-body">
+            <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ error }}
+                <button type="button" class="btn-close" (click)="error = ''"></button>
+            </div>
+
+            <div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ success }}
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        formControlName="name"
+                        placeholder="e.g., Color, Size, Material"
+                        [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+                    />
+                    <div class="invalid-feedback" *ngIf="form.get('name')?.hasError('required')">
+                        Name is required
+                    </div>
+                    <div class="invalid-feedback" *ngIf="form.get('name')?.hasError('maxlength')">
+                        Name cannot exceed 100 characters
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea
+                        class="form-control"
+                        id="description"
+                        formControlName="description"
+                        rows="3"
+                        placeholder="Optional description"
+                        [class.is-invalid]="form.get('description')?.invalid && form.get('description')?.touched"
+                    ></textarea>
+                    <div class="invalid-feedback" *ngIf="form.get('description')?.hasError('maxlength')">
+                        Description cannot exceed 500 characters
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="displayOrder" class="form-label">Display Order <span class="text-danger">*</span></label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        id="displayOrder"
+                        formControlName="displayOrder"
+                        placeholder="0"
+                        [class.is-invalid]="form.get('displayOrder')?.invalid && form.get('displayOrder')?.touched"
+                    />
+                    <small class="form-text text-muted">Lower numbers appear first</small>
+                    <div class="invalid-feedback" *ngIf="form.get('displayOrder')?.hasError('required')">
+                        Display order is required
+                    </div>
+                    <div class="invalid-feedback" *ngIf="form.get('displayOrder')?.hasError('min')">
+                        Display order must be 0 or greater
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="loading">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="loading || form.invalid">
+                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ isEditMode ? 'Update' : 'Create' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

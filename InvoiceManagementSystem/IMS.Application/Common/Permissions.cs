@@ -27,6 +27,15 @@ namespace IMS.Application.Common
         // Products / Items
         public const string ViewItems = "Items.View";
         public const string ManageItems = "Items.Manage";
+        // Product Properties
+        public const string ViewProductProperties = "ProductProperties.View";
+        public const string ManageProductProperties = "ProductProperties.Manage";
+        // Property Attributes
+        public const string ViewPropertyAttributes = "PropertyAttributes.View";
+        public const string ManagePropertyAttributes = "PropertyAttributes.Manage";
+        // Item Property Assignments
+        public const string ViewItemPropertyAssignments = "ItemPropertyAssignments.View";
+        public const string ManageItemPropertyAssignments = "ItemPropertyAssignments.Manage";
         // Warehouses & Stocks
         public const string ViewWarehouses = "Warehouses.View";
         public const string ManageWarehouses = "Warehouses.Manage";

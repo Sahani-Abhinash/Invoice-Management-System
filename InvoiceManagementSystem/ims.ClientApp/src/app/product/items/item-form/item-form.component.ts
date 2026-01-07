@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ItemService, CreateItemDto, UnitOfMeasure, ItemImage } from '../item.service';
 import { ImageGalleryComponent } from '../../../shared/components/image-gallery/image-gallery.component';
+import { ItemPropertyAssignmentComponent } from '../../item-property-assignment/item-property-assignment.component';
 
 @Component({
     selector: 'app-item-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink, ImageGalleryComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, ImageGalleryComponent, ItemPropertyAssignmentComponent],
     templateUrl: './item-form.component.html',
     styleUrls: []
 })

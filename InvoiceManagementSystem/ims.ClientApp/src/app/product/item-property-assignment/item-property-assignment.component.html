@@ -1,0 +1,115 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="las la-tags me-2"></i> Property Assignments
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Messages -->
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="clearMessages()" title="Close"></button>
+        </div>
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ successMessage }}
+            <button type="button" class="btn-close" (click)="clearMessages()" title="Close"></button>
+        </div>
+
+        <!-- Assignment Form -->
+        <form [formGroup]="form" (ngSubmit)="assignProperty()" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="propertySelect" class="form-label">Property</label>
+                    <select
+                        id="propertySelect"
+                        class="form-select"
+                        formControlName="propertyId"
+                        (change)="onPropertyChange($event)">
+                        <option value="">Select a property...</option>
+                        <option *ngFor="let prop of availableProperties" [value]="prop.id">
+                            {{ prop.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="attributeSelect" class="form-label">Value</label>
+                    <select
+                        id="attributeSelect"
+                        class="form-select"
+                        formControlName="attributeId"
+                        (change)="onAttributeChange($event)"
+                        [disabled]="!selectedProperty">
+                        <option value="">Select a value...</option>
+                        <option *ngFor="let attr of availableAttributes" [value]="attr.id">
+                            {{ attr.value }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="notesInput" class="form-label">Notes</label>
+                    <input
+                        id="notesInput"
+                        type="text"
+                        class="form-control"
+                        formControlName="notes"
+                        placeholder="Optional notes">
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        [disabled]="!form.valid || loading">
+                        <i class="las la-plus me-2" *ngIf="!loading"></i>
+                        <span class="spinner-border spinner-border-sm me-2" *ngIf="loading" role="status" aria-hidden="true"></span>
+                        {{ loading ? 'Assigning...' : 'Assign Property' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Assigned Properties List -->
+        <div *ngIf="loading && assignedProperties.length === 0" class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div *ngIf="!loading && assignedProperties.length === 0" class="alert alert-info">
+            No properties assigned yet. Select a property and value above to assign.
+        </div>
+
+        <div *ngIf="assignedProperties.length > 0" class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                        <th>Notes</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let assignment of assignedProperties">
+                        <td><span class="fw-medium">{{ assignment.propertyName }}</span></td>
+                        <td>{{ assignment.attributeValue }}</td>
+                        <td class="text-muted small">{{ assignment.notes || '—' }}</td>
+                        <td class="text-end">
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-soft-danger"
+                                (click)="removeAssignment(assignment.id)"
+                                title="Remove">
+                                <i class="las la-trash fs-15"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

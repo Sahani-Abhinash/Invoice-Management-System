@@ -87,6 +87,9 @@ builder.Services.AddScoped<IMS.Application.Interfaces.Pricing.IPriceListService,
 builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemPriceService, IMS.Infrastructure.Services.Product.ItemPriceService>();
 builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemService, IMS.Infrastructure.Services.Product.ItemService>();
 builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemImageService, IMS.Infrastructure.Services.Product.ItemImageService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IProductPropertyService, IMS.Infrastructure.Services.Product.ProductPropertyService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IPropertyAttributeService, IMS.Infrastructure.Services.Product.PropertyAttributeService>();
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemPropertyAttributeService, IMS.Infrastructure.Services.Product.ItemPropertyAttributeService>();
 
 // Register Managers (Separate managers for each entity)
 builder.Services.AddScoped<ICompanyManager, CompanyManager>();
@@ -104,6 +107,9 @@ builder.Services.AddScoped<IMS.Application.Interfaces.Warehouses.IGrnService, IM
 builder.Services.AddScoped<IMS.Application.Managers.Warehouses.IGrnManager, IMS.Application.Managers.Warehouses.GrnManager>();
 // Product managers
 builder.Services.AddScoped<IMS.Application.Managers.Product.IUnitOfMeasureManager, IMS.Application.Managers.Product.UnitOfMeasureManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Product.IProductPropertyManager, IMS.Application.Managers.Product.ProductPropertyManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Product.IPropertyAttributeManager, IMS.Application.Managers.Product.PropertyAttributeManager>();
+builder.Services.AddScoped<IMS.Application.Managers.Product.IItemPropertyAttributeManager, IMS.Application.Managers.Product.ItemPropertyAttributeManager>();
 // Pricing managers
 builder.Services.AddScoped<IMS.Application.Managers.Pricing.IPriceListManager, IMS.Application.Managers.Pricing.PriceListManager>();
 // ItemPrice manager

@@ -66,6 +66,9 @@ namespace IMS.Infrastructure.Persistence
         public DbSet<Item> Items => Set<Item>();
         public DbSet<ItemImage> ItemImages => Set<ItemImage>();
         public DbSet<UnitOfMeasure> UnitOfMeasures => Set<UnitOfMeasure>();
+        public DbSet<ProductProperty> ProductProperties => Set<ProductProperty>();
+        public DbSet<PropertyAttribute> PropertyAttributes => Set<PropertyAttribute>();
+        public DbSet<ItemPropertyAttribute> ItemPropertyAttributes => Set<ItemPropertyAttribute>();
 
         // ---------------------
         // Pricing
