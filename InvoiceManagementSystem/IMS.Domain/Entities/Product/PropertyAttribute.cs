@@ -20,5 +20,10 @@ namespace IMS.Domain.Entities.Product
         public string? Metadata { get; set; }
 
         public ICollection<ItemPropertyAttribute> ItemPropertyAttributes { get; set; } = new List<ItemPropertyAttribute>();
+
+        /// <summary>
+        /// Collection of item price variants that use this attribute
+        /// </summary>
+        public ICollection<ItemPriceVariant> ItemPriceVariants { get; set; } = new List<ItemPriceVariant>();
     }
 }

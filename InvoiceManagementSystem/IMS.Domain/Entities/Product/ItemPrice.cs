@@ -20,6 +20,11 @@ namespace IMS.Domain.Entities.Product
 
         public DateTime EffectiveFrom { get; set; }
         public DateTime? EffectiveTo { get; set; }
+
+        /// <summary>
+        /// Collection of variants for this price (e.g., different colors, sizes)
+        /// </summary>
+        public ICollection<ItemPriceVariant> Variants { get; set; } = new List<ItemPriceVariant>();
     }
 
 }

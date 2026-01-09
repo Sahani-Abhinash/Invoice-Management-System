@@ -1,0 +1,65 @@
+<div class="variant-selector-container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="alert alert-info">
+        Loading variants...
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+    </div>
+
+    <!-- Success State -->
+    <div *ngIf="success" class="alert alert-success">
+        {{ success }}
+    </div>
+
+    <!-- Variant Selection -->
+    <div *ngIf="!loading && variants.length > 0" class="variants-section">
+        <h5>Select Options</h5>
+
+        <!-- Group variants by property (Color, Size, etc.) -->
+        <div *ngFor="let propertyName of getPropertyNames()" class="property-group">
+            <label class="property-label">{{ propertyName }}</label>
+
+            <div class="variant-options">
+                <button *ngFor="let variant of getVariantsByProperty(propertyName)"
+                    class="variant-btn"
+                    [class.selected]="isVariantSelected(variant)"
+                    [class.out-of-stock]="variant.stockQuantity === 0"
+                    [disabled]="variant.stockQuantity === 0"
+                    (click)="onVariantSelect(variant)"
+                    title="{{ variant.displayLabel }}">
+                    {{ getVariantDisplayText(variant) }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Selected Variant Summary -->
+        <div *ngIf="selectedVariant" class="selected-summary">
+            <div class="summary-card">
+                <h6>Selected Variant</h6>
+                <p class="variant-text">{{ selectedVariant.displayLabel }}</p>
+                <p *ngIf="selectedVariant.price" class="variant-price">
+                    Price: <strong>{{ selectedVariant.price | currency }}</strong>
+                </p>
+                <p *ngIf="selectedVariant.stockQuantity !== undefined" class="variant-stock">
+                    Stock: <strong>{{ selectedVariant.stockQuantity }}</strong>
+                </p>
+                <button class="btn btn-outline-secondary btn-sm" (click)="clearSelection()">
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- No selection message -->
+        <div *ngIf="!selectedVariant" class="no-selection">
+            <p class="text-muted">Please select a variant option</p>
+        </div>
+    </div>
+
+    <!-- No Variants Available -->
+    <div *ngIf="!loading && variants.length === 0" class="alert alert-warning">
+        No variants available for this product
+    </div>
+</div>

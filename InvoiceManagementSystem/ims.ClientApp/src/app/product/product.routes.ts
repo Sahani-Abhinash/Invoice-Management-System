@@ -9,6 +9,8 @@ import { ProductPropertyListComponent } from './product-property/product-propert
 import { ProductPropertyFormComponent } from './product-property/product-property-form/product-property-form.component';
 import { PropertyAttributeListComponent } from './property-attribute/property-attribute-list/property-attribute-list.component';
 import { PropertyAttributeFormComponent } from './property-attribute/property-attribute-form/property-attribute-form.component';
+import { ItemPriceVariantListComponent } from './item-price-variant/item-price-variant-list/item-price-variant-list.component';
+import { ItemPriceVariantFormComponent } from './item-price-variant/item-price-variant-form/item-price-variant-form.component';
 
 export const PRODUCT_ROUTES: Routes = [
     { path: '', redirectTo: 'items', pathMatch: 'full' },
@@ -26,5 +28,8 @@ export const PRODUCT_ROUTES: Routes = [
     { path: 'properties/edit/:id', component: ProductPropertyFormComponent },
     { path: 'attributes', component: PropertyAttributeListComponent },
     { path: 'attributes/create', component: PropertyAttributeFormComponent },
-    { path: 'attributes/edit/:id', component: PropertyAttributeFormComponent }
+    { path: 'attributes/edit/:id', component: PropertyAttributeFormComponent },
+    { path: 'variants', component: ItemPriceVariantListComponent },
+    { path: 'variants/create', component: ItemPriceVariantFormComponent },
+    { path: 'variants/edit/:id', component: ItemPriceVariantFormComponent }
 ];

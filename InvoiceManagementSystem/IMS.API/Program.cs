@@ -110,6 +110,9 @@ builder.Services.AddScoped<IMS.Application.Managers.Product.IUnitOfMeasureManage
 builder.Services.AddScoped<IMS.Application.Managers.Product.IProductPropertyManager, IMS.Application.Managers.Product.ProductPropertyManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Product.IPropertyAttributeManager, IMS.Application.Managers.Product.PropertyAttributeManager>();
 builder.Services.AddScoped<IMS.Application.Managers.Product.IItemPropertyAttributeManager, IMS.Application.Managers.Product.ItemPropertyAttributeManager>();
+// ItemPriceVariant service & manager
+builder.Services.AddScoped<IMS.Application.Interfaces.Product.IItemPriceVariantService, IMS.Infrastructure.Services.Product.ItemPriceVariantService>();
+builder.Services.AddScoped<IMS.Application.Managers.Product.IItemPriceVariantManager, IMS.Application.Managers.Product.ItemPriceVariantManager>();
 // Pricing managers
 builder.Services.AddScoped<IMS.Application.Managers.Pricing.IPriceListManager, IMS.Application.Managers.Pricing.PriceListManager>();
 // ItemPrice manager

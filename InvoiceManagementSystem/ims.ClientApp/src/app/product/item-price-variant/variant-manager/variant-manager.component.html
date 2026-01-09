@@ -1,0 +1,151 @@
+<div class="variant-manager-container">
+    <div class="manager-header">
+        <h5>Manage Product Variants</h5>
+        <p class="text-muted">Add/edit/delete color, size, and other variant options</p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+    </div>
+
+    <!-- Success Alert -->
+    <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+        {{ success }}
+        <button type="button" class="btn-close" (click)="success = ''"></button>
+    </div>
+
+    <!-- Form Section -->
+    <div class="form-section">
+        <h6>{{ isEditMode ? 'Edit Variant' : 'Add New Variant' }}</h6>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="row">
+                <!-- Property Selection -->
+                <div class="col-md-6 mb-3">
+                    <label for="propertyId" class="form-label">Property Type *</label>
+                    <select class="form-select" id="propertyId" formControlName="propertyId"
+                        (change)="onPropertyChange($event)">
+                        <option value="">Select a property...</option>
+                        <option *ngFor="let prop of properties" [value]="prop.id">
+                            {{ prop.name }}
+                        </option>
+                    </select>
+                    <div *ngIf="form.get('propertyId')?.invalid && form.get('propertyId')?.touched"
+                        class="invalid-feedback d-block">
+                        Property type is required
+                    </div>
+                </div>
+
+                <!-- Attribute Selection -->
+                <div class="col-md-6 mb-3">
+                    <label for="attributeId" class="form-label">Variant Value *</label>
+                    <select class="form-select" id="attributeId" formControlName="propertyAttributeId">
+                        <option value="">Select a value...</option>
+                        <option *ngFor="let attr of attributes" [value]="attr.id">
+                            {{ attr.value }}
+                        </option>
+                    </select>
+                    <div *ngIf="form.get('propertyAttributeId')?.invalid && form.get('propertyAttributeId')?.touched"
+                        class="invalid-feedback d-block">
+                        Variant value is required
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Display Order -->
+                <div class="col-md-4 mb-3">
+                    <label for="displayOrder" class="form-label">Display Order</label>
+                    <input type="number" class="form-control" id="displayOrder"
+                        formControlName="displayOrder" min="0">
+                </div>
+
+                <!-- Stock Quantity -->
+                <div class="col-md-4 mb-3">
+                    <label for="stockQuantity" class="form-label">Stock Quantity</label>
+                    <input type="number" class="form-control" id="stockQuantity"
+                        formControlName="stockQuantity" min="0">
+                </div>
+
+                <!-- Variant SKU -->
+                <div class="col-md-4 mb-3">
+                    <label for="variantSKU" class="form-label">Variant SKU (Optional)</label>
+                    <input type="text" class="form-control" id="variantSKU"
+                        formControlName="variantSKU" placeholder="e.g., WHITE-M">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" [disabled]="loading || !form.valid">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    {{ isEditMode ? 'Update Variant' : 'Add Variant' }}
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="resetForm()"
+                    *ngIf="isEditMode">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Variants List Section -->
+    <div class="variants-list-section mt-4">
+        <h6>Current Variants ({{ variants.length }})</h6>
+
+        <div *ngIf="loading && variants.length === 0" class="alert alert-info">
+            Loading variants...
+        </div>
+
+        <div *ngIf="!loading && variants.length === 0" class="alert alert-warning">
+            No variants added yet. Add your first variant above.
+        </div>
+
+        <!-- Variants Table -->
+        <div *ngIf="variants.length > 0" class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                        <th>Order</th>
+                        <th>Stock</th>
+                        <th>SKU</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let variant of variants">
+                        <td>
+                            <strong>{{ variant.propertyName }}</strong>
+                        </td>
+                        <td>{{ variant.attributeValue }}</td>
+                        <td>{{ variant.displayOrder }}</td>
+                        <td>
+                            <span *ngIf="variant.stockQuantity !== undefined" 
+                                [class.text-danger]="variant.stockQuantity === 0">
+                                {{ variant.stockQuantity }}
+                            </span>
+                            <span *ngIf="variant.stockQuantity === undefined" class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <span *ngIf="variant.variantSKU" class="badge bg-info">
+                                {{ variant.variantSKU }}
+                            </span>
+                            <span *ngIf="!variant.variantSKU" class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-2" (click)="editVariant(variant)">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" (click)="deleteVariant(variant.id)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

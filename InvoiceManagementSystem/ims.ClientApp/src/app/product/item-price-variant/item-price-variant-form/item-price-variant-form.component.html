@@ -1,0 +1,168 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">{{ isEditMode ? 'Edit' : 'Add' }} Item Variant</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a routerLink="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a routerLink="/products">Products</a></li>
+                        <li class="breadcrumb-item"><a routerLink="/products/variants">Item Variants</a></li>
+                        <li class="breadcrumb-item active">{{ isEditMode ? 'Edit' : 'Add' }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div *ngIf="!loading" class="row">
+        <div class="col-lg-12">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Variant Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Item Price Selection -->
+                            <div class="col-lg-12">
+                                <label for="itemPriceId" class="form-label">Item Price <span class="text-danger">*</span></label>
+                                <select 
+                                    id="itemPriceId" 
+                                    class="form-select" 
+                                    formControlName="itemPriceId"
+                                    [class.is-invalid]="form.get('itemPriceId')?.invalid && form.get('itemPriceId')?.touched"
+                                    [disabled]="isEditMode">
+                                    <option value="">Select Item Price</option>
+                                    <option *ngFor="let ip of itemPrices" [value]="ip.id">
+                                        {{ ip.itemName }} - {{ ip.price | currency }}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="form.get('itemPriceId')?.invalid && form.get('itemPriceId')?.touched">
+                                    Item Price is required
+                                </div>
+                            </div>
+
+                            <!-- Property Selection (for filtering) -->
+                            <div class="col-lg-6">
+                                <label for="productPropertyId" class="form-label">Property Type <span class="text-muted">(Optional - for filtering)</span></label>
+                                <select 
+                                    id="productPropertyId" 
+                                    class="form-select" 
+                                    formControlName="productPropertyId">
+                                    <option value="">All Properties</option>
+                                    <option *ngFor="let prop of properties" [value]="prop.id">
+                                        {{ prop.name }}
+                                    </option>
+                                </select>
+                                <small class="text-muted">Filter attributes by property type (e.g., Color, Size)</small>
+                            </div>
+
+                            <!-- Property Attribute Selection -->
+                            <div class="col-lg-6">
+                                <label for="propertyAttributeId" class="form-label">Property Value <span class="text-danger">*</span></label>
+                                <select 
+                                    id="propertyAttributeId" 
+                                    class="form-select" 
+                                    formControlName="propertyAttributeId"
+                                    [class.is-invalid]="form.get('propertyAttributeId')?.invalid && form.get('propertyAttributeId')?.touched">
+                                    <option value="">Select Value</option>
+                                    <!-- If Property Type is selected, show only attributes for that property -->
+                                    <option 
+                                        *ngFor="let attr of filteredAttributes" 
+                                        [value]="attr.id">
+                                        {{ attr.value }}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="form.get('propertyAttributeId')?.invalid && form.get('propertyAttributeId')?.touched">
+                                    Property Value is required
+                                </div>
+                            </div>
+
+                            <!-- Display Order -->
+                            <div class="col-lg-4">
+                                <label for="displayOrder" class="form-label">Display Order <span class="text-danger">*</span></label>
+                                <input 
+                                    type="number" 
+                                    id="displayOrder" 
+                                    class="form-control" 
+                                    formControlName="displayOrder"
+                                    [class.is-invalid]="form.get('displayOrder')?.invalid && form.get('displayOrder')?.touched"
+                                    min="0">
+                                <div class="invalid-feedback" *ngIf="form.get('displayOrder')?.invalid && form.get('displayOrder')?.touched">
+                                    Display order must be 0 or greater
+                                </div>
+                            </div>
+
+                            <!-- Stock Quantity -->
+                            <div class="col-lg-4">
+                                <label for="stockQuantity" class="form-label">Stock Quantity</label>
+                                <input 
+                                    type="number" 
+                                    id="stockQuantity" 
+                                    class="form-control" 
+                                    formControlName="stockQuantity"
+                                    [class.is-invalid]="form.get('stockQuantity')?.invalid && form.get('stockQuantity')?.touched"
+                                    min="0"
+                                    placeholder="Leave empty if not tracked">
+                                <div class="invalid-feedback" *ngIf="form.get('stockQuantity')?.invalid && form.get('stockQuantity')?.touched">
+                                    Stock quantity cannot be negative
+                                </div>
+                            </div>
+
+                            <!-- Variant SKU -->
+                            <div class="col-lg-4">
+                                <label for="variantSKU" class="form-label">Variant SKU</label>
+                                <input 
+                                    type="text" 
+                                    id="variantSKU" 
+                                    class="form-control" 
+                                    formControlName="variantSKU"
+                                    [class.is-invalid]="form.get('variantSKU')?.invalid && form.get('variantSKU')?.touched"
+                                    maxlength="100"
+                                    placeholder="e.g., TSHIRT-RED-M">
+                                <div class="invalid-feedback" *ngIf="form.get('variantSKU')?.invalid && form.get('variantSKU')?.touched">
+                                    SKU cannot exceed 100 characters
+                                </div>
+                            </div>
+
+                            <!-- Info Box -->
+                            <div class="col-lg-12">
+                                <div class="alert alert-info">
+                                    <i class="ri-information-line me-2"></i>
+                                    <strong>Note:</strong> A variant links a specific property value (e.g., "Red" or "Size M") to an item price. 
+                                    You can combine multiple variants to create options like "Red, Size M" for customers to choose from.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-light" (click)="cancel()" [disabled]="saving">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+                                <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+                                {{ isEditMode ? 'Update' : 'Create' }} Variant
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -75,6 +75,7 @@ namespace IMS.Infrastructure.Persistence
         // ---------------------
         public DbSet<PriceList> PriceLists => Set<PriceList>();
         public DbSet<ItemPrice> ItemPrices => Set<ItemPrice>();
+        public DbSet<ItemPriceVariant> ItemPriceVariants => Set<ItemPriceVariant>();
 
         // ---------------------
         // Security / Users / Roles
